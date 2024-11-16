@@ -12,6 +12,7 @@ bun dev
 ```
 
 - open [http://localhost:3000](http://localhost:3000)
+- api testing [http://localhost:3000/api/panel](http://localhost:3000/api/panel)
 
 ## Tech Stack
 
