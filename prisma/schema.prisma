@@ -7,10 +7,6 @@ generator client {
 
 datasource db {
     provider = "postgresql"
-    // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
-    // Further reading:
-    // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
-    // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
     url      = env("DATABASE_URL")
 }
 
@@ -63,6 +59,10 @@ model User {
     accounts      Account[]
     sessions      Session[]
     posts         Post[]
+
+    UserAnswer UserAnswer[]
+
+    UsersToClass UsersToClass[]
 }
 
 model VerificationToken {
@@ -71,4 +71,103 @@ model VerificationToken {
     expires    DateTime
 
     @@unique([identifier, token])
+}
+
+model Class {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  Packages  Package[]
+  Users     UsersToClass[]
+}
+
+enum Type {
+  tryout
+  drill
+}
+
+model Package {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      Type
+  TOstart   DateTime?
+  TOend     DateTime?
+  TOduration String?
+  classId   Int
+  Class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  Questions Question[]
+}
+
+enum Subtest {
+  pu
+  ppu
+  pbm
+  pk
+  lb
+  pm
+}
+
+enum QuestionType {
+  essay
+  mulChoice
+}
+
+model Question {
+  id             String      @id @default(uuid())
+  index          Int
+  content        String
+  imageUrl       String?
+  subtest        Subtest
+  type           QuestionType
+  score          Int         @default(0)
+  explanation    String?
+  correctAnswerId String?     @map("correct_answer")
+  createdAt      DateTime    @default(now())
+  packageId      Int
+  Package        Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  Answers        Answer[]    @relation("QuestionAnswers")
+  CorrectAnswer  Answer?     @relation("QuestionCorrectAnswer")
+}
+
+model Answer {
+  id         String   @id @default(uuid())
+  index      Int
+  content    String
+  questionId String @unique
+  Question   Question @relation("QuestionAnswers", fields: [questionId], references: [id], onDelete: Cascade)
+  QuestionAns   Question @relation("QuestionCorrectAnswer", fields: [questionId], references: [id], onDelete: Cascade, map: "QuestionCorrectAnswer_questionId_fkey")
+
+  UserAnswer UserAnswer[]
+}
+
+model UserAnswer {
+  userId    String
+  answerId  String
+  answer    String
+  User      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Answer    Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  @@id([userId, answerId])
+}
+
+model Video {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
+  createdAt   DateTime  @default(now())
+}
+
+model File {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
+}
+
+model UsersToClass {
+  userId  String
+  classId Int
+  User    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  Class   Class?  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  @@id([userId, classId])
 }
