@@ -1,101 +1,22 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
-
-    @@index([name])
-}
-
-// Necessary for Next auth
-model Account {
-    id                       String  @id @default(cuid())
-    userId                   String
-    type                     String
-    provider                 String
-    providerAccountId        String
-    refresh_token            String? // @db.Text
-    access_token             String? // @db.Text
-    expires_at               Int?
-    token_type               String?
-    scope                    String?
-    id_token                 String? // @db.Text
-    session_state            String?
-    user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-    refresh_token_expires_in Int?
-
-    @@unique([provider, providerAccountId])
-}
-
-model Session {
-    id           String   @id @default(cuid())
-    sessionToken String   @unique
-    userId       String
-    expires      DateTime
-    user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model User {
-    id            String    @id @default(cuid())
-    name          String?
-    email         String?   @unique
-    emailVerified DateTime?
-    image         String?
-    accounts      Account[]
-    sessions      Session[]
-    posts         Post[]
-
-    UserAnswer UserAnswer[]
-
-    UsersToClass UsersToClass[]
-}
-
-model VerificationToken {
-    identifier String
-    token      String   @unique
-    expires    DateTime
-
-    @@unique([identifier, token])
-}
-
-model Class {
-  id        Int       @id @default(autoincrement())
-  name      String
-  createdAt DateTime  @default(now())
-  Packages  Package[]
-  Users     UsersToClass[]
+// Enums
+enum Role {
+  user
+  teacher
+  admin
 }
 
 enum Type {
   tryout
   drill
-}
-
-model Package {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      Type
-  TOstart   DateTime?
-  TOend     DateTime?
-  TOduration String?
-  classId   Int
-  Class     Class     @relation(fields: [classId], references: [id], onDelete: Cascade)
-  Questions Question[]
 }
 
 enum Subtest {
@@ -112,40 +33,103 @@ enum QuestionType {
   mulChoice
 }
 
+// Models
+model User {
+  id            String         @id @default(cuid())
+  name          String?
+  email         String?        @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role           @default(user)
+  createdAt     DateTime       @default(now())
+  accounts      Account[]
+  sessions      Session[]
+  userAnswers   UserAnswer[]
+  usersToClasses UsersToClass[]
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Class {
+  id        Int           @id @default(autoincrement())
+  name      String
+  createdAt DateTime       @default(now())
+  packages  Package[]
+  usersToClasses UsersToClass[]
+}
+
+model Package {
+  id          Int        @id @default(autoincrement())
+  name        String
+  type        Type
+  TOstart     DateTime?
+  TOend       DateTime?
+  TOduration  String?
+  classId     Int
+  class       Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  questions   Question[]
+}
+
 model Question {
-  id             String      @id @default(uuid())
+  id             String         @id @default(uuid())
   index          Int
   content        String
   imageUrl       String?
   subtest        Subtest
   type           QuestionType
-  score          Int         @default(0)
+  score          Int            @default(0)
   explanation    String?
-  correctAnswerId String?     @map("correct_answer")
-  createdAt      DateTime    @default(now())
+  correctAnswerId String?
+  createdAt      DateTime        @default(now())
   packageId      Int
-  Package        Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  Answers        Answer[]    @relation("QuestionAnswers")
-  CorrectAnswer  Answer?     @relation("QuestionCorrectAnswer")
+  package        Package         @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  answers        Answer[]        @relation("QuestionAnswers")
+  correctAnswer  Answer?         @relation("QuestionCorrectAnswer", fields: [correctAnswerId], references: [id])
 }
 
 model Answer {
-  id         String   @id @default(uuid())
-  index      Int
-  content    String
-  questionId String @unique
-  Question   Question @relation("QuestionAnswers", fields: [questionId], references: [id], onDelete: Cascade)
-  QuestionAns   Question @relation("QuestionCorrectAnswer", fields: [questionId], references: [id], onDelete: Cascade, map: "QuestionCorrectAnswer_questionId_fkey")
+  id           String       @id @default(uuid())
+  index        Int
+  content      String
+  questionId   String
+  question     Question     @relation("QuestionAnswers", fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers  UserAnswer[]
 
-  UserAnswer UserAnswer[]
+  Question Question[] @relation("QuestionCorrectAnswer")
 }
 
 model UserAnswer {
   userId    String
   answerId  String
   answer    String
-  User      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Answer    Answer?   @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  user      User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answerRef Answer? @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
   @@id([userId, answerId])
 }
 
@@ -167,7 +151,16 @@ model File {
 model UsersToClass {
   userId  String
   classId Int
-  User    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  Class   Class?  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+
   @@id([userId, classId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
