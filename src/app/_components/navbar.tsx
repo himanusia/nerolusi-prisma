@@ -12,7 +12,6 @@ import {
 } from "./ui/navigation-menu";
 import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { ModeToggle } from "./mode-toggle";
 import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import AuthDialog from "./auth-dialog";
@@ -109,7 +108,6 @@ export default function Navbar() {
           <Link href={"/packageManagement"}>Manajemen Soal</Link>
         </Button>
       )}
-      <ModeToggle />
       <AuthDialog />
       <Button asChild>
         <Link href={"/video"}>Video</Link>
@@ -150,18 +148,17 @@ ListItem.displayName = "ListItem";
 
 function MyTime() {
   const { seconds, minutes, hours } = useTime();
-  const [isClient, setIsClient] = useState(false);
+
+  const [clientTime, setClientTime] = useState("");
 
   useEffect(() => {
-    setIsClient(true); // This will trigger a re-render once the component mounts
-  }, []);
-
-  if (!isClient) return null; // Render nothing on the server
+    setClientTime(`${hours}:${minutes}:${seconds}`);
+  }, [hours, minutes, seconds]);
 
   return (
     <div style={{ textAlign: "center" }}>
       <div style={{ fontSize: "50px" }}>
-        <span>{hours}</span>:<span>{minutes}</span>:<span>{seconds}</span>
+        <div style={{ fontSize: "50px" }}>{clientTime}</div>
       </div>
     </div>
   );

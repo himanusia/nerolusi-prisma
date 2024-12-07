@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import "~/styles/globals.css";
 import { TRPCReactProvider } from "~/trpc/react";
-import { ThemeProvider } from "./_components/theme-provider";
 import { SessionProvider } from "next-auth/react";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
@@ -23,17 +22,8 @@ export default function RootLayout({
       <body className="size-full">
         <SessionProvider>
           <TRPCReactProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <NextSSRPlugin
-                routerConfig={extractRouterConfig(ourFileRouter)}
-              />
-              {children}
-            </ThemeProvider>
+            <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
+            {children}
           </TRPCReactProvider>
         </SessionProvider>
       </body>

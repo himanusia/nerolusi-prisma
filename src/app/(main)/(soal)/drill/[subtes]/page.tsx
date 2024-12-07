@@ -1,7 +1,7 @@
 import { Button } from "~/app/_components/ui/button";
 import Link from "next/link";
 
-export default function Page({
+export default async function Page({
   params: { subtes },
 }: {
   params: { subtes: string };

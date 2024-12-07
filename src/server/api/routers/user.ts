@@ -26,6 +26,10 @@ export const userRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+
       await ctx.db.user.update({
         where: { id: input.id },
         data: { role: input.role },
