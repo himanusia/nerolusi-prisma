@@ -110,7 +110,6 @@ model Question {
   index                 Int
   content               String
   imageUrl             String?
-  subtestType           SubtestType
   type                  QuestionType
   score                 Int
   explanation           String?

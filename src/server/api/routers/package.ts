@@ -1,6 +1,6 @@
-import { Package, Prisma } from "@prisma/client";
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { Subtest, QuestionType, Type, SubtestType } from "@prisma/client";
 
 export const packageRouter = createTRPCRouter({
   // Get One Package with Questions and Answers
@@ -42,21 +42,20 @@ export const packageRouter = createTRPCRouter({
     .input(
       z.object({
         name: z.string().min(1, "Name is required"),
-        type: z.enum(["tryout", "drill"]),
+        type: z.nativeEnum(Type),
         classId: z.number().positive("Class ID must be a positive number"),
         TOstart: z.string().optional(),
         TOend: z.string().optional(),
         subtests: z.array(
           z.object({
-            type: z.enum(["pu", "ppu", "pbm", "pk", "lb", "pm"]),
+            type: z.nativeEnum(SubtestType),
             duration: z.string(),
             questions: z.array(
               z.object({
                 index: z.number().positive("Index must be a positive number"),
                 content: z.string().min(1, "Content is required"),
                 imageUrl: z.string().optional(),
-                subtestType: z.enum(["pu", "ppu", "pbm", "pk", "lb", "pm"]),
-                type: z.enum(["essay", "mulChoice"]),
+                type: z.nativeEnum(QuestionType),
                 score: z
                   .number()
                   .min(0, "Score must be non-negative")
@@ -82,20 +81,28 @@ export const packageRouter = createTRPCRouter({
         const { subtests, ...packageData } = input;
 
         // Normalize date fields
+        const { classId, ...restPackageData } = packageData;
         const normalizedPackageData = {
-          ...packageData,
+          ...restPackageData,
+          name: packageData.name,
+          type: packageData.type,
           TOstart: packageData.TOstart ? new Date(packageData.TOstart) : null,
           TOend: packageData.TOend ? new Date(packageData.TOend) : null,
         };
 
         // Create Package without packageId in the input
         const createdPackage = await ctx.db.package.create({
-          data: normalizedPackageData,
+          data: {
+            ...normalizedPackageData,
+            class: {
+              connect: { id: classId },
+            },
+          },
         });
 
         // Create Subtests, Questions, and Answers using created packageId
         for (const subtest of subtests) {
-          const createdSubtest = await ctx.db.subtest.create({
+          await ctx.db.subtest.create({
             data: {
               type: subtest.type,
               duration: subtest.duration,
@@ -105,7 +112,6 @@ export const packageRouter = createTRPCRouter({
                   index: question.index,
                   content: question.content,
                   imageUrl: question.imageUrl,
-                  subtestType: question.subtestType,
                   type: question.type,
                   score: question.score,
                   explanation: question.explanation,

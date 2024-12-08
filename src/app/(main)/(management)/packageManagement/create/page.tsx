@@ -18,7 +18,27 @@ export default function CreatePackagePage() {
     },
   });
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    type: "tryout" | "drill";
+    classId: number;
+    TOstart: string;
+    TOend: string;
+    subtests: {
+      type: "pu" | "ppu" | "pbm" | "pk" | "lb" | "pm";
+      duration: string;
+      questions: {
+        index: number;
+        content: string;
+        imageUrl: string;
+        type: "mulChoice" | "essay";
+        score: number;
+        explanation: string;
+        answers: { index: number; content: string }[];
+        correctAnswerChoice?: number;
+      }[];
+    }[];
+  }>({
     name: "",
     type: "tryout",
     classId: 1,
@@ -33,7 +53,6 @@ export default function CreatePackagePage() {
             index: 1,
             content: "",
             imageUrl: "",
-            subtestType: "pu",
             type: "mulChoice", // Default type as multiple choice
             score: 0,
             explanation: "",
@@ -56,7 +75,11 @@ export default function CreatePackagePage() {
 
   const handleSubtestChange = (index: number, field: string, value: any) => {
     const updatedSubtests = [...formData.subtests];
-    updatedSubtests[index][field] = value;
+    if (updatedSubtests[index]) {
+      if (field in updatedSubtests[index]) {
+        (updatedSubtests[index] as any)[field] = value;
+      }
+    }
     setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
   };
 
@@ -67,7 +90,13 @@ export default function CreatePackagePage() {
     value: any,
   ) => {
     const updatedSubtests = [...formData.subtests];
-    updatedSubtests[subtestIndex].questions[questionIndex][field] = value;
+    if (
+      updatedSubtests[subtestIndex] &&
+      updatedSubtests[subtestIndex].questions[questionIndex]
+    ) {
+      (updatedSubtests[subtestIndex].questions[questionIndex] as any)[field] =
+        value;
+    }
 
     if (field === "type" && value === "essay") {
       updatedSubtests[subtestIndex].questions[questionIndex].answers = [];
@@ -86,10 +115,18 @@ export default function CreatePackagePage() {
     value: string,
   ) => {
     const updatedSubtests = [...formData.subtests];
-    updatedSubtests[subtestIndex].questions[questionIndex].answers[
-      answerIndex
-    ].content = value;
-    setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
+    if (
+      updatedSubtests[subtestIndex] &&
+      updatedSubtests[subtestIndex].questions[questionIndex] &&
+      updatedSubtests[subtestIndex].questions[questionIndex].answers[
+        answerIndex
+      ]
+    ) {
+      updatedSubtests[subtestIndex].questions[questionIndex].answers[
+        answerIndex
+      ].content = value;
+      setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
+    }
   };
 
   const handleCorrectAnswerChoiceChange = (
@@ -98,8 +135,14 @@ export default function CreatePackagePage() {
     answerIndex: number,
   ) => {
     const updatedSubtests = [...formData.subtests];
-    updatedSubtests[subtestIndex].questions[questionIndex].correctAnswerChoice =
-      answerIndex;
+    if (
+      updatedSubtests[subtestIndex] &&
+      updatedSubtests[subtestIndex].questions[questionIndex]
+    ) {
+      updatedSubtests[subtestIndex].questions[
+        questionIndex
+      ].correctAnswerChoice = answerIndex;
+    }
     setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
   };
 
@@ -116,7 +159,6 @@ export default function CreatePackagePage() {
               index: 1,
               content: "",
               imageUrl: "",
-              subtestType: "pu",
               type: "mulChoice",
               score: 0,
               explanation: "",
@@ -140,7 +182,6 @@ export default function CreatePackagePage() {
       index: updatedSubtests[subtestIndex].questions.length + 1,
       content: "",
       imageUrl: "",
-      subtestType: updatedSubtests[subtestIndex].type,
       type: "mulChoice", // Default question type as multiple choice
       score: 0,
       explanation: "",
@@ -238,6 +279,22 @@ export default function CreatePackagePage() {
             <option value="drill">Drill</option>
           </select>
         </label>
+        <label>
+          Start Date:
+          <input
+            type="datetime-local"
+            value={formData.TOstart}
+            onChange={(e) => handleChange("TOstart", e.target.value)}
+          />
+        </label>
+        <label>
+          End Date:
+          <input
+            type="datetime-local"
+            value={formData.TOend}
+            onChange={(e) => handleChange("TOend", e.target.value)}
+          />
+        </label>
         {/* Subtests */}
         {formData.subtests.map((subtest, sIndex) => (
           <div key={sIndex}>
@@ -254,6 +311,17 @@ export default function CreatePackagePage() {
                 <option value="ppu">PPU</option>
                 <option value="pbm">PBM</option>
               </select>
+            </label>
+            <label>
+              Duration:
+              <input
+                type="number"
+                min="0"
+                value={subtest.duration}
+                onChange={(e) =>
+                  handleSubtestChange(sIndex, "duration", e.target.value)
+                }
+              />
             </label>
             <h4>Questions</h4>
             {subtest.questions.map((question, qIndex) => (
