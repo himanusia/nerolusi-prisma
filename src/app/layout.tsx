@@ -6,6 +6,7 @@ import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
 import { extractRouterConfig } from "uploadthing/server";
 
 import { ourFileRouter } from "~/app/api/uploadthing/core";
+import { Toaster } from "./_components/ui/sonner";
 
 export const metadata: Metadata = {
   title: "Nerolusi",
@@ -24,6 +25,8 @@ export default function RootLayout({
           <TRPCReactProvider>
             <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
             {children}
+
+            <Toaster />
           </TRPCReactProvider>
         </SessionProvider>
       </body>

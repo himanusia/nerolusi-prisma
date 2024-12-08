@@ -4,6 +4,8 @@ import { faker } from "@faker-js/faker";
 const prisma = new PrismaClient();
 
 async function main() {
+  console.log("Seeding data...");
+
   // Generate Random Users
   const users = await Promise.all(
     Array.from({ length: 10 }).map(() =>
@@ -30,27 +32,29 @@ async function main() {
   );
 
   // Connect Random Users to Random Classes
-  for (const user of users) {
+  const usersToClasses = users.map((user) => {
     const randomClass = faker.helpers.arrayElement(classes);
-    await prisma.usersToClass.create({
+    return prisma.usersToClass.create({
       data: {
         userId: user.id,
         classId: randomClass.id,
       },
     });
-  }
+  });
+  await Promise.all(usersToClasses);
 
   // Generate Random Packages for Classes
   const packages = [];
   for (const classItem of classes) {
     for (let i = 0; i < 2; i++) {
+      const TOstart = faker.date.future();
+      const TOend = faker.date.future({ refDate: TOstart }); // Ensure end date is after start date
       const newPackage = await prisma.package.create({
         data: {
           name: faker.company.catchPhrase(),
           type: faker.helpers.arrayElement(["tryout", "drill"]),
-          TOstart: faker.date.future(),
-          TOend: faker.date.future(),
-          TOduration: `${faker.number.int({ min: 30, max: 180 })} minutes`,
+          TOstart,
+          TOend,
           classId: classItem.id,
         },
       });
@@ -58,15 +62,12 @@ async function main() {
     }
   }
 
-  // Generate Random Questions and Answers
+  // Generate Random Subtests for Packages
   for (const packageItem of packages) {
-    for (let i = 0; i < 5; i++) {
-      const question = await prisma.question.create({
+    for (let i = 0; i < 3; i++) {
+      const subtest = await prisma.subtest.create({
         data: {
-          index: i + 1,
-          content: faker.lorem.sentence(),
-          imageUrl: faker.image.url(),
-          subtest: faker.helpers.arrayElement([
+          type: faker.helpers.arrayElement([
             "pu",
             "ppu",
             "pbm",
@@ -74,31 +75,46 @@ async function main() {
             "lb",
             "pm",
           ]),
-          type: faker.helpers.arrayElement(["essay", "mulChoice"]),
-          score: faker.number.int({ min: 0, max: 10 }),
+          duration: `${faker.number.int({ min: 30, max: 120 })} minutes`,
           packageId: packageItem.id,
         },
       });
 
-      // Generate Answers for Question
-      const answers = await Promise.all(
-        Array.from({ length: 4 }).map((_, index) =>
-          prisma.answer.create({
-            data: {
-              index: index + 1,
-              content: faker.lorem.word(),
-              questionId: question.id,
-            },
-          }),
-        ),
-      );
+      // Generate Random Questions and Answers for Subtest
+      for (let j = 0; j < 5; j++) {
+        const question = await prisma.question.create({
+          data: {
+            index: j + 1,
+            content: faker.lorem.sentence(),
+            imageUrl: faker.image.url(),
+            subtestType: subtest.type,
+            type: faker.helpers.arrayElement(["essay", "mulChoice"]),
+            score: faker.number.int({ min: 0, max: 10 }),
+            packageId: packageItem.id,
+            subtestId: subtest.id,
+          },
+        });
 
-      // Assign Correct Answer Randomly
-      const correctAnswer = faker.helpers.arrayElement(answers);
-      await prisma.question.update({
-        where: { id: question.id },
-        data: { correctAnswerId: correctAnswer.id },
-      });
+        // Generate Answers for Question
+        const answers = await Promise.all(
+          Array.from({ length: 4 }).map((_, index) =>
+            prisma.answer.create({
+              data: {
+                index: index + 1,
+                content: faker.lorem.word(),
+                questionId: question.id,
+              },
+            }),
+          ),
+        );
+
+        // Assign Correct Answer Randomly
+        const correctAnswer = faker.helpers.arrayElement(answers);
+        await prisma.question.update({
+          where: { id: question.id },
+          data: { correctAnswerChoice: correctAnswer.index }, // Store the index as the correct choice
+        });
+      }
     }
   }
 
@@ -120,12 +136,12 @@ async function main() {
     })),
   });
 
-  console.log("Seeding completed with random data!");
+  console.log("Seeding completed successfully!");
 }
 
 main()
   .catch((e) => {
-    console.error(e);
+    console.error("Error while seeding:", e);
     process.exit(1);
   })
   .finally(async () => {
