@@ -84,21 +84,20 @@ model Class {
 }
 
 model Package {
-  id         Int          @id @default(autoincrement())
-  name       String
-  type       Type
-  classId    Int
-  TOstart    DateTime?
-  TOend      DateTime?
-  subtests   Subtest[]
+  id          Int          @id @default(autoincrement())
+  name        String
+  type        Type
+  classId     Int
+  TOstart     DateTime?
+  TOend       DateTime?
+  subtests    Subtest[]
   userAnswers UserAnswer[]
-  class       Class      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  class       Class?      @relation(fields: [classId], references: [id], onDelete: Cascade)
 }
 
 model Subtest {
   id          Int         @id @default(autoincrement())
   type        SubtestType
-  duration    String
   packageId   Int
   TOduration  Int?
   package     Package     @relation(fields: [packageId], references: [id])
@@ -109,16 +108,16 @@ model Question {
   id                    Int           @id @default(autoincrement())
   index                 Int
   content               String
-  imageUrl             String?
+  imageUrl              String?
   type                  QuestionType
   score                 Int
   explanation           String?
-  answers              Answer[]    
+  answers               Answer[]    
   correctAnswerChoice   Int?
-  packageId            Int
-  subtestId            Int         
-  subtest              Subtest      @relation(fields: [subtestId], references: [id])
-  userAnswers          UserAnswer[] 
+  packageId             Int
+  subtestId             Int         
+  subtest               Subtest      @relation(fields: [subtestId], references: [id])
+  userAnswers           UserAnswer[] 
 }
 
 

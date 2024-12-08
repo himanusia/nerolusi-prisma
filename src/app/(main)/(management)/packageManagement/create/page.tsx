@@ -5,6 +5,21 @@ import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { SubtestType, QuestionType, Type } from "@prisma/client";
+import { Input } from "~/app/_components/ui/input";
+import { Button } from "~/app/_components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/app/_components/ui/popover";
+import {
+  Command,
+  CommandItem,
+  CommandList,
+} from "~/app/_components/ui/command";
+import { Textarea } from "~/app/_components/ui/textarea";
+import { UploadButton } from "~/utils/uploadthing";
+import Image from "next/image";
 
 export default function CreatePackagePage() {
   const router = useRouter();
@@ -100,10 +115,12 @@ export default function CreatePackagePage() {
     }
 
     if (field === "type" && value === "essay") {
-      updatedSubtests[subtestIndex].questions[questionIndex].answers = [];
+      updatedSubtests[subtestIndex].questions[questionIndex].answers = [
+        { index: 1, content: "" },
+      ];
       updatedSubtests[subtestIndex].questions[
         questionIndex
-      ].correctAnswerChoice = undefined;
+      ].correctAnswerChoice = 0;
     }
 
     setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
@@ -260,37 +277,49 @@ export default function CreatePackagePage() {
 
   return (
     <div>
-      <h1>Create Package</h1>
-      <form onSubmit={handleSubmit}>
+      <h1 className="flex justify-center text-2xl font-semibold">
+        Create Package
+      </h1>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <label>
           Name:
-          <input
+          <Input
             type="text"
             value={formData.name}
             onChange={(e) => handleChange("name", e.target.value)}
           />
         </label>
-        <label>
-          Type:
-          <select
-            value={formData.type}
-            onChange={(e) => handleChange("type", e.target.value)}
-          >
-            <option value="tryout">Tryout</option>
-            <option value="drill">Drill</option>
-          </select>
+        <label className="flex w-fit">
+          <p>Type:</p>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline">{formData.type}</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-full">
+              <Command>
+                <CommandList>
+                  <CommandItem onSelect={() => handleChange("type", "tryout")}>
+                    Tryout
+                  </CommandItem>
+                  <CommandItem onSelect={() => handleChange("type", "drill")}>
+                    Drill
+                  </CommandItem>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
         </label>
-        <label>
-          Start Date:
-          <input
+        <label className="flex w-fit">
+          <p className="w-fit">Start Date:</p>
+          <Input
             type="datetime-local"
             value={formData.TOstart}
             onChange={(e) => handleChange("TOstart", e.target.value)}
           />
         </label>
-        <label>
-          End Date:
-          <input
+        <label className="flex w-fit">
+          <p className="w-fit">End Date:</p>
+          <Input
             type="datetime-local"
             value={formData.TOend}
             onChange={(e) => handleChange("TOend", e.target.value)}
@@ -298,26 +327,38 @@ export default function CreatePackagePage() {
         </label>
         {/* Subtests */}
         {formData.subtests.map((subtest, sIndex) => (
-          <div key={sIndex}>
-            <h3>Subtest {sIndex + 1}</h3>
-            <label>
+          <div
+            key={sIndex}
+            className="flex flex-col gap-3 rounded-xl border p-6"
+          >
+            <h3 className="text-xl font-semibold">Subtest {sIndex + 1}</h3>
+            <label className="w-fit">
               Subtest Type:
-              <select
-                value={subtest.type}
-                onChange={(e) =>
-                  handleSubtestChange(sIndex, "type", e.target.value)
-                }
-              >
-                {Object.values(SubtestType).map((type) => (
-                  <option key={type} value={type}>
-                    {type}
-                  </option>
-                ))}
-              </select>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline">{subtest.type}</Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-full">
+                  <Command>
+                    <CommandList>
+                      {Object.values(SubtestType).map((type) => (
+                        <CommandItem
+                          key={type}
+                          onSelect={() =>
+                            handleSubtestChange(sIndex, "type", type)
+                          }
+                        >
+                          {type}
+                        </CommandItem>
+                      ))}
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </label>
-            <label>
-              Duration:
-              <input
+            <label className="flex w-32">
+              Duration (minutes):
+              <Input
                 type="number"
                 min="0"
                 value={subtest.duration}
@@ -326,45 +367,109 @@ export default function CreatePackagePage() {
                 }
               />
             </label>
-            <h4>Questions</h4>
+            <h4 className="text-lg font-semibold">Questions</h4>
             {subtest.questions.map((question, qIndex) => (
-              <div key={qIndex}>
-                <label>Content:</label>
-                <textarea
-                  value={question.content}
-                  onChange={(e) =>
-                    handleQuestionChange(
-                      sIndex,
-                      qIndex,
-                      "content",
-                      e.target.value,
-                    )
-                  }
-                />
-                <label>
-                  Question Type:
-                  <select
-                    value={question.type}
+              <div
+                key={qIndex}
+                className="flex flex-col gap-3 rounded-lg border p-3"
+              >
+                <h4 className="font-semibold">Questions {qIndex + 1}</h4>
+                <div>
+                  <label>Content: </label>
+                  <Textarea
+                    value={question.content}
                     onChange={(e) =>
                       handleQuestionChange(
                         sIndex,
                         qIndex,
-                        "type",
+                        "content",
                         e.target.value,
                       )
                     }
-                  >
-                    <option value="mulChoice">Multiple Choice</option>
-                    <option value="essay">Essay</option>
-                  </select>
+                  />
+                </div>
+                <div>
+                  <label>Explanation: </label>
+                  <Textarea
+                    value={question.explanation}
+                    onChange={(e) =>
+                      handleQuestionChange(
+                        sIndex,
+                        qIndex,
+                        "explanation",
+                        e.target.value,
+                      )
+                    }
+                  />
+                </div>
+                <div>
+                  <label>Image Upload: </label>
+                  <UploadButton
+                    className="rounded-lg border"
+                    endpoint="imageUploader"
+                    onClientUploadComplete={(res) =>
+                      handleQuestionChange(
+                        sIndex,
+                        qIndex,
+                        "imageUrl",
+                        res?.[0]?.url,
+                      )
+                    }
+                  />
+                  {question.imageUrl && (
+                    <Image
+                      src={question.imageUrl}
+                      alt={question.imageUrl}
+                      width={300}
+                      height={300}
+                    />
+                  )}
+                </div>
+                <label className="w-fit">
+                  Question Type:
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline">{question.type}</Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full">
+                      <Command>
+                        <CommandList>
+                          <CommandItem
+                            onSelect={() =>
+                              handleQuestionChange(
+                                sIndex,
+                                qIndex,
+                                "type",
+                                "mulChoice",
+                              )
+                            }
+                          >
+                            Multiple Choice
+                          </CommandItem>
+                          <CommandItem
+                            onSelect={() =>
+                              handleQuestionChange(
+                                sIndex,
+                                qIndex,
+                                "type",
+                                "essay",
+                              )
+                            }
+                          >
+                            Essay
+                          </CommandItem>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </label>
                 {question.type === "mulChoice" && (
-                  <div>
+                  <div className="flex flex-col gap-3">
                     <h5>Answers</h5>
                     {question.answers.map((answer, aIndex) => (
-                      <div key={aIndex}>
-                        <input
-                          type="text"
+                      <div key={aIndex} className="flex gap-2">
+                        {String.fromCharCode(65 + aIndex)}.
+                        <Textarea
                           value={answer.content}
                           onChange={(e) =>
                             handleAnswerChange(
@@ -376,7 +481,7 @@ export default function CreatePackagePage() {
                           }
                         />
                         <label>
-                          <input
+                          <Input
                             type="radio"
                             checked={
                               question.correctAnswerChoice === aIndex + 1
@@ -389,62 +494,64 @@ export default function CreatePackagePage() {
                               )
                             }
                           />
-                          Correct Answer
                         </label>
-                        <button
+                        <Button
                           type="button"
                           onClick={() => removeAnswer(sIndex, qIndex, aIndex)}
                         >
                           Remove Answer
-                        </button>
+                        </Button>
                       </div>
                     ))}
-                    <button
+                    <Button
                       type="button"
                       onClick={() =>
                         addAnswer(sIndex, qIndex, question.answers.length + 1)
                       }
                     >
                       Add Answer
-                    </button>
+                    </Button>
                   </div>
                 )}
                 {question.type === "essay" && (
                   <div>
                     <label>Essay Answer:</label>
-                    <textarea
-                      value={question.explanation}
+                    <Textarea
+                      value={question.answers[0]?.content ?? ""}
                       onChange={(e) =>
-                        handleQuestionChange(
-                          sIndex,
-                          qIndex,
-                          "explanation",
-                          e.target.value,
-                        )
+                        handleAnswerChange(sIndex, qIndex, 0, e.target.value)
                       }
                     />
                   </div>
                 )}
-                <button
+                <Button
                   type="button"
                   onClick={() => removeQuestion(sIndex, qIndex)}
                 >
                   Remove Question
-                </button>
+                </Button>
               </div>
             ))}
-            <button type="button" onClick={() => addQuestion(sIndex)}>
+            <Button
+              type="button"
+              onClick={() => addQuestion(sIndex)}
+              className="w-full"
+            >
               Add Question
-            </button>
-            <button type="button" onClick={() => removeSubtest(sIndex)}>
+            </Button>
+            <Button
+              type="button"
+              onClick={() => removeSubtest(sIndex)}
+              className="w-full"
+            >
               Remove Subtest
-            </button>
+            </Button>
           </div>
         ))}
-        <button type="button" onClick={addSubtest}>
+        <Button type="button" onClick={addSubtest}>
           Add Subtest
-        </button>
-        <button type="submit">Submit</button>
+        </Button>
+        <Button type="submit">Submit</Button>
       </form>
     </div>
   );
