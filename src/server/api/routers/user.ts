@@ -8,11 +8,7 @@ export const userRouter = createTRPCRouter({
         createdAt: "desc",
       },
       include: {
-        usersToClasses: {
-          include: {
-            class: true,
-          },
-        },
+        class: true, // Include class data if needed
       },
     });
     return users ?? null;
@@ -34,5 +30,25 @@ export const userRouter = createTRPCRouter({
         where: { id: input.id },
         data: { role: input.role },
       });
+    }),
+
+  // New mutation to update user's class
+  updateClass: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        classId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+
+      const updatedUser = await ctx.db.user.update({
+        where: { id: input.userId },
+        data: { classid: input.classId }, // Update classid
+      });
+      return updatedUser;
     }),
 });

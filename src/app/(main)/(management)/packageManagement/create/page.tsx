@@ -18,7 +18,7 @@ import {
   CommandList,
 } from "~/app/_components/ui/command";
 import { Textarea } from "~/app/_components/ui/textarea";
-import { UploadButton } from "~/utils/uploadthing";
+import { UploadDropzone } from "~/utils/uploadthing";
 import Image from "next/image";
 
 export default function CreatePackagePage() {
@@ -42,7 +42,7 @@ export default function CreatePackagePage() {
     TOend: string;
     subtests: {
       type: SubtestType;
-      duration: string;
+      duration: number;
       questions: {
         index: number;
         content: string;
@@ -63,7 +63,7 @@ export default function CreatePackagePage() {
     subtests: [
       {
         type: "pu",
-        duration: "",
+        duration: 0,
         questions: [
           {
             index: 1,
@@ -171,7 +171,7 @@ export default function CreatePackagePage() {
         ...prev.subtests,
         {
           type: "pu",
-          duration: "",
+          duration: 0,
           questions: [
             {
               index: 1,
@@ -361,9 +361,13 @@ export default function CreatePackagePage() {
               <Input
                 type="number"
                 min="0"
-                value={subtest.duration}
+                value={subtest.duration.toString()}
                 onChange={(e) =>
-                  handleSubtestChange(sIndex, "duration", e.target.value)
+                  handleSubtestChange(
+                    sIndex,
+                    "duration",
+                    Number(e.target.value),
+                  )
                 }
               />
             </label>
@@ -404,7 +408,7 @@ export default function CreatePackagePage() {
                 </div>
                 <div>
                   <label>Image Upload: </label>
-                  <UploadButton
+                  <UploadDropzone
                     className="rounded-lg border"
                     endpoint="imageUploader"
                     onClientUploadComplete={(res) =>

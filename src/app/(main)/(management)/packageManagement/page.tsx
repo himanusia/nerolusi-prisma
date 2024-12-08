@@ -3,7 +3,7 @@ import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/server";
 import PackageTable from "./PackageTable";
 
-export default async function Page() {
+export default async function PackageManagementPage() {
   const pkg = await api.package.getAllPackages();
 
   return (

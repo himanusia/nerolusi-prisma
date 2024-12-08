@@ -32,16 +32,17 @@ async function main() {
   );
 
   // Connect Random Users to Random Classes
-  const usersToClasses = users.map((user) => {
+  for (const user of users) {
     const randomClass = faker.helpers.arrayElement(classes);
-    return prisma.usersToClass.create({
+    await prisma.class.update({
+      where: { id: randomClass.id },
       data: {
-        userId: user.id,
-        classId: randomClass.id,
+        users: {
+          connect: { id: user.id },
+        },
       },
     });
-  });
-  await Promise.all(usersToClasses);
+  }
 
   // Generate Random Packages for Classes
   const packages = [];
@@ -75,7 +76,7 @@ async function main() {
             "lb",
             "pm",
           ]),
-          duration: `${faker.number.int({ min: 30, max: 120 })} minutes`,
+          duration: faker.number.int({ min: 30, max: 120 }),
           packageId: packageItem.id,
         },
       });
@@ -87,7 +88,6 @@ async function main() {
             index: j + 1,
             content: faker.lorem.sentence(),
             imageUrl: faker.image.url(),
-            subtestType: subtest.type,
             type: faker.helpers.arrayElement(["essay", "mulChoice"]),
             score: faker.number.int({ min: 0, max: 10 }),
             packageId: packageItem.id,

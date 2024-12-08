@@ -1,32 +1,29 @@
-import { Button } from "~/app/_components/ui/button";
 import Link from "next/link";
+import { auth } from "~/server/auth";
+import { api } from "~/trpc/server";
 
-export default function Page() {
+export default async function TryoutListPage() {
+  const session = await auth();
+  const classId = session.user.classid;
+  if (!classId) {
+    throw new Error("classId is required");
+  }
+  const data = await api.package.getPackages({ classId });
+
   return (
-    <div className="flex flex-col items-center justify-center gap-3">
-      pilih paket tryout:
-      <ul className="flex gap-3">
-        <li>
-          <Button asChild>
-            <Link href={`/tryout/1`}>1</Link>
-          </Button>
-        </li>
-        <li>
-          <Button asChild>
-            <Link href={`/tryout/2`}>2</Link>
-          </Button>
-        </li>
-        <li>
-          <Button asChild>
-            <Link href={`/tryout/3`}>3</Link>
-          </Button>
-        </li>
-        <li>
-          <Button asChild>
-            <Link href={`/tryout/4`}>4</Link>
-          </Button>
-        </li>
-      </ul>
+    <div className="flex flex-col gap-3">
+      {data?.map((pkg) => (
+        <Link
+          key={pkg.id}
+          href={`/tryout/${pkg.id}`}
+          className="flex flex-col rounded-xl border bg-inherit p-3"
+        >
+          <h3>{pkg.name}</h3>
+          <p>Type: {pkg.type}</p>
+          {pkg.TOstart && <p>Start Date: {pkg.TOstart.toLocaleString()}</p>}
+          {pkg.TOend && <p>End Date: {pkg.TOend.toLocaleString()}</p>}
+        </Link>
+      ))}
     </div>
   );
 }

@@ -42,10 +42,12 @@ model User {
   image         String?
   role          Role           @default(user)
   createdAt     DateTime       @default(now())
+  classid       Int?
+  class         Class?         @relation(fields: [classid], references: [id])
   accounts      Account[]      
   sessions      Session[]      
   userAnswers   UserAnswer[] 
-  usersToClasses UsersToClass[]
+  quizSession   QuizSession[]
 }
 
 model Account {
@@ -79,8 +81,8 @@ model Class {
   id        Int           @id @default(autoincrement())
   name      String
   createdAt DateTime       @default(now())
+  users     User[]
   packages  Package[]
-  usersToClasses UsersToClass[]
 }
 
 model Package {
@@ -99,9 +101,10 @@ model Subtest {
   id          Int         @id @default(autoincrement())
   type        SubtestType
   packageId   Int
-  TOduration  Int?
+  duration    Int?
   package     Package     @relation(fields: [packageId], references: [id])
   questions   Question[]
+  quizSession QuizSession[]
 }
 
 model Question {
@@ -133,11 +136,13 @@ model UserAnswer {
   id          Int          @id @default(autoincrement())
   answerChoice Int      
   questionId  Int
-  userId      String 
   question    Question     @relation(fields: [questionId], references: [id])
+  userId      String 
   user        User         @relation(fields: [userId], references: [id])
   packageId   Int
   package     Package      @relation(fields: [packageId], references: [id])
+  quizSessionId Int
+  quizSession QuizSession  @relation(fields: [quizSessionId], references: [id])
 }
 
 model Video {
@@ -155,19 +160,22 @@ model File {
   url         String
 }
 
-model UsersToClass {
-  userId  String
-  classId Int
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  class   Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
-
-  @@id([userId, classId])
-}
-
 model VerificationToken {
   identifier String
   token      String   @unique
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model QuizSession {
+  id         Int      @id @default(autoincrement())
+  userId     String   
+  packageId  Int
+  subtestId  Int
+  startTime  DateTime @default(now())
+  duration   Int
+  user       User     @relation(fields: [userId], references: [id])
+  subtest    Subtest  @relation(fields: [subtestId], references: [id])
+  userAnswers UserAnswer[]
 }

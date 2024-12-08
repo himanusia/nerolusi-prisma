@@ -3,32 +3,6 @@ import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 import { QuestionType, Type, SubtestType } from "@prisma/client";
 
 export const packageRouter = createTRPCRouter({
-  // Get One Package with Questions and Answers
-  getOnePackage: protectedProcedure
-    .input(
-      z.object({
-        packageId: z.number(),
-      }),
-    )
-    .query(async ({ ctx, input }) => {
-      const packageData = await ctx.db.package.findUnique({
-        where: { id: input.packageId },
-        include: {
-          subtests: {
-            include: {
-              questions: {
-                include: {
-                  answers: true,
-                },
-              },
-            },
-          },
-        },
-      });
-
-      return packageData;
-    }),
-
   // Get All Packages
   getAllPackages: protectedProcedure.query(async ({ ctx }) => {
     const packages = await ctx.db.package.findMany({
@@ -36,6 +10,21 @@ export const packageRouter = createTRPCRouter({
     });
     return packages ?? null;
   }),
+
+  // Get Packages in Class
+  getPackages: protectedProcedure
+    .input(
+      z.object({
+        classId: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.package.findMany({
+        where: {
+          classId: input.classId,
+        },
+      });
+    }),
 
   // Create Package
   createPackage: protectedProcedure
@@ -49,7 +38,7 @@ export const packageRouter = createTRPCRouter({
         subtests: z.array(
           z.object({
             type: z.nativeEnum(SubtestType),
-            duration: z.string(),
+            duration: z.number().optional(),
             questions: z.array(
               z.object({
                 index: z.number().positive("Index must be a positive number"),

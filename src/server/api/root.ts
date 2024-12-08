@@ -6,6 +6,8 @@ import { videoRouter } from "./routers/video";
 import { fileRouter } from "./routers/file";
 import { answerRouter } from "./routers/answer";
 import { questionsRouter } from "./routers/question";
+import { subtestRouter } from "./routers/subtest";
+import { quizRouter } from "./routers/quiz";
 
 /**
  * This is the primary router for your server.
@@ -20,6 +22,8 @@ export const appRouter = createTRPCRouter({
   file: fileRouter,
   question: questionsRouter,
   answer: answerRouter,
+  subtest: subtestRouter,
+  quiz: quizRouter,
 });
 
 // export type definition of API

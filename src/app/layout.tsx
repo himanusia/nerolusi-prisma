@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "~/styles/globals.css";
+import "@uploadthing/react/styles.css";
 import { TRPCReactProvider } from "~/trpc/react";
 import { SessionProvider } from "next-auth/react";
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin";
