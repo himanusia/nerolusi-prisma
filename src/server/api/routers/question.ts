@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
-import { SubtestType, QuestionType, Type } from "@prisma/client";
 
 export const questionsRouter = createTRPCRouter({
   getOneQuestions: protectedProcedure

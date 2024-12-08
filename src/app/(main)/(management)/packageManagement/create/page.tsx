@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { api } from "~/trpc/react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { SubtestType, QuestionType, Type } from "@prisma/client";
 
 export default function CreatePackagePage() {
   const router = useRouter();
@@ -20,18 +21,18 @@ export default function CreatePackagePage() {
 
   const [formData, setFormData] = useState<{
     name: string;
-    type: "tryout" | "drill";
+    type: Type;
     classId: number;
     TOstart: string;
     TOend: string;
     subtests: {
-      type: "pu" | "ppu" | "pbm" | "pk" | "lb" | "pm";
+      type: SubtestType;
       duration: string;
       questions: {
         index: number;
         content: string;
         imageUrl: string;
-        type: "mulChoice" | "essay";
+        type: QuestionType;
         score: number;
         explanation: string;
         answers: { index: number; content: string }[];
@@ -307,9 +308,11 @@ export default function CreatePackagePage() {
                   handleSubtestChange(sIndex, "type", e.target.value)
                 }
               >
-                <option value="pu">PU</option>
-                <option value="ppu">PPU</option>
-                <option value="pbm">PBM</option>
+                {Object.values(SubtestType).map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
