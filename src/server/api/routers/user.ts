@@ -45,10 +45,9 @@ export const userRouter = createTRPCRouter({
         throw new Error("Unauthorized");
       }
 
-      const updatedUser = await ctx.db.user.update({
+      await ctx.db.user.update({
         where: { id: input.userId },
         data: { classid: input.classId }, // Update classid
       });
-      return updatedUser;
     }),
 });

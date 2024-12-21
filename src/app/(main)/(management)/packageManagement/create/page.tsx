@@ -69,7 +69,7 @@ export default function CreatePackagePage() {
             index: 1,
             content: "",
             imageUrl: "",
-            type: "mulChoice", // Default type as multiple choice
+            type: "mulChoice",
             score: 0,
             explanation: "",
             answers: [
@@ -200,7 +200,7 @@ export default function CreatePackagePage() {
       index: updatedSubtests[subtestIndex].questions.length + 1,
       content: "",
       imageUrl: "",
-      type: "mulChoice", // Default question type as multiple choice
+      type: "mulChoice",
       score: 0,
       explanation: "",
       answers: [
@@ -377,7 +377,7 @@ export default function CreatePackagePage() {
                 key={qIndex}
                 className="flex flex-col gap-3 rounded-lg border p-3"
               >
-                <h4 className="font-semibold">Questions {qIndex + 1}</h4>
+                <h4 className="font-semibold">Question {qIndex + 1}</h4>
                 <div>
                   <label>Content: </label>
                   <Textarea
@@ -388,6 +388,22 @@ export default function CreatePackagePage() {
                         qIndex,
                         "content",
                         e.target.value,
+                      )
+                    }
+                  />
+                </div>
+                <div>
+                  <label>Score: </label>
+                  <Input
+                    type="number"
+                    min="0"
+                    value={question.score}
+                    onChange={(e) =>
+                      handleQuestionChange(
+                        sIndex,
+                        qIndex,
+                        "score",
+                        Number(e.target.value),
                       )
                     }
                   />
@@ -423,7 +439,7 @@ export default function CreatePackagePage() {
                   {question.imageUrl && (
                     <Image
                       src={question.imageUrl}
-                      alt={question.imageUrl}
+                      alt={`Question ${qIndex + 1} Image`}
                       width={300}
                       height={300}
                     />
@@ -471,8 +487,8 @@ export default function CreatePackagePage() {
                   <div className="flex flex-col gap-3">
                     <h5>Answers</h5>
                     {question.answers.map((answer, aIndex) => (
-                      <div key={aIndex} className="flex gap-2">
-                        {String.fromCharCode(65 + aIndex)}.
+                      <div key={aIndex} className="flex items-center gap-2">
+                        <span>{String.fromCharCode(65 + aIndex)}.</span>
                         <Textarea
                           value={answer.content}
                           onChange={(e) =>
@@ -483,10 +499,12 @@ export default function CreatePackagePage() {
                               e.target.value,
                             )
                           }
+                          className="flex-1"
                         />
                         <label>
                           <Input
                             type="radio"
+                            name={`correctAnswer-${sIndex}-${qIndex}`}
                             checked={
                               question.correctAnswerChoice === aIndex + 1
                             }
@@ -503,7 +521,7 @@ export default function CreatePackagePage() {
                           type="button"
                           onClick={() => removeAnswer(sIndex, qIndex, aIndex)}
                         >
-                          Remove Answer
+                          Remove
                         </Button>
                       </div>
                     ))}
