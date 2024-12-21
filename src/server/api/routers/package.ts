@@ -33,7 +33,7 @@ export const packageRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
-      return await ctx.db.user.findMany({
+      const users = await ctx.db.user.findMany({
         where: {
           userAnswers: {
             some: {
@@ -41,6 +41,43 @@ export const packageRouter = createTRPCRouter({
             },
           },
         },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          userAnswers: {
+            where: {
+              packageId: input.packageId,
+            },
+            select: {
+              question: {
+                select: {
+                  correctAnswerChoice: true,
+                },
+              },
+              answerChoice: true,
+            },
+          },
+        },
+      });
+
+      // Calculate scores for each user
+      return users.map((user) => {
+        const score = user.userAnswers.reduce((total, answer) => {
+          return (
+            total +
+            (answer.answerChoice === answer.question.correctAnswerChoice
+              ? 1
+              : 0)
+          );
+        }, 0);
+
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          score,
+        };
       });
     }),
 

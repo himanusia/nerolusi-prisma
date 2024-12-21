@@ -5,7 +5,7 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ColDef } from "ag-grid-community";
-import { User, Class } from "@prisma/client";
+import { User } from "@prisma/client";
 import { toast } from "sonner";
 import { api } from "~/trpc/react";
 
