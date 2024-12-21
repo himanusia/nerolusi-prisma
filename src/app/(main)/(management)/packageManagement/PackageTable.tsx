@@ -5,12 +5,16 @@ import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { Package } from "@prisma/client";
+import { useRouter } from "next/navigation";
+import { Button } from "~/app/_components/ui/button";
 
 export default function PackageTable({
   packageData,
 }: {
   packageData: Package[];
 }) {
+  const router = useRouter();
+
   const columnDefs = useMemo(
     () => [
       {
@@ -49,18 +53,34 @@ export default function PackageTable({
         sortable: true,
         filter: true,
       },
+      {
+        headerName: "Actions",
+        cellRenderer: (params: any) => {
+          return (
+            <Button
+              onClick={() =>
+                router.push(`/packageManagement/${params.data.id}`)
+              }
+            >
+              Manage
+            </Button>
+          );
+        },
+      },
     ],
-    [],
+    [router],
   );
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
-      <AgGridReact
-        rowData={packageData}
-        columnDefs={columnDefs}
-        pagination={true}
-        paginationPageSize={10}
-      />
+    <div>
+      <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+        <AgGridReact
+          rowData={packageData}
+          columnDefs={columnDefs}
+          pagination={true}
+          paginationPageSize={10}
+        />
+      </div>
     </div>
   );
 }

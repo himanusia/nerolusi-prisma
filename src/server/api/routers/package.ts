@@ -26,6 +26,24 @@ export const packageRouter = createTRPCRouter({
       });
     }),
 
+  getUsersByPackage: protectedProcedure
+    .input(
+      z.object({
+        packageId: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.user.findMany({
+        where: {
+          userAnswers: {
+            some: {
+              packageId: input.packageId,
+            },
+          },
+        },
+      });
+    }),
+
   // Create Package
   createPackage: protectedProcedure
     .input(

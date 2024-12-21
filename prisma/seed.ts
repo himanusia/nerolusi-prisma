@@ -11,7 +11,7 @@ async function main() {
     Array.from({ length: 10 }).map(() =>
       prisma.user.create({
         data: {
-          name: faker.name.fullName(),
+          name: faker.person.fullName(),
           email: faker.internet.email(),
           role: faker.helpers.arrayElement(["user", "teacher", "admin"]),
           image: faker.image.avatar(),
@@ -114,6 +114,44 @@ async function main() {
           where: { id: question.id },
           data: { correctAnswerChoice: correctAnswer.index }, // Store the index as the correct choice
         });
+      }
+    }
+  }
+
+  // Generate Random QuizSessions and UserAnswers
+  for (const user of users) {
+    for (const packageItem of packages) {
+      const subtests = await prisma.subtest.findMany({
+        where: { packageId: packageItem.id },
+      });
+      for (const subtest of subtests) {
+        const quizSession = await prisma.quizSession.create({
+          data: {
+            userId: user.id,
+            packageId: packageItem.id,
+            subtestId: subtest.id,
+            duration: faker.number.int({
+              min: 10,
+              max: subtest.duration || 60,
+            }),
+          },
+        });
+
+        const questions = await prisma.question.findMany({
+          where: { subtestId: subtest.id },
+        });
+        for (const question of questions) {
+          const randomAnswer = faker.number.int({ min: 1, max: 4 });
+          await prisma.userAnswer.create({
+            data: {
+              answerChoice: randomAnswer,
+              questionId: question.id,
+              userId: user.id,
+              packageId: packageItem.id,
+              quizSessionId: quizSession.id,
+            },
+          });
+        }
       }
     }
   }

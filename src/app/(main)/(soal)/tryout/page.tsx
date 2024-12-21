@@ -5,9 +5,20 @@ import { api } from "~/trpc/server";
 export default async function TryoutListPage() {
   const session = await auth();
   const classId = session.user.classid;
+
   if (!classId) {
-    throw new Error("classId is required");
+    return (
+      <div className="flex h-screen flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold">
+          You are not enrolled in any class
+        </h1>
+        <p className="mt-2">
+          Please contact your administrator to assign you to a class.
+        </p>
+      </div>
+    );
   }
+
   const data = await api.package.getPackages({ classId });
 
   return (
