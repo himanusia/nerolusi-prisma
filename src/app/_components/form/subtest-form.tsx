@@ -1,0 +1,145 @@
+// src/app/_components/form/subtest-form.tsx
+"use client";
+
+import React from "react";
+import { Button } from "~/app/_components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/app/_components/ui/popover";
+import {
+  Command,
+  CommandItem,
+  CommandList,
+} from "~/app/_components/ui/command";
+import { Input } from "../ui/input";
+import QuestionForm from "./question-form";
+import { Subtest } from "~/lib/types";
+import { SubtestType } from "@prisma/client";
+
+interface SubtestFormProps {
+  subtestIndex: number;
+  subtest: Subtest;
+  handleSubtestChange: (
+    index: number,
+    field: keyof Subtest,
+    value: any,
+  ) => void;
+  handleQuestionChange: (
+    subtestIndex: number,
+    questionIndex: number,
+    field: keyof Subtest["questions"][number],
+    value: any,
+  ) => void;
+  handleAnswerChange: (
+    subtestIndex: number,
+    questionIndex: number,
+    answerIndex: number,
+    value: string,
+  ) => void;
+  handleCorrectAnswerChoiceChange: (
+    subtestIndex: number,
+    questionIndex: number,
+    answerIndex: number,
+  ) => void;
+  addQuestion: (subtestIndex: number) => void;
+  addAnswer: (subtestIndex: number, questionIndex: number) => void;
+  removeAnswer: (
+    subtestIndex: number,
+    questionIndex: number,
+    answerIndex: number,
+  ) => void;
+  removeQuestion: (subtestIndex: number, questionIndex: number) => void;
+  removeSubtest: (subtestIndex: number) => void;
+}
+
+const SubtestForm: React.FC<SubtestFormProps> = ({
+  subtestIndex,
+  subtest,
+  handleSubtestChange,
+  handleQuestionChange,
+  handleAnswerChange,
+  handleCorrectAnswerChoiceChange,
+  addQuestion,
+  addAnswer,
+  removeAnswer,
+  removeQuestion,
+  removeSubtest,
+}) => {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border p-6">
+      <h3 className="text-xl font-semibold">Subtest {subtestIndex + 1}</h3>
+      <label className="w-fit">
+        Subtest Type:
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">{subtest.type}</Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full">
+            <Command>
+              <CommandList>
+                {Object.values(SubtestType).map((type) => (
+                  <CommandItem
+                    key={type}
+                    onSelect={() =>
+                      handleSubtestChange(subtestIndex, "type", type)
+                    }
+                  >
+                    {type}
+                  </CommandItem>
+                ))}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
+      </label>
+      <label className="flex w-32">
+        Duration (minutes):
+        <Input
+          type="number"
+          min="0"
+          value={subtest.duration.toString()}
+          onChange={(e) =>
+            handleSubtestChange(
+              subtestIndex,
+              "duration",
+              Number(e.target.value),
+            )
+          }
+        />
+      </label>
+      <h4 className="text-lg font-semibold">Questions</h4>
+      {subtest.questions.map((question, qIndex) => (
+        <QuestionForm
+          key={qIndex}
+          subtestIndex={subtestIndex}
+          questionIndex={qIndex}
+          question={question}
+          handleQuestionChange={handleQuestionChange}
+          handleAnswerChange={handleAnswerChange}
+          handleCorrectAnswerChoiceChange={handleCorrectAnswerChoiceChange}
+          addAnswer={addAnswer}
+          removeAnswer={removeAnswer}
+          removeQuestion={removeQuestion}
+        />
+      ))}
+      <Button
+        type="button"
+        onClick={() => addQuestion(subtestIndex)}
+        className="w-full"
+      >
+        Add Question
+      </Button>
+      <Button
+        type="button"
+        onClick={() => removeSubtest(subtestIndex)}
+        className="w-full"
+      >
+        Remove Subtest
+      </Button>
+    </div>
+  );
+};
+
+export default SubtestForm;

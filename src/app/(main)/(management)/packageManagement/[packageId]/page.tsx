@@ -1,16 +1,21 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { api } from "~/trpc/react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { useMemo } from "react";
 import { ColDef } from "ag-grid-community";
+import { Button } from "~/app/_components/ui/button";
 
 export default function PackageManagementPage() {
-  const { id } = useParams();
-  const packageId = parseInt(Array.isArray(id) ? id[0] : id, 10);
+  const params = useParams();
+  const router = useRouter();
+  const packageId = parseInt(
+    Array.isArray(params.packageId) ? params.packageId[0] : params.packageId,
+    10,
+  );
 
   const { data, isLoading, error } = api.package.getUsersByPackage.useQuery({
     packageId,
@@ -40,7 +45,12 @@ export default function PackageManagementPage() {
 
   return (
     <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
-      <h1 className="text-xl font-bold">Package ID: {id}</h1>
+      <h1 className="text-xl font-bold">Package ID: {packageId}</h1>
+      <Button
+        onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
+      >
+        Edit
+      </Button>
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}
