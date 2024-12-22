@@ -5,6 +5,7 @@ import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Input } from "~/app/_components/ui/input";
 
 export default function QuizPage() {
   const { paket, sessionId } = useParams();
@@ -44,6 +45,14 @@ export default function QuizPage() {
 
       setEndTime(calculatedEndTime);
       setTimeLeft(Math.max(calculatedEndTime - Date.now(), 0));
+
+      if (sessionDetails.userAnswers) {
+        const initialSelectedAnswers = new Map<number, number>();
+        sessionDetails.userAnswers.forEach((ua) => {
+          initialSelectedAnswers.set(ua.questionId, ua.answerChoice);
+        });
+        setSelectedAnswers(initialSelectedAnswers);
+      }
     }
   }, [sessionDetails]);
 
@@ -54,6 +63,7 @@ export default function QuizPage() {
         const newTimeLeft = Math.max(endTime - Date.now(), 0);
         if (newTimeLeft <= 0) {
           clearInterval(timer);
+          handleSubmit();
         }
         return newTimeLeft;
       });
@@ -98,6 +108,7 @@ export default function QuizPage() {
       });
     } catch (error) {
       console.error("Failed to save answer:", error);
+      toast.error("Failed to save answer. Please try again.");
     }
   };
 
@@ -118,11 +129,11 @@ export default function QuizPage() {
       for (const [questionId, answerChoice] of selectedAnswers.entries()) {
         await saveAnswer(questionId, answerChoice);
       }
-      toast("Quiz submitted successfully!");
+      toast.success("Quiz submitted successfully!");
       router.push(`/tryout/${paket}`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
-      toast("Failed to submit quiz. Please try again.");
+      toast.error("Failed to submit quiz. Please try again.");
     }
   };
 
@@ -155,21 +166,24 @@ export default function QuizPage() {
                 </strong>
               </p>
               {questions[currentQuestionIndex].answers.map((answer) => (
-                <label key={answer.id} className="block">
-                  <input
+                <label
+                  key={answer.index}
+                  className="flex cursor-pointer flex-row items-center"
+                >
+                  <Input
                     type="radio"
                     name={`question-${questions[currentQuestionIndex].id}`}
-                    value={answer.id}
-                    className="mr-2"
+                    value={answer.index}
+                    className="mr-2 size-fit"
                     checked={
                       selectedAnswers.get(
                         questions[currentQuestionIndex].id,
-                      ) === answer.id
+                      ) === answer.index
                     }
                     onChange={() =>
                       handleAnswerSelect(
                         questions[currentQuestionIndex].id,
-                        answer.id,
+                        answer.index,
                       )
                     }
                   />
@@ -187,7 +201,11 @@ export default function QuizPage() {
           {questions?.map((_, index) => (
             <li key={index}>
               <Button
-                className="w-12"
+                className={`w-12 ${
+                  selectedAnswers.has(questions[index].id)
+                    ? "bg-green-500 text-white"
+                    : ""
+                }`}
                 onClick={() => setCurrentQuestionIndex(index)}
               >
                 {index + 1}

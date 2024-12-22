@@ -143,6 +143,8 @@ model UserAnswer {
   package     Package      @relation(fields: [packageId], references: [id])
   quizSessionId Int
   quizSession QuizSession  @relation(fields: [quizSessionId], references: [id])
+
+  @@unique([userId, quizSessionId, questionId], name: "userId_quizSessionId_questionId")
 }
 
 model Video {

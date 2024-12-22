@@ -42,7 +42,13 @@ export const quizRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findUnique({
         where: { id: parseInt(input.sessionId) },
-        include: { subtest: true, user: true },
+        include: {
+          subtest: true,
+          user: true,
+          userAnswers: {
+            where: { quizSessionId: parseInt(input.sessionId) },
+          },
+        },
       });
       if (!session) throw new Error("Session not found");
       return session;
@@ -62,8 +68,18 @@ export const quizRouter = createTRPCRouter({
       const { answerChoice, questionId, userId, packageId, quizSessionId } =
         input;
 
-      const userAnswer = await ctx.db.userAnswer.create({
-        data: {
+      const userAnswer = await ctx.db.userAnswer.upsert({
+        where: {
+          userId_quizSessionId_questionId: {
+            userId,
+            quizSessionId,
+            questionId,
+          },
+        },
+        update: {
+          answerChoice,
+        },
+        create: {
           answerChoice,
           questionId,
           userId,
