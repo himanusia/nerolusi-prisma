@@ -180,4 +180,6 @@ model QuizSession {
   user       User     @relation(fields: [userId], references: [id])
   subtest    Subtest  @relation(fields: [subtestId], references: [id])
   userAnswers UserAnswer[]
+
+  @@unique([userId, subtestId], name: "unique_user_subtest")
 }
