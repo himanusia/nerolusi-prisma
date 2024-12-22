@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
+import axios from "axios";
 
 const prisma = new PrismaClient();
 
@@ -157,13 +158,54 @@ async function main() {
   }
 
   // Generate Random Videos
-  await prisma.video.createMany({
-    data: Array.from({ length: 10 }).map(() => ({
-      title: faker.lorem.words(3),
-      description: faker.lorem.sentence(),
-      url: faker.internet.url(),
-    })),
-  });
+  const fetchYouTubeVideos = async (query, maxResults = 10) => {
+    const url = "https://www.googleapis.com/youtube/v3/search";
+    try {
+      const response = await axios.get(url, {
+        params: {
+          part: "snippet",
+          q: query,
+          type: "video",
+          maxResults,
+          key: process.env.GOOGLE_API_KEY,
+        },
+      });
+
+      return response.data.items.map((item) => ({
+        title: item.snippet.title,
+        description: item.snippet.description,
+        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
+      }));
+    } catch (error) {
+      console.error("Error fetching YouTube videos:", error);
+      return [];
+    }
+  };
+
+  const searchQuery = "utbk";
+
+  const videos = await fetchYouTubeVideos(searchQuery, 10);
+
+  if (videos.length === 0) {
+    console.log("No videos fetched from YouTube.");
+    return;
+  }
+
+  try {
+    await prisma.video.createMany({
+      data: videos.map((video) => ({
+        title: video.title,
+        description: video.description,
+        url: video.url,
+      })),
+      skipDuplicates: true, // Opsional: Menghindari duplikasi jika ada unique constraint
+    });
+    console.log(
+      `Successfully created ${videos.length} videos from YouTube API.`,
+    );
+  } catch (error) {
+    console.error("Error creating videos:", error);
+  }
 
   // Generate Random Files
   await prisma.file.createMany({

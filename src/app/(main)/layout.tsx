@@ -8,7 +8,7 @@ export default function layout({
   return (
     <div className="size-full">
       <Navbar />
-      <div className="mx-12 my-3">{children}</div>
+      {children}
     </div>
   );
 }

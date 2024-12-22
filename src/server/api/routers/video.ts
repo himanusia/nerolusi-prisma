@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const videoRouter = createTRPCRouter({
-  getAllvideos: protectedProcedure.query(async ({ ctx }) => {
+  getAllVideos: protectedProcedure.query(async ({ ctx }) => {
     const videos = await ctx.db.video.findMany();
     return videos ?? null;
   }),
@@ -10,19 +10,27 @@ export const videoRouter = createTRPCRouter({
   addVideo: protectedProcedure
     .input(
       z.object({
-        title: z.string().min(1),
+        title: z.string().min(1, "Title is required"),
         description: z.string().optional(),
-        url: z.string().url(),
+        url: z.string().url("Invalid URL format"),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.video.create({
+      const { title, description, url } = input;
+
+      const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+      if (!regex.test(url)) {
+        throw new Error("URL harus merupakan URL YouTube yang valid.");
+      }
+
+      const newVideo = await ctx.db.video.create({
         data: {
-          title: input.title,
-          description: input.description,
-          url: input.url,
-          createdAt: new Date(),
+          title,
+          description,
+          url,
         },
       });
+
+      return newVideo;
     }),
 });
