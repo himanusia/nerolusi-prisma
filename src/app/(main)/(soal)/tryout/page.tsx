@@ -29,7 +29,7 @@ export default async function TryoutListPage() {
     );
   }
 
-  const data = await api.package.getPackages({ classId });
+  const data = await api.package.getTryoutPackages({ classId });
 
   return (
     <div className="flex flex-col gap-3">

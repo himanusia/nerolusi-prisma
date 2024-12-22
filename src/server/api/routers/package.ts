@@ -26,6 +26,21 @@ export const packageRouter = createTRPCRouter({
       });
     }),
 
+  getTryoutPackages: protectedProcedure
+    .input(
+      z.object({
+        classId: z.number(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.package.findMany({
+        where: {
+          classId: input.classId,
+          type: "tryout",
+        },
+      });
+    }),
+
   // Get Single Package with Subtests, Questions, and Answers
   getPackage: protectedProcedure
     .input(z.object({ id: z.number().min(1, "Package ID is required") }))
