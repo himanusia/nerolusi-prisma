@@ -35,12 +35,15 @@ export default function UserTable({ userData }: { userData: User[] }) {
       {
         field: "classid",
         headerName: "Class",
-        sortable: true,
         filter: true,
         editable: true,
         cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: classes?.map((classItem) => classItem.name) || [], // Populate with class names
+          values: classes?.map((classItem) => classItem.id) || [],
+        },
+        valueFormatter: (params) => {
+          const classItem = classes?.find((c) => c.id === params.value);
+          return classItem ? classItem.name : "";
         },
       },
       {
