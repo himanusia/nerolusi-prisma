@@ -78,6 +78,7 @@ export const packageRouter = createTRPCRouter({
               question: {
                 select: {
                   correctAnswerChoice: true,
+                  score: true,
                 },
               },
               answerChoice: true,
@@ -92,7 +93,7 @@ export const packageRouter = createTRPCRouter({
           return (
             total +
             (answer.answerChoice === answer.question.correctAnswerChoice
-              ? 1
+              ? answer.question.score
               : 0)
           );
         }, 0);
@@ -185,7 +186,7 @@ export const packageRouter = createTRPCRouter({
                   score: question.score,
                   explanation: question.explanation,
                   correctAnswerChoice: question.correctAnswerChoice,
-                  packageId: createdPackage.id, // Menambahkan packageId
+                  packageId: createdPackage.id,
                   answers: {
                     create: question.answers.map((answer) => ({
                       index: answer.index,
@@ -469,7 +470,7 @@ export const packageRouter = createTRPCRouter({
                         score: question.score,
                         explanation: question.explanation,
                         correctAnswerChoice: question.correctAnswerChoice,
-                        packageId: id, // Menambahkan packageId
+                        packageId: id,
                         subtest: {
                           connect: { id: newSubtest.id },
                         },

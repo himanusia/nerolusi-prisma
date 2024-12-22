@@ -36,7 +36,6 @@ export default function PackageManagementPage() {
   if (error) return <div>Error: {error.message}</div>;
   if (!data) return <div>No users found for this package.</div>;
 
-  // Transform data for Ag Grid
   const rowData = data.map((user) => ({
     name: user.name || "Unnamed User",
     email: user.email || "N/A",

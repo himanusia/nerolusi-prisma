@@ -1,4 +1,3 @@
-// src/app/(main)/(management)/packageManagement/[id]/edit/page.tsx
 "use client";
 
 import React from "react";
@@ -12,20 +11,19 @@ const EditPackagePage: React.FC = () => {
   const router = useRouter();
   const { packageId } = useParams();
 
-  // Pastikan packageId valid sebelum melakukan query
   const parsedPackageId = packageId ? Number(packageId) : undefined;
 
   const { data, isLoading, isError, error } = api.package.getPackage.useQuery(
-    { id: parsedPackageId ?? 0 }, // Berikan default value 0 jika undefined
+    { id: parsedPackageId ?? 0 },
     {
-      enabled: !!parsedPackageId, // Hanya jalankan query jika packageId ada
+      enabled: !!parsedPackageId,
     },
   );
 
   const updatePackageMutation = api.package.updatePackage.useMutation({
     onSuccess: () => {
       toast.success("Package updated successfully!");
-      router.push("/packageManagement");
+      router.push(`/packageManagement/${parsedPackageId}`);
     },
     onError: (error: any) => {
       console.error("Error:", error);
@@ -34,14 +32,13 @@ const EditPackagePage: React.FC = () => {
   });
 
   const handleSubmit = async (formData: PackageFormData) => {
-    // Ubah tipe parameter
     if (!parsedPackageId) {
       toast.error("Invalid package ID.");
       return;
     }
 
     const updatedData: PackageFormData = {
-      id: parsedPackageId, // Tambahkan id
+      id: parsedPackageId,
       ...formData,
     };
 
@@ -56,7 +53,6 @@ const EditPackagePage: React.FC = () => {
   if (isError) return <p>Error: {error.message}</p>;
   if (!data) return <p>Package not found</p>;
 
-  // Sanitasi data untuk menghapus field yang tidak diperlukan di frontend
   const sanitizedData: PackageFormData = {
     id: data.id,
     name: data.name,

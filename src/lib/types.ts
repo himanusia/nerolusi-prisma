@@ -1,15 +1,11 @@
-// src/lib/types/packageTypes.ts
-
 import { Type, SubtestType, QuestionType } from "@prisma/client";
 
-// Tipe untuk Jawaban
 export interface Answer {
   id?: number;
   index: number;
   content: string;
 }
 
-// Tipe untuk Pertanyaan
 export interface Question {
   id?: number;
   index: number;
@@ -22,7 +18,6 @@ export interface Question {
   correctAnswerChoice?: number;
 }
 
-// Tipe untuk Subtest
 export interface Subtest {
   id?: number;
   type: SubtestType;
@@ -30,7 +25,6 @@ export interface Subtest {
   questions: Question[];
 }
 
-// Tipe untuk Form Data Paket (Create dan Update)
 export interface PackageFormData {
   id?: number;
   name: string;
@@ -41,7 +35,6 @@ export interface PackageFormData {
   subtests: Subtest[];
 }
 
-// Tipe untuk Paket yang Diambil dari Backend (Semua Field Wajib)
 export interface Package extends PackageFormData {
   id: number;
 }
