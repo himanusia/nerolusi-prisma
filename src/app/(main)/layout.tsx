@@ -8,7 +8,7 @@ export default function layout({
   return (
     <div className="size-full">
       <Navbar />
-      {children}
+      <div className="container mx-auto p-4">{children}</div>
     </div>
   );
 }

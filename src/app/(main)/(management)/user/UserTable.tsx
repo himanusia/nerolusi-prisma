@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -13,7 +13,6 @@ export default function UserTable({ userData }: { userData: User[] }) {
   const updateRoleMutation = api.user.updateRole.useMutation();
   const updateClassMutation = api.user.updateClass.useMutation();
 
-  // Fetch available classes
   const { data: classes } = api.class.getAllClasses.useQuery();
 
   const columnDefs: ColDef<User>[] = useMemo(
@@ -51,14 +50,16 @@ export default function UserTable({ userData }: { userData: User[] }) {
         headerName: "Created At",
         sortable: true,
         filter: true,
+        valueFormatter: (params) => new Date(params.value).toLocaleString(),
       },
     ],
     [classes],
   );
 
   const onCellValueChanged = async (event: any) => {
+    const updatedData = event.data;
+
     if (event.colDef.field === "role") {
-      const updatedData = event.data;
       try {
         await updateRoleMutation.mutateAsync({
           id: updatedData.id,
@@ -72,16 +73,15 @@ export default function UserTable({ userData }: { userData: User[] }) {
       }
     }
 
-    if (event.colDef.field === "class") {
-      const updatedData = event.data;
+    if (event.colDef.field === "classid") {
       try {
-        // Find the class ID by matching class name
+        const classId = Number(updatedData.classid);
         const selectedClass = classes?.find(
-          (classItem) => classItem.name === updatedData.class,
+          (classItem) => classItem.id === classId,
         );
+
         if (!selectedClass) throw new Error("Class not found");
 
-        // Update the user's class using the mutation
         await updateClassMutation.mutateAsync({
           userId: updatedData.id,
           classId: selectedClass.id,
@@ -91,7 +91,7 @@ export default function UserTable({ userData }: { userData: User[] }) {
       } catch (error) {
         console.error("Failed to update class:", error);
         toast.error("Failed to update class.");
-        event.node.setDataValue("class", event.oldValue); // Revert to old value
+        event.node.setDataValue("classId", event.oldValue);
       }
     }
   };
