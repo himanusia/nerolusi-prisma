@@ -2,6 +2,25 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const quizRouter = createTRPCRouter({
+  getSession: protectedProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        subtestId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const session = await ctx.db.quizSession.findUnique({
+        where: {
+          unique_user_subtest: {
+            userId: input.userId,
+            subtestId: input.subtestId,
+          },
+        },
+      });
+      return session;
+    }),
+
   createSession: protectedProcedure
     .input(
       z.object({

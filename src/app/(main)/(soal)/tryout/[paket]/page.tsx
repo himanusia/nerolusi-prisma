@@ -9,6 +9,7 @@ import { api } from "~/trpc/react";
 export default function QuizPage() {
   const { paket } = useParams();
   const startSessionMutation = api.quiz.createSession.useMutation();
+  const getSessionMutation = api.quiz.getSession.useMutation();
   const router = useRouter();
   const session = useSession();
 
@@ -41,21 +42,34 @@ export default function QuizPage() {
   );
 
   async function handleSubtestClick(subtestId: number, duration: number) {
-    try {
-      // Start the session by calling the mutation
-      const quizSession = await startSessionMutation.mutateAsync({
-        userId: session.data.user.id,
-        packageId: Number(paket),
-        subtestId,
-        duration: duration ?? 10000,
-      });
+    if (!session.data || !session.data.user) {
+      toast.error("Anda harus login terlebih dahulu");
+      return;
+    }
 
-      // After session is successfully created, navigate to the tryout page
-      if (quizSession) {
-        router.push(`/tryout/${paket}/${quizSession.id}`);
+    const userId = session.data.user.id;
+    const packageId = Number(paket);
+
+    try {
+      let quizSession;
+
+      try {
+        quizSession = await getSessionMutation.mutateAsync({
+          userId,
+          subtestId,
+        });
+      } catch (error) {
+        quizSession = await startSessionMutation.mutateAsync({
+          userId,
+          packageId,
+          subtestId,
+          duration: duration ?? 10000,
+        });
       }
+
+      router.push(`/tryout/${paket}/${quizSession.id}`);
     } catch (error) {
-      toast.error("Error creating sesion");
+      toast.error("Error creating sessionnn");
     }
   }
 }

@@ -8,7 +8,7 @@ export default async function Page({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3">
-      Subtes {`${subtes}`} <br />
+      Subtest {`${subtes}`} <br />
       pilih paket:
       <ul className="flex flex-wrap gap-3">
         <li>
