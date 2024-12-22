@@ -34,7 +34,7 @@ export default function AuthDialog() {
         ) : (
           <Button
             variant={"ghost"}
-            onClick={() => signOut()}
+            onClick={() => signOut({ callbackUrl: "/signin" })}
             className="border"
           >
             Sign Out
