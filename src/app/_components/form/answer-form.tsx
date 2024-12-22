@@ -1,4 +1,3 @@
-// src/app/_components/form/answer-form.tsx
 "use client";
 
 import React from "react";
