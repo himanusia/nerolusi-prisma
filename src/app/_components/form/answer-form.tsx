@@ -1,20 +1,18 @@
+// src/app/_components/form/answer-form.tsx
 "use client";
 
 import React from "react";
+import { Textarea } from "~/app/_components/ui/textarea";
 import { Button } from "~/app/_components/ui/button";
-import { Textarea } from "../ui/textarea";
-
-interface Answer {
-  id?: number;
-  index: number;
-  content: string;
-}
+import { Answer } from "~/lib/types";
 
 interface AnswerFormProps {
   subtestIndex: number;
   questionIndex: number;
   answerIndex: number;
   answer: Answer;
+  isCorrect: boolean;
+  setAsCorrect: () => void;
   handleAnswerChange: (
     subtestIndex: number,
     questionIndex: number,
@@ -33,12 +31,19 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
   questionIndex,
   answerIndex,
   answer,
+  isCorrect,
+  setAsCorrect,
   handleAnswerChange,
   removeAnswer,
 }) => {
   return (
     <div className="flex items-center gap-2">
-      <span>{String.fromCharCode(65 + answerIndex)}.</span>
+      <input
+        type="radio"
+        name={`correctAnswer-${subtestIndex}-${questionIndex}`}
+        checked={isCorrect}
+        onChange={setAsCorrect}
+      />
       <Textarea
         value={answer.content}
         onChange={(e) =>

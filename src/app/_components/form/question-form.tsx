@@ -55,6 +55,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
   question,
   handleQuestionChange,
   handleAnswerChange,
+  handleCorrectAnswerChoiceChange,
   addAnswer,
   removeAnswer,
   removeQuestion,
@@ -177,6 +178,14 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               questionIndex={questionIndex}
               answerIndex={aIndex}
               answer={answer}
+              isCorrect={question.correctAnswerChoice === aIndex + 1}
+              setAsCorrect={() =>
+                handleCorrectAnswerChoiceChange(
+                  subtestIndex,
+                  questionIndex,
+                  aIndex + 1,
+                )
+              }
               handleAnswerChange={handleAnswerChange}
               removeAnswer={removeAnswer}
             />
