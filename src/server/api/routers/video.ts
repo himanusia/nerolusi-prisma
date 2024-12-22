@@ -33,4 +33,20 @@ export const videoRouter = createTRPCRouter({
 
       return newVideo;
     }),
+
+  deleteVideo: protectedProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id } = input;
+
+      await ctx.db.video.delete({
+        where: { id },
+      });
+
+      return { success: true };
+    }),
 });
