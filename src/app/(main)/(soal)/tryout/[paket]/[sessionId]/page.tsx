@@ -6,6 +6,7 @@ import { api } from "~/trpc/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
+import Image from "next/image";
 
 export default function QuizPage() {
   const { paket, sessionId } = useParams();
@@ -164,6 +165,13 @@ export default function QuizPage() {
                   {currentQuestionIndex + 1}.{" "}
                   {questions[currentQuestionIndex].content}
                 </strong>
+                <Image
+                  src={questions[currentQuestionIndex].imageUrl}
+                  alt="Question Image"
+                  width={300}
+                  height={200}
+                  className="mt-2"
+                />
               </p>
               {questions[currentQuestionIndex].answers.map((answer) => (
                 <label
