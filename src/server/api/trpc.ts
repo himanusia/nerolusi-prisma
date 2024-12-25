@@ -135,7 +135,7 @@ export const adminProcedure = t.procedure
     if (
       !ctx.session ||
       !ctx.session.user ||
-      (ctx.session.user.role !== "admin" && ctx.session.user.role !== "teacher")
+      ctx.session.user.role !== "admin"
     ) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
@@ -152,7 +152,7 @@ export const teacherProcedure = t.procedure
     if (
       !ctx.session ||
       !ctx.session.user ||
-      ctx.session.user.role !== "teacher"
+      (ctx.session.user.role !== "teacher" && ctx.session.user.role !== "admin")
     ) {
       throw new TRPCError({ code: "UNAUTHORIZED" });
     }
