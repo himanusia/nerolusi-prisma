@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo } from "react";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -17,9 +17,24 @@ export default function UserTable({ userData }: { userData: User[] }) {
 
   const columnDefs: ColDef<User>[] = useMemo(
     () => [
-      { field: "id", headerName: "ID", sortable: true, filter: true },
-      { field: "name", headerName: "Name", sortable: true, filter: true },
-      { field: "email", headerName: "Email", sortable: true, filter: true },
+      {
+        field: "id",
+        headerName: "ID",
+        sortable: true,
+        filter: "agTextColumnFilter",
+      },
+      {
+        field: "name",
+        headerName: "Name",
+        sortable: true,
+        filter: "agTextColumnFilter",
+      },
+      {
+        field: "email",
+        headerName: "Email",
+        sortable: true,
+        filter: "agTextColumnFilter",
+      },
       {
         field: "role",
         headerName: "Role",
@@ -34,13 +49,14 @@ export default function UserTable({ userData }: { userData: User[] }) {
       {
         field: "classid",
         headerName: "Class",
-        filter: true,
+        filter: "agTextColumnFilter",
         editable: true,
         cellEditor: "agSelectCellEditor",
         cellEditorParams: {
-          values: classes?.map((classItem) => classItem.id) || [],
+          values: [null, ...(classes?.map((classItem) => classItem.id) || [])],
         },
         valueFormatter: (params) => {
+          if (!params.value) return "No Class";
           const classItem = classes?.find((c) => c.id === params.value);
           return classItem ? classItem.name : "";
         },
@@ -75,16 +91,12 @@ export default function UserTable({ userData }: { userData: User[] }) {
 
     if (event.colDef.field === "classid") {
       try {
-        const classId = Number(updatedData.classid);
-        const selectedClass = classes?.find(
-          (classItem) => classItem.id === classId,
-        );
-
-        if (!selectedClass) throw new Error("Class not found");
-
+        const classId = updatedData.classid
+          ? Number(updatedData.classid)
+          : null;
         await updateClassMutation.mutateAsync({
           userId: updatedData.id,
-          classId: selectedClass.id,
+          classId,
         });
 
         toast.success("Class updated successfully!");

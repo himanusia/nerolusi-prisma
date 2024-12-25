@@ -37,7 +37,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        classId: z.number(),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -47,7 +47,7 @@ export const userRouter = createTRPCRouter({
 
       await ctx.db.user.update({
         where: { id: input.userId },
-        data: { classid: input.classId }, // Update classid
+        data: { classid: input.classId },
       });
     }),
 });
