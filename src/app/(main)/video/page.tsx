@@ -101,7 +101,7 @@ export default function VideoGallery() {
       </div>
 
       {/* Grid Section */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+      <div className="grid size-full grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
         {videos?.map((video) => {
           const videoId = getYouTubeVideoId(video.url);
           const thumbnailUrl = videoId
@@ -125,7 +125,7 @@ export default function VideoGallery() {
             >
               <DialogTrigger asChild>
                 <Button
-                  className="flex h-fit w-full flex-col transition-shadow hover:shadow-lg focus:outline-none"
+                  className="flex size-full flex-col transition-shadow hover:shadow-lg focus:outline-none"
                   variant="ghost"
                 >
                   <div className="relative aspect-video w-full">
