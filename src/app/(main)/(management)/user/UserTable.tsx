@@ -65,7 +65,7 @@ export default function UserTable({ userData }: { userData: User[] }) {
           id: updatedData.id,
           role: updatedData.role,
         });
-        toast("Role updated successfully!");
+        toast.success("Role updated successfully!");
       } catch (error) {
         console.error("Failed to update role:", error);
         toast.error("Failed to update role.");
@@ -87,7 +87,7 @@ export default function UserTable({ userData }: { userData: User[] }) {
           classId: selectedClass.id,
         });
 
-        toast("Class updated successfully!");
+        toast.success("Class updated successfully!");
       } catch (error) {
         console.error("Failed to update class:", error);
         toast.error("Failed to update class.");

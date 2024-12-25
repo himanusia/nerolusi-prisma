@@ -14,7 +14,7 @@ import { api } from "~/trpc/react";
 import { getYouTubeVideoId } from "~/utils/get-youtube-id";
 import { Button } from "~/app/_components/ui/button";
 import AddVideoForm from "./add-video-form";
-import { PlusIcon, Trash2Icon } from "lucide-react"; // Tambahkan ikon Trash
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
@@ -37,7 +37,7 @@ export default function VideoGallery() {
   const [selectedVideo, setSelectedVideo] = useState<Video | null>(null);
   const deleteVideoMutation = api.video.deleteVideo.useMutation({
     onSuccess: () => {
-      toast("Video deleted successfully!");
+      toast.success("Video deleted successfully!");
       refetch();
     },
     onError: (error) => {
@@ -113,7 +113,7 @@ export default function VideoGallery() {
             >
               <DialogTrigger asChild>
                 <Button
-                  className="flex h-fit w-full flex-col p-0 text-left transition-shadow hover:shadow-lg focus:outline-none"
+                  className="flex h-fit w-full flex-col transition-shadow hover:shadow-lg focus:outline-none"
                   variant="ghost"
                 >
                   <div className="relative aspect-video w-full">
@@ -125,9 +125,9 @@ export default function VideoGallery() {
                       className="rounded-md shadow-md transition-opacity hover:opacity-80"
                     />
                   </div>
-                  <h2 className="mt-2 w-full truncate text-lg font-semibold">
+                  {/* <span className="w-full truncate text-lg font-semibold">
                     {video.title}
-                  </h2>
+                  </span> */}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl overflow-hidden p-6">
@@ -150,7 +150,7 @@ export default function VideoGallery() {
                   )}
                   <p className="mt-4">{video.description}</p>
                 </div>
-                {/* Tombol Delete dan Close */}
+
                 {session?.user?.role !== "user" && (
                   <div className="mt-6 flex justify-between">
                     <Button
