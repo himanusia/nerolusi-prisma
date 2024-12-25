@@ -60,6 +60,19 @@ export const quizRouter = createTRPCRouter({
       return questions;
     }),
 
+  getQuestionsBySubtestwithExplanation: userProcedure
+    .input(z.object({ subtestId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const questions = await ctx.db.question.findMany({
+        where: { subtestId: input.subtestId },
+        orderBy: { index: "asc" },
+        include: {
+          answers: true,
+        },
+      });
+      return questions;
+    }),
+
   getSessionDetails: userProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ ctx, input }) => {
