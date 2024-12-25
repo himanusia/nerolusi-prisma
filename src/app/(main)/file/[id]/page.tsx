@@ -14,6 +14,7 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 import FileForm, { FileInput } from "./file-forms";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 export default function FilePage() {
   const { id } = useParams();
@@ -29,7 +30,16 @@ export default function FilePage() {
   const addFileMutation = api.file.addFile.useMutation();
   const [editDialogOpen, setEditDialogOpen] = useState(null);
   const editFileMutation = api.file.editFile.useMutation();
-  const deleteFileMutation = api.file.deleteFile.useMutation();
+  const deleteFileMutation = api.file.deleteFile.useMutation({
+    onSuccess: () => {
+      toast.success("File deleted successfully!");
+      refetch();
+    },
+    onError: (error) => {
+      console.error("Failed to delete file:", error);
+      toast.error(error.message || "Failed to delete file.");
+    },
+  });
 
   const handleDelete = async (fileId: number) => {
     if (confirm("Are you sure you want to delete this file?")) {
