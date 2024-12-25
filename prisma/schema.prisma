@@ -103,7 +103,7 @@ model Subtest {
   type        SubtestType
   packageId   Int
   duration    Int?
-  package     Package     @relation(fields: [packageId], references: [id])
+  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   questions   Question[]
   quizSession QuizSession[]
 }
@@ -120,7 +120,7 @@ model Question {
   correctAnswerChoice   Int?
   packageId             Int
   subtestId             Int         
-  subtest               Subtest      @relation(fields: [subtestId], references: [id])
+  subtest               Subtest      @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   userAnswers           UserAnswer[] 
 }
 
@@ -130,20 +130,20 @@ model Answer {
   content     String      
   index       Int       
   questionId  Int
-  question    Question     @relation(fields: [questionId], references: [id])
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model UserAnswer {
   id          Int          @id @default(autoincrement())
   answerChoice Int      
   questionId  Int
-  question    Question     @relation(fields: [questionId], references: [id])
+  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
   userId      String 
-  user        User         @relation(fields: [userId], references: [id])
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   packageId   Int
-  package     Package      @relation(fields: [packageId], references: [id])
+  package     Package      @relation(fields: [packageId], references: [id], onDelete: Cascade)
   quizSessionId Int
-  quizSession QuizSession  @relation(fields: [quizSessionId], references: [id])
+  quizSession QuizSession  @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, quizSessionId, questionId], name: "userId_quizSessionId_questionId")
 }
@@ -169,7 +169,7 @@ model File {
   description String?
   url         String
   folderId    Int
-  folder      Folder    @relation(fields: [folderId], references: [id])
+  folder      Folder    @relation(fields: [folderId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -187,8 +187,8 @@ model QuizSession {
   subtestId  Int
   startTime  DateTime @default(now())
   duration   Int
-  user       User     @relation(fields: [userId], references: [id])
-  subtest    Subtest  @relation(fields: [subtestId], references: [id])
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subtest    Subtest  @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   userAnswers UserAnswer[]
 
   @@unique([userId, subtestId], name: "unique_user_subtest")

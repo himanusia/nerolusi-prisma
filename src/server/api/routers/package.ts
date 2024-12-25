@@ -527,4 +527,18 @@ export const packageRouter = createTRPCRouter({
         throw error;
       }
     }),
+
+    deletePackage: teacherProcedure
+    .input(
+      z.object({
+        id: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.package.delete({
+        where: {
+          id: input.id,
+        },
+      });
+    }),
 });
