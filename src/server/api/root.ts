@@ -5,8 +5,6 @@ import { packageRouter } from "./routers/package";
 import { videoRouter } from "./routers/video";
 import { fileRouter } from "./routers/file";
 import { answerRouter } from "./routers/answer";
-import { questionsRouter } from "./routers/question";
-import { subtestRouter } from "./routers/subtest";
 import { quizRouter } from "./routers/quiz";
 
 /**
@@ -20,9 +18,7 @@ export const appRouter = createTRPCRouter({
   package: packageRouter,
   video: videoRouter,
   file: fileRouter,
-  question: questionsRouter,
   answer: answerRouter,
-  subtest: subtestRouter,
   quiz: quizRouter,
 });
 

@@ -1,16 +1,16 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
 
 export const fileRouter = createTRPCRouter({
-  getAllFolders: protectedProcedure.query(async ({ ctx }) => {
+  getAllFolders: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.folder.findMany();
   }),
 
-  getAllFiles: protectedProcedure.query(async ({ ctx }) => {
+  getAllFiles: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.file.findMany();
   }),
 
-  getFilesByFolderId: protectedProcedure
+  getFilesByFolderId: userProcedure
     .input(
       z.object({
         folderId: z.number(),
@@ -24,7 +24,7 @@ export const fileRouter = createTRPCRouter({
       });
     }),
 
-  // uploadFile: protectedProcedure
+  // uploadFile: userProcedure
   //   .input(
   //     z.object({
   //       title: z.string(),

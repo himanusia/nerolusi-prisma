@@ -1,10 +1,14 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  teacherProcedure,
+  userProcedure,
+} from "~/server/api/trpc";
 import { QuestionType, Type, SubtestType, Prisma } from "@prisma/client";
 
 export const packageRouter = createTRPCRouter({
   // Get All Packages
-  getAllPackages: protectedProcedure.query(async ({ ctx }) => {
+  getAllPackages: userProcedure.query(async ({ ctx }) => {
     const packages = await ctx.db.package.findMany({
       orderBy: { id: "desc" },
     });
@@ -12,7 +16,7 @@ export const packageRouter = createTRPCRouter({
   }),
 
   // Get Packages in Class
-  getPackages: protectedProcedure
+  getPackages: userProcedure
     .input(
       z.object({
         classId: z.number(),
@@ -26,7 +30,7 @@ export const packageRouter = createTRPCRouter({
       });
     }),
 
-  getTryoutPackages: protectedProcedure
+  getTryoutPackages: userProcedure
     .input(
       z.object({
         classId: z.number(),
@@ -42,7 +46,7 @@ export const packageRouter = createTRPCRouter({
     }),
 
   // Get Single Package with Subtests, Questions, and Answers
-  getPackage: protectedProcedure
+  getPackage: userProcedure
     .input(z.object({ id: z.number().min(1, "Package ID is required") }))
     .query(async ({ input, ctx }) => {
       const packageData = await ctx.db.package.findUnique({
@@ -66,7 +70,7 @@ export const packageRouter = createTRPCRouter({
     }),
 
   // Get Users by Package with Scores
-  getUsersByPackage: protectedProcedure
+  getUsersByPackage: userProcedure
     .input(
       z.object({
         packageId: z.number(),
@@ -123,7 +127,7 @@ export const packageRouter = createTRPCRouter({
     }),
 
   // Create Package
-  createPackage: protectedProcedure
+  createPackage: teacherProcedure
     .input(
       z.object({
         name: z.string().min(1, "Name is required"),
@@ -232,7 +236,7 @@ export const packageRouter = createTRPCRouter({
     }),
 
   // Update Package
-  updatePackage: protectedProcedure
+  updatePackage: teacherProcedure
     .input(
       z.object({
         id: z.number().positive("Package ID must be a positive number"),

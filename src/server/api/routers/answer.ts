@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
 
 export const answerRouter = createTRPCRouter({
-  getAnswer: protectedProcedure
+  getAnswer: userProcedure
     .input(
       z.object({
         questionId: z.number(),

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
 
 export const quizRouter = createTRPCRouter({
-  getSession: protectedProcedure
+  getSession: userProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -21,7 +21,7 @@ export const quizRouter = createTRPCRouter({
       return session;
     }),
 
-  createSession: protectedProcedure
+  createSession: userProcedure
     .input(
       z.object({
         userId: z.string(),
@@ -42,7 +42,7 @@ export const quizRouter = createTRPCRouter({
       return session;
     }),
 
-  getQuestionsBySubtest: protectedProcedure
+  getQuestionsBySubtest: userProcedure
     .input(z.object({ subtestId: z.number() }))
     .query(async ({ ctx, input }) => {
       const questions = await ctx.db.question.findMany({
@@ -55,7 +55,7 @@ export const quizRouter = createTRPCRouter({
       return questions;
     }),
 
-  getSessionDetails: protectedProcedure
+  getSessionDetails: userProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findUnique({
@@ -72,7 +72,7 @@ export const quizRouter = createTRPCRouter({
       return session;
     }),
 
-  saveAnswer: protectedProcedure
+  saveAnswer: userProcedure
     .input(
       z.object({
         answerChoice: z.number(),

@@ -1,13 +1,17 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  teacherProcedure,
+  userProcedure,
+} from "~/server/api/trpc";
 
 export const videoRouter = createTRPCRouter({
-  getAllVideos: protectedProcedure.query(async ({ ctx }) => {
+  getAllVideos: userProcedure.query(async ({ ctx }) => {
     const videos = await ctx.db.video.findMany();
     return videos ?? null;
   }),
 
-  addVideo: protectedProcedure
+  addVideo: teacherProcedure
     .input(
       z.object({
         title: z.string().min(1, "Title is required"),
@@ -34,7 +38,7 @@ export const videoRouter = createTRPCRouter({
       return newVideo;
     }),
 
-  deleteVideo: protectedProcedure
+  deleteVideo: teacherProcedure
     .input(
       z.object({
         id: z.number(),

@@ -1,20 +1,24 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  userProcedure,
+} from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
-  getAllUsers: protectedProcedure.query(async ({ ctx }) => {
+  getAllUsers: userProcedure.query(async ({ ctx }) => {
     const users = await ctx.db.user.findMany({
       orderBy: {
         createdAt: "desc",
       },
       include: {
-        class: true, // Include class data if needed
+        class: true,
       },
     });
     return users ?? null;
   }),
 
-  updateRole: protectedProcedure
+  updateRole: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -33,7 +37,7 @@ export const userRouter = createTRPCRouter({
     }),
 
   // New mutation to update user's class
-  updateClass: protectedProcedure
+  updateClass: adminProcedure
     .input(
       z.object({
         userId: z.string(),

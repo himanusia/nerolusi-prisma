@@ -1,8 +1,12 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  teacherProcedure,
+  userProcedure,
+} from "~/server/api/trpc";
 
 export const classRouter = createTRPCRouter({
-  getAllClasses: protectedProcedure.query(async ({ ctx }) => {
+  getAllClasses: userProcedure.query(async ({ ctx }) => {
     const classes = await ctx.db.class.findMany({
       select: {
         id: true,
@@ -12,7 +16,7 @@ export const classRouter = createTRPCRouter({
     return classes ?? null;
   }),
 
-  createClass: protectedProcedure
+  createClass: teacherProcedure
     .input(
       z.object({
         name: z.string().min(1, "Class name is required"),
