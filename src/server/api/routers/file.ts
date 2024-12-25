@@ -2,28 +2,45 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 export const fileRouter = createTRPCRouter({
-  getAllFiles: protectedProcedure.query(async ({ ctx }) => {
-    const files = await ctx.db.file.findMany();
-    return files ?? null;
+  getAllFolders: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.folder.findMany();
   }),
 
-  uploadFile: protectedProcedure
+  getAllFiles: protectedProcedure.query(async ({ ctx }) => {
+    return await ctx.db.file.findMany();
+  }),
+
+  getFilesByFolderId: protectedProcedure
     .input(
       z.object({
-        title: z.string(),
-        description: z.string().optional(),
-        url: z.string().url(),
+        folderId: z.number(),
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      const result = await ctx.db.file.create({
-        data: {
-          title: input.title,
-          description: input.description,
-          url: input.url,
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.file.findMany({
+        where: {
+          folderId: input.folderId,
         },
       });
-
-      return result;
     }),
+
+  // uploadFile: protectedProcedure
+  //   .input(
+  //     z.object({
+  //       title: z.string(),
+  //       description: z.string().optional(),
+  //       url: z.string().url(),
+  //     }),
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     const result = await ctx.db.file.create({
+  //       data: {
+  //         title: input.title,
+  //         description: input.description,
+  //         url: input.url,
+  //       },
+  //     });
+
+  //     return result;
+  //   }),
 });

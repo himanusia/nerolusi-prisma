@@ -50,7 +50,7 @@ async function main() {
   for (const classItem of classes) {
     for (let i = 0; i < 2; i++) {
       const TOstart = faker.date.future();
-      const TOend = faker.date.future({ refDate: TOstart }); // Ensure end date is after start date
+      const TOend = faker.date.future({ refDate: TOstart });
       const newPackage = await prisma.package.create({
         data: {
           name: faker.company.catchPhrase(),
@@ -87,7 +87,7 @@ async function main() {
         const question = await prisma.question.create({
           data: {
             index: j + 1,
-            content: faker.lorem.sentence(),
+            content: faker.word.words(),
             imageUrl: faker.image.url(),
             type: faker.helpers.arrayElement(["essay", "mulChoice"]),
             score: faker.number.int({ min: 0, max: 10 }),
@@ -102,7 +102,7 @@ async function main() {
             prisma.answer.create({
               data: {
                 index: index + 1,
-                content: faker.lorem.word(),
+                content: faker.word.words(),
                 questionId: question.id,
               },
             }),
@@ -113,7 +113,7 @@ async function main() {
         const correctAnswer = faker.helpers.arrayElement(answers);
         await prisma.question.update({
           where: { id: question.id },
-          data: { correctAnswerChoice: correctAnswer.index }, // Store the index as the correct choice
+          data: { correctAnswerChoice: correctAnswer.index },
         });
       }
     }
@@ -198,7 +198,7 @@ async function main() {
         description: video.description,
         url: video.url,
       })),
-      skipDuplicates: true, // Opsional: Menghindari duplikasi jika ada unique constraint
+      skipDuplicates: true,
     });
     console.log(
       `Successfully created ${videos.length} videos from YouTube API.`,
@@ -207,14 +207,36 @@ async function main() {
     console.error("Error creating videos:", error);
   }
 
-  // Generate Random Files
-  await prisma.file.createMany({
-    data: Array.from({ length: 10 }).map(() => ({
-      title: faker.lorem.words(2),
-      description: faker.lorem.sentence(),
-      url: faker.internet.url(),
-    })),
-  });
+  // Generate Random Folders
+  const folders = await Promise.all(
+    Array.from({ length: 5 }).map(() =>
+      prisma.folder.create({
+        data: {
+          name: faker.word.words(),
+          description: faker.lorem.sentence(),
+        },
+      }),
+    ),
+  );
+
+  // Generate Random Files for Each Folder
+  for (const folder of folders) {
+    await Promise.all(
+      Array.from({ length: 10 }).map(() =>
+        prisma.file.create({
+          data: {
+            title: faker.word.words(),
+            description: faker.lorem.sentence(),
+            url: faker.helpers.arrayElement([
+              `https://picsum.photos/200/300?random=${faker.number.int()}`,
+              `https://via.placeholder.com/150?text=${faker.lorem.word()}`,
+            ]),
+            folderId: folder.id,
+          },
+        }),
+      ),
+    );
+  }
 
   console.log("Seeding completed successfully!");
 }

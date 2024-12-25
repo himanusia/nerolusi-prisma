@@ -155,11 +155,20 @@ model Video {
   createdAt   DateTime  @default(now())
 }
 
+model Folder {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  files       File[]
+}
+
 model File {
   id          Int       @id @default(autoincrement())
   title       String
   description String?
   url         String
+  folderId    Int
+  folder      Folder    @relation(fields: [folderId], references: [id])
 }
 
 model VerificationToken {
