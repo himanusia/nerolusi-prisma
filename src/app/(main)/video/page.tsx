@@ -13,7 +13,7 @@ import ReactPlayer from "react-player";
 import { api } from "~/trpc/react";
 import { getYouTubeVideoId } from "~/utils/get-youtube-id";
 import { Button } from "~/app/_components/ui/button";
-import AddVideoForm from "./add-video-form";
+import VideoForm, { VideoInput } from "./video-form";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
@@ -45,6 +45,10 @@ export default function VideoGallery() {
       toast.error(error.message || "Failed to delete video.");
     },
   });
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const addVideoMutation = api.video.addVideo.useMutation();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const editVideoMutation = api.video.editVideo.useMutation();
 
   if (isLoading) return <div className="mt-10 text-center">Loading...</div>;
   if (isError)
@@ -53,6 +57,19 @@ export default function VideoGallery() {
         Error fetching videos.
       </div>
     );
+
+  const handleAddVideo = async (data: VideoInput) => {
+    await addVideoMutation.mutateAsync(data);
+    setAddDialogOpen(false);
+    refetch();
+  };
+
+  const handleEditVideo = async (data: VideoInput) => {
+    await editVideoMutation.mutateAsync(data);
+    setEditDialogOpen(false);
+    setSelectedVideo(null);
+    refetch();
+  };
 
   const handleDelete = async (videoId: number) => {
     if (confirm("Are you sure you want to delete this video?")) {
@@ -66,7 +83,7 @@ export default function VideoGallery() {
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-4xl font-bold">Video Gallery</h1>
         {session?.user?.role !== "user" && (
-          <Dialog>
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
             <DialogTrigger asChild>
               <Button className="flex items-center">
                 <PlusIcon className="mr-2 h-5 w-5" />
@@ -77,12 +94,7 @@ export default function VideoGallery() {
               <DialogHeader>
                 <DialogTitle>Add New Video</DialogTitle>
               </DialogHeader>
-              <AddVideoForm
-                onSuccess={() => {
-                  refetch();
-                  setSelectedVideo(null);
-                }}
-              />
+              <VideoForm mode="add" onSubmit={handleAddVideo} />
             </DialogContent>
           </Dialog>
         )}
@@ -125,9 +137,9 @@ export default function VideoGallery() {
                       className="rounded-md shadow-md transition-opacity hover:opacity-80"
                     />
                   </div>
-                  {/* <span className="w-full truncate text-lg font-semibold">
+                  <span className="w-full truncate text-lg font-semibold">
                     {video.title}
-                  </span> */}
+                  </span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-3xl overflow-hidden p-6">
@@ -161,6 +173,26 @@ export default function VideoGallery() {
                       <Trash2Icon className="mr-2 h-5 w-5" />
                       Delete
                     </Button>
+                    <Dialog
+                      open={editDialogOpen}
+                      onOpenChange={setEditDialogOpen}
+                    >
+                      <DialogTrigger asChild>
+                        <Button>Edit</Button>
+                      </DialogTrigger>
+                      <DialogContent className="max-w-xl p-6">
+                        <DialogHeader>
+                          <DialogTitle>Edit Video</DialogTitle>
+                        </DialogHeader>
+                        {selectedVideo && (
+                          <VideoForm
+                            mode="edit"
+                            initialValues={selectedVideo}
+                            onSubmit={handleEditVideo}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 )}
               </DialogContent>

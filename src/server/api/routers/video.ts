@@ -53,4 +53,29 @@ export const videoRouter = createTRPCRouter({
 
       return { success: true };
     }),
+
+  editVideo: teacherProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1, "Title is required"),
+        description: z.string().optional(),
+        url: z.string().url("Invalid URL format"),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const { id, title, description, url } = input;
+
+      const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
+      if (!regex.test(url)) {
+        throw new Error("URL harus merupakan URL YouTube yang valid.");
+      }
+
+      const updatedVideo = await ctx.db.video.update({
+        where: { id },
+        data: { title, description, url },
+      });
+
+      return updatedVideo;
+    }),
 });

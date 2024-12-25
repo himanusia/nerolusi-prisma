@@ -3,49 +3,57 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { api } from "~/trpc/react";
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
 import { Textarea } from "~/app/_components/ui/textarea";
 import { toast } from "sonner";
 
-const addVideoSchema = z.object({
+const videoSchema = z.object({
+  id: z.number().optional(),
   title: z.string().min(1, "Title is required"),
   description: z.string().optional(),
   url: z.string().url("Invalid URL format"),
 });
 
-type AddVideoInput = z.infer<typeof addVideoSchema>;
+export type VideoInput = z.infer<typeof videoSchema>;
 
-export default function AddVideoForm({ onSuccess }: { onSuccess: () => void }) {
+interface VideoFormProps {
+  initialValues?: VideoInput;
+  onSubmit: (data: VideoInput) => Promise<void>;
+  mode: "add" | "edit";
+}
+
+export default function VideoForm({
+  initialValues,
+  onSubmit,
+  mode,
+}: VideoFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
-  } = useForm<AddVideoInput>({
-    resolver: zodResolver(addVideoSchema),
-  });
-
-  const addVideoMutation = api.video.addVideo.useMutation({
-    onSuccess: () => {
-      toast.success("Video Added", {
-        description: "Video has been successfully added.",
-      });
-      reset();
-      onSuccess();
-    },
-    onError: () => {
-      toast.error("Something went wrong.");
+  } = useForm<VideoInput>({
+    resolver: zodResolver(videoSchema),
+    defaultValues: initialValues || {
+      title: "",
+      description: "",
+      url: "",
     },
   });
 
-  const onSubmit = async (data: AddVideoInput) => {
-    await addVideoMutation.mutateAsync(data);
+  const handleFormSubmit = async (data: VideoInput) => {
+    try {
+      await onSubmit(data);
+      toast.success(
+        `${mode === "add" ? "Video added" : "Video updated"} successfully!`,
+      );
+    } catch (error) {
+      toast.error(`Failed to ${mode === "add" ? "add" : "update"} video.`);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div>
         <label className="block text-sm font-medium">Title</label>
         <Input
@@ -85,7 +93,13 @@ export default function AddVideoForm({ onSuccess }: { onSuccess: () => void }) {
       </div>
       <div className="flex justify-end">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Adding..." : "Add Video"}
+          {isSubmitting
+            ? mode === "add"
+              ? "Adding..."
+              : "Updating..."
+            : mode === "add"
+              ? "Add Video"
+              : "Update Video"}
         </Button>
       </div>
     </form>
