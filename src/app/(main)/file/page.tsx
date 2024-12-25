@@ -11,8 +11,9 @@ import {
   DialogTitle,
 } from "~/app/_components/ui/dialog";
 import { PlusIcon, Trash2Icon } from "lucide-react";
-import AddFolderForm from "./add-folder-form";
 import { toast } from "sonner";
+import FolderForm, { FolderInput } from "./folder-form";
+import { useState } from "react";
 
 export default function FolderPage() {
   const { data: session } = useSession();
@@ -24,7 +25,7 @@ export default function FolderPage() {
     refetch,
   } = api.file.getAllFolders.useQuery();
 
-  const deleteVideoMutation = api.file.deleteFolder.useMutation({
+  const deleteFolderMutation = api.file.deleteFolder.useMutation({
     onSuccess: () => {
       toast.success("Folder deleted successfully!");
       refetch();
@@ -35,10 +36,30 @@ export default function FolderPage() {
     },
   });
 
+  const [selectedFolder, setSelectedFolder] = useState<FolderInput | null>(
+    null,
+  );
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const addFolderMutation = api.file.addFolder.useMutation();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const editFolderMutation = api.file.editFolder.useMutation();
+
   const handleDelete = async (folderId: number) => {
     if (confirm("Are you sure you want to delete this folder?")) {
-      await deleteVideoMutation.mutateAsync({ folderId });
+      await deleteFolderMutation.mutateAsync({ folderId });
     }
+  };
+
+  const handleAddFolder = async (data: FolderInput) => {
+    await addFolderMutation.mutateAsync(data);
+    setAddDialogOpen(false);
+    refetch();
+  };
+
+  const handleEditFolder = async (data: FolderInput) => {
+    await editFolderMutation.mutateAsync(data);
+    setEditDialogOpen(false);
+    refetch();
   };
 
   if (isLoading) return <div className="mt-10 text-center">Loading...</div>;
@@ -52,7 +73,7 @@ export default function FolderPage() {
   return (
     <div className="flex size-full flex-col">
       {session?.user?.role !== "user" && (
-        <Dialog>
+        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
             <Button className="flex items-center">
               <PlusIcon className="mr-2 h-5 w-5" />
@@ -61,18 +82,14 @@ export default function FolderPage() {
           </DialogTrigger>
           <DialogContent className="max-w-xl p-6">
             <DialogHeader>
-              <DialogTitle>Add New Video</DialogTitle>
+              <DialogTitle>Add New Folder</DialogTitle>
             </DialogHeader>
-            <AddFolderForm
-              onSuccess={() => {
-                refetch();
-              }}
-            />
+            <FolderForm mode="add" onSubmit={handleAddFolder} />
           </DialogContent>
         </Dialog>
       )}
       {folders.map((folder) => (
-        <div className="flex w-full items-center justify-between border-b p-4">
+        <div className="flex w-full items-center justify-between gap-4 border-b p-4">
           <Button
             key={folder.id}
             variant={"ghost"}
@@ -87,14 +104,31 @@ export default function FolderPage() {
               <div className="mt-6 flex justify-between"></div>
             )}
           </Button>
-          <Button
-            variant="destructive"
-            className="flex items-center"
-            onClick={() => handleDelete(folder.id!)}
-          >
-            <Trash2Icon className="mr-2 h-5 w-5" />
-            Delete
-          </Button>
+          <div className="flex gap-4">
+            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+              <DialogTrigger asChild className="w-full">
+                <Button>Edit</Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-xl p-6">
+                <DialogHeader>
+                  <DialogTitle>Edit Folder</DialogTitle>
+                </DialogHeader>
+                <FolderForm
+                  mode="edit"
+                  initialValues={folder}
+                  onSubmit={handleEditFolder}
+                />
+              </DialogContent>
+            </Dialog>
+            <Button
+              variant="destructive"
+              className="flex items-center"
+              onClick={() => handleDelete(folder.id!)}
+            >
+              <Trash2Icon className="mr-2 h-5 w-5" />
+              Delete
+            </Button>
+          </div>
         </div>
       ))}
     </div>

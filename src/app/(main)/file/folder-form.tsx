@@ -3,54 +3,57 @@
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { api } from "~/trpc/react";
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
 import { Textarea } from "~/app/_components/ui/textarea";
 import { toast } from "sonner";
 
-const addFolderSchema = z.object({
-  name: z.string().min(1, "name is required"),
+const folderSchema = z.object({
+  id: z.number().optional(),
+  name: z.string().min(1, "Name is required"),
   description: z.string().optional(),
 });
 
-type AddFolderInput = z.infer<typeof addFolderSchema>;
+export type FolderInput = z.infer<typeof folderSchema>;
 
-export default function AddFolderForm({
-  onSuccess,
-}: {
-  onSuccess: () => void;
-}) {
+interface FolderFormProps {
+  initialValues?: FolderInput;
+  onSubmit: (data: FolderInput) => Promise<void>;
+  mode: "add" | "edit";
+}
+
+export default function FolderForm({
+  initialValues,
+  onSubmit,
+  mode,
+}: FolderFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    reset,
-  } = useForm<AddFolderInput>({
-    resolver: zodResolver(addFolderSchema),
-  });
-
-  const addFolderMutation = api.file.addFolder.useMutation({
-    onSuccess: () => {
-      toast.success("Folder Added", {
-        description: "Folder has been successfully added.",
-      });
-      reset();
-      onSuccess();
-    },
-    onError: () => {
-      toast.error("Something went wrong.");
+  } = useForm<FolderInput>({
+    resolver: zodResolver(folderSchema),
+    defaultValues: initialValues || {
+      name: "",
+      description: "",
     },
   });
 
-  const onSubmit = async (data: AddFolderInput) => {
-    await addFolderMutation.mutateAsync(data);
+  const handleFormSubmit = async (data: FolderInput) => {
+    try {
+      await onSubmit(data);
+      toast.success(
+        `${mode === "add" ? "Folder added" : "Folder updated"} successfully!`,
+      );
+    } catch (error) {
+      toast.error(`Failed to ${mode === "add" ? "add" : "update"} folder.`);
+    }
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <div>
-        <label className="block text-sm font-medium">name</label>
+        <label className="block text-sm font-medium">Name</label>
         <Input
           type="text"
           placeholder="Enter Folder name"
@@ -64,7 +67,7 @@ export default function AddFolderForm({
       <div>
         <label className="block text-sm font-medium">Description</label>
         <Textarea
-          placeholder="Enter Folder description"
+          placeholder="Enter folder description"
           {...register("description")}
           className="mt-1"
         />
@@ -76,7 +79,13 @@ export default function AddFolderForm({
       </div>
       <div className="flex justify-end">
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Adding..." : "Add Folder"}
+          {isSubmitting
+            ? mode === "add"
+              ? "Adding..."
+              : "Updating..."
+            : mode === "add"
+              ? "Add Folder"
+              : "Update Folder"}
         </Button>
       </div>
     </form>

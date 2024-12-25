@@ -25,6 +25,24 @@ export const fileRouter = createTRPCRouter({
     return await ctx.db.folder.findMany();
   }),
 
+  editFolder: adminProcedure
+  .input(
+    z.object({
+      id: z.number(),
+      name: z.string().min(1, "Folder name is required"),
+      description: z.string().optional(),
+    }),
+  )
+  .mutation(async ({ ctx, input }) => {
+    return await ctx.db.folder.update({
+      where: { id: input.id },
+      data: {
+        name: input.name,
+        description: input.description,
+      },
+    });
+  }),
+
   deleteFolder: adminProcedure
     .input(z.object({ folderId: z.number() }))
     .mutation(async ({ ctx, input }) => {
