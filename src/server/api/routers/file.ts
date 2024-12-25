@@ -26,22 +26,22 @@ export const fileRouter = createTRPCRouter({
   }),
 
   editFolder: adminProcedure
-  .input(
-    z.object({
-      id: z.number(),
-      name: z.string().min(1, "Folder name is required"),
-      description: z.string().optional(),
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string().min(1, "Folder name is required"),
+        description: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.folder.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          description: input.description,
+        },
+      });
     }),
-  )
-  .mutation(async ({ ctx, input }) => {
-    return await ctx.db.folder.update({
-      where: { id: input.id },
-      data: {
-        name: input.name,
-        description: input.description,
-      },
-    });
-  }),
 
   deleteFolder: adminProcedure
     .input(z.object({ folderId: z.number() }))
@@ -53,9 +53,51 @@ export const fileRouter = createTRPCRouter({
       });
     }),
 
+  addFile: adminProcedure
+    .input(
+      z.object({
+        folderId: z.number(),
+        title: z.string().min(1, "File title is required"),
+        description: z.string().optional(),
+        url: z.string().url(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.file.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          url: input.url,
+          folderId: input.folderId,
+        },
+      });
+    }),
+
   getAllFiles: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.file.findMany();
   }),
+
+  editFile: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string().min(1, "File title is required"),
+        description: z.string().optional(),
+        url: z.string().url(),
+        folderId: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.file.update({
+        where: { id: input.id },
+        data: {
+          title: input.title,
+          description: input.description,
+          url: input.url,
+          folderId: input.folderId,
+        },
+      });
+    }),
 
   deleteFile: adminProcedure
     .input(z.object({ fileId: z.number() }))

@@ -36,12 +36,9 @@ export default function FolderPage() {
     },
   });
 
-  const [selectedFolder, setSelectedFolder] = useState<FolderInput | null>(
-    null,
-  );
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const addFolderMutation = api.file.addFolder.useMutation();
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(null);
   const editFolderMutation = api.file.editFolder.useMutation();
 
   const handleDelete = async (folderId: number) => {
@@ -72,6 +69,7 @@ export default function FolderPage() {
 
   return (
     <div className="flex size-full flex-col">
+      <h1 className="mb-4 text-2xl font-semibold">Folders</h1>
       {session?.user?.role !== "user" && (
         <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
           <DialogTrigger asChild>
@@ -105,8 +103,17 @@ export default function FolderPage() {
             )}
           </Button>
           <div className="flex gap-4">
-            <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-              <DialogTrigger asChild className="w-full">
+            <Dialog
+              open={editDialogOpen === folder.id}
+              onOpenChange={(open) => {
+                if (open) {
+                  setEditDialogOpen(folder.id);
+                } else {
+                  setEditDialogOpen(null);
+                }
+              }}
+            >
+              <DialogTrigger asChild>
                 <Button>Edit</Button>
               </DialogTrigger>
               <DialogContent className="max-w-xl p-6">
