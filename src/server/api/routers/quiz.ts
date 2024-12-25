@@ -48,6 +48,11 @@ export const quizRouter = createTRPCRouter({
       const questions = await ctx.db.question.findMany({
         where: { subtestId: input.subtestId },
         orderBy: { index: "asc" },
+        omit: {
+          correctAnswerChoice: true,
+          explanation: true,
+          score: true,
+        },
         include: {
           answers: true,
         },
