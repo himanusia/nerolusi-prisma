@@ -87,9 +87,11 @@ export default function FolderPage() {
         </Dialog>
       )}
       {folders.map((folder) => (
-        <div className="flex w-full items-center justify-between gap-4 border-b p-4">
+        <div
+          key={folder.id}
+          className="flex w-full items-center justify-between gap-4 border-b p-4"
+        >
           <Button
-            key={folder.id}
             variant={"ghost"}
             className="size-full"
             onClick={() => router.push(`/file/${folder.id}`)}
