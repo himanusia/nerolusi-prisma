@@ -96,6 +96,16 @@ export default function Navbar() {
               <Button variant={"ghost"}>Try Out</Button>
             </Link>
           </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/video" legacyBehavior passHref>
+              <Button variant={"ghost"}>Video</Button>
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
+            <Link href="/file" legacyBehavior passHref>
+              <Button variant={"ghost"}>File</Button>
+            </Link>
+          </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
       {user?.role === "admin" && (
@@ -109,12 +119,6 @@ export default function Navbar() {
         </Button>
       )}
       <AuthDialog />
-      <Button asChild>
-        <Link href={"/video"}>Video</Link>
-      </Button>
-      <Button asChild>
-        <Link href={"/file"}>File</Link>
-      </Button>
       <MyTime />
     </div>
   );

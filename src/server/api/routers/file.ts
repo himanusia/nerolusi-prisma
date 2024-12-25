@@ -1,14 +1,53 @@
 import { z } from "zod";
-import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
+import {
+  adminProcedure,
+  createTRPCRouter,
+  userProcedure,
+} from "~/server/api/trpc";
 
 export const fileRouter = createTRPCRouter({
+  addFolder: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(1, "Folder name is required"),
+        description: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.folder.create({
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+
   getAllFolders: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.folder.findMany();
   }),
 
+  deleteFolder: adminProcedure
+    .input(z.object({ folderId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.folder.delete({
+        where: {
+          id: input.folderId,
+        },
+      });
+    }),
+
   getAllFiles: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.file.findMany();
   }),
+
+  deleteFile: adminProcedure
+    .input(z.object({ fileId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.file.delete({
+        where: {
+          id: input.fileId,
+        },
+      });
+    }),
 
   getFilesByFolderId: userProcedure
     .input(
