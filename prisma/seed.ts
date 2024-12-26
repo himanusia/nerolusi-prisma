@@ -50,7 +50,7 @@ async function main() {
   for (const classItem of classes) {
     for (let i = 0; i < 5; i++) {
       const TOstart = faker.date.recent({ days: 7 });
-      const TOend = faker.date.soon({ refDate: TOstart, days: 3 });
+      const TOend = faker.date.soon({ refDate: TOstart, days: 7 });
       const newPackage = await db.package.create({
         data: {
           name: faker.company.catchPhrase(),
