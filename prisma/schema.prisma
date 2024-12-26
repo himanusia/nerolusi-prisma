@@ -196,3 +196,11 @@ model QuizSession {
 
   @@unique([userId, subtestId], name: "unique_user_subtest")
 }
+
+model Announcement {
+  id          Int       @id @default(autoincrement())
+  title       String?
+  content     String?
+  url         String?
+  createdAt   DateTime  @default(now())
+}

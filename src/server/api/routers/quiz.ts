@@ -1,7 +1,31 @@
 import { z } from "zod";
-import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
+import {
+  createTRPCRouter,
+  teacherProcedure,
+  userProcedure,
+} from "~/server/api/trpc";
 
 export const quizRouter = createTRPCRouter({
+  getAnnouncement: userProcedure.query(async ({ ctx, input }) => {
+    return await ctx.db.announcement.findFirst();
+  }),
+
+  upsertAnnouncement: teacherProcedure
+    .input(
+      z.object({
+        title: z.string().optional(),
+        content: z.string().optional(),
+        url: z.string().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.announcement.upsert({
+        where: { id: 1 },
+        update: { content: input.content, title: input.title, url: input.url },
+        create: { content: input.content, title: input.title, url: input.url },
+      });
+    }),
+
   getPackageWithSubtest: userProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
