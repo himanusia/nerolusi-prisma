@@ -33,7 +33,7 @@ export default function QuizPage() {
           <Button
             key={subtest.id}
             onClick={() => handleSubtestClick(subtest.id, subtest.duration)}
-            variant="ghost"
+            variant="outline"
             className="w-full"
           >
             {subtest.type}
