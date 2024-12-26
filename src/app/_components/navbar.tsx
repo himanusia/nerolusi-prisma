@@ -10,12 +10,12 @@ import {
   NavigationMenuList,
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
-import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import AuthDialog from "./auth-dialog";
-import { useTime } from "react-timer-hook";
+import { GoFile, GoVideo } from "react-icons/go";
+import React from "react";
 
 const soals: { title: string; href: string; description: string }[] = [
   {
@@ -61,21 +61,20 @@ export default function Navbar() {
   const user = session.data?.user;
 
   return (
-    <div className="scrollbar scrollbar-none sticky left-0 top-0 z-50 flex h-10 w-screen items-center gap-3 overflow-x-auto bg-background px-12 py-6">
+    <div className="sticky left-0 top-0 z-50 flex h-10 w-screen items-center justify-center gap-3 bg-background py-6 scrollbar scrollbar-none">
       <Link href={"/"}>
         <Image
           src={"/logo.png"}
           alt={"logo nerolusi"}
           width={"36"}
           height={"36"}
-          className="mr-6"
         ></Image>
       </Link>
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger>
-              <Link href={"/drill"}>Drilling Soal</Link>
+              <Link href={"/drill"}>Drill</Link>
             </NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
@@ -98,12 +97,18 @@ export default function Navbar() {
           </NavigationMenuItem>
           <NavigationMenuItem>
             <Link href="/video" legacyBehavior passHref>
-              <Button variant={"ghost"}>Video</Button>
+              <Button variant={"ghost"} className="flex gap-2">
+                <GoVideo />
+                <div className="hidden md:block">Video</div>
+              </Button>
             </Link>
           </NavigationMenuItem>
           <NavigationMenuItem>
             <Link href="/file" legacyBehavior passHref>
-              <Button variant={"ghost"}>File</Button>
+              <Button variant={"ghost"} className="flex gap-2">
+                <GoFile />
+                <div className="hidden md:block">File</div>
+              </Button>
             </Link>
           </NavigationMenuItem>
         </NavigationMenuList>
@@ -119,7 +124,6 @@ export default function Navbar() {
         </Button>
       )}
       <AuthDialog />
-      <MyTime />
     </div>
   );
 }
@@ -149,21 +153,3 @@ const ListItem = React.forwardRef<
   );
 });
 ListItem.displayName = "ListItem";
-
-function MyTime() {
-  const { seconds, minutes, hours } = useTime();
-
-  const [clientTime, setClientTime] = useState("");
-
-  useEffect(() => {
-    setClientTime(`${hours}:${minutes}:${seconds}`);
-  }, [hours, minutes, seconds]);
-
-  return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: "50px" }}>
-        <div style={{ fontSize: "50px" }}>{clientTime}</div>
-      </div>
-    </div>
-  );
-}

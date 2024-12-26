@@ -7,6 +7,7 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { signIn, signOut, useSession } from "next-auth/react";
+import { FaSignOutAlt } from "react-icons/fa";
 
 export default function AuthDialog() {
   const session = useSession();
@@ -16,7 +17,7 @@ export default function AuthDialog() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant={"ghost"} className="border">
-          {user ? "Sign Out" : "Sign In"}
+          <FaSignOutAlt />
         </Button>
       </DialogTrigger>
       <DialogContent>
