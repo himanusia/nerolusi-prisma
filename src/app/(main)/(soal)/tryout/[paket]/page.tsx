@@ -14,10 +14,10 @@ export default function QuizPage() {
   const session = useSession();
 
   const {
-    data: subtests,
+    data: packageData,
     isLoading,
     isError,
-  } = api.quiz.getSubtestByPackage.useQuery({ id: Number(paket) });
+  } = api.quiz.getPackageWithSubtest.useQuery({ id: Number(paket) });
 
   if (isLoading) return <div>Loading subtests...</div>;
   if (isError) return <div>Failed to load subtests</div>;
@@ -25,10 +25,10 @@ export default function QuizPage() {
   return (
     <div className="p-4">
       {/* Display the package name */}
-      <h1 className="mb-4 text-xl font-bold">Package: {paket}</h1>
+      <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
       {/* Render buttons for each subtest */}
       <div className="flex flex-wrap gap-4">
-        {subtests?.map((subtest) => (
+        {packageData.subtests?.map((subtest) => (
           <Button
             key={subtest.id}
             onClick={() => handleSubtestClick(subtest.id, subtest.duration)}

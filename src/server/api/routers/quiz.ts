@@ -2,19 +2,15 @@ import { z } from "zod";
 import { createTRPCRouter, userProcedure } from "~/server/api/trpc";
 
 export const quizRouter = createTRPCRouter({
-  getSubtestByPackage: userProcedure
+  getPackageWithSubtest: userProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.subtest.findMany({
+      return await ctx.db.package.findUnique({
         where: {
-          package: {
-            id: input.id,
-          },
+          id: input.id,
         },
-        select: {
-          id: true,
-          type: true,
-          duration: true,
+        include: {
+          subtests: true,
         },
       });
     }),
