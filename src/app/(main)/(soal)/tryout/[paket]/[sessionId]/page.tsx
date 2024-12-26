@@ -165,14 +165,14 @@ export default function QuizPage() {
                   {currentQuestionIndex + 1}.{" "}
                   {questions[currentQuestionIndex].content}
                 </strong>
-                <Image
-                  src={questions[currentQuestionIndex].imageUrl}
-                  alt="Question Image"
-                  width={300}
-                  height={200}
-                  className="max-h-[50vh] w-fit"
-                />
               </p>
+              <Image
+                src={questions[currentQuestionIndex].imageUrl}
+                alt="Question Image"
+                width={300}
+                height={200}
+                className="max-h-[50vh] w-fit"
+              />
               {questions[currentQuestionIndex].answers.map((answer) => (
                 <label
                   key={answer.index}
