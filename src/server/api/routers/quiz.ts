@@ -57,6 +57,7 @@ export const quizRouter = createTRPCRouter({
           packageId: input.packageId,
           subtestId: input.subtestId,
           duration: input.duration,
+          endTime: new Date(new Date().getTime() + input.duration * 60 * 1000),
         },
       });
     }),
