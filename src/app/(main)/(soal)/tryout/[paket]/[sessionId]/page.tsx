@@ -3,13 +3,14 @@
 import { useEffect, useState } from "react";
 import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/react";
-import { redirect, useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
 
 export default function QuizPage() {
   const { paket, sessionId } = useParams();
+  const router = useRouter();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
 
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -28,6 +29,15 @@ export default function QuizPage() {
     isLoading: isSessionLoading,
     isError: isSessionError,
   } = api.quiz.getSessionDetails.useQuery({ sessionId: sessionIdString });
+
+  useEffect(() => {
+    if (
+      sessionDetails?.endTime &&
+      new Date(sessionDetails.endTime) < new Date()
+    ) {
+      router.push(`/tryout/${paket}`);
+    }
+  }, [sessionDetails, router, paket]);
 
   const {
     data: questions,
@@ -61,7 +71,7 @@ export default function QuizPage() {
   // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
+      setTimeLeft(() => {
         const newTimeLeft = Math.max(endTime - Date.now(), 0);
         if (newTimeLeft <= 0) {
           clearInterval(timer);
@@ -136,7 +146,7 @@ export default function QuizPage() {
         sessionId: parseInt(sessionIdString),
       });
       toast.success("Quiz submitted successfully!");
-      redirect(`/tryout/${paket}`);
+      router.push(`/tryout/${paket}`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
