@@ -31,17 +31,32 @@ export default function PackageManagementPage() {
       {
         headerName: "Actions",
         cellRenderer: (params: any) => {
+          const quizSessions = params.data.quizSession || [];
           return (
-            <div className="flex gap-2">
-              <Button
-                onClick={() =>
-                  router.push(
-                    `/tryout/${packageId}/${params.data.quizSessionId}`,
-                  )
-                }
-              >
-                Manage
-              </Button>
+            <div className="flex flex-col gap-2">
+              {quizSessions.length > 0 ? (
+                <select
+                  onChange={(e) => {
+                    const selectedSessionId = e.target.value;
+                    if (selectedSessionId) {
+                      router.push(`/tryout/${packageId}/${selectedSessionId}`);
+                    }
+                  }}
+                  defaultValue=""
+                  className="rounded border p-1"
+                >
+                  <option value="" disabled>
+                    Select Session
+                  </option>
+                  {quizSessions.map((session) => (
+                    <option key={session.id} value={session.id}>
+                      {session.subtest.type || `Session ${session.id}`}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <span>No sessions</span>
+              )}
             </div>
           );
         },
@@ -55,7 +70,7 @@ export default function PackageManagementPage() {
   if (!data) return <div>No users found for this package.</div>;
 
   const rowData = data.map((user) => ({
-    quizSessionId: user.quizSessionId,
+    quizSession: user.quizSession,
     name: user.name || "Unnamed User",
     email: user.email || "N/A",
     score: user.score,

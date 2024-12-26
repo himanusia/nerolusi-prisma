@@ -121,7 +121,11 @@ export default function QuizPage() {
 
   // Save answer to the backend
   const saveAnswer = async (questionId: number, answerChoice: number) => {
-    if (new Date(sessionDetails.package.TOend) < new Date()) return;
+    if (
+      new Date(sessionDetails.package.TOend) < new Date() &&
+      session.data.user.role === "user"
+    )
+      return;
 
     try {
       await saveAnswerMutation.mutateAsync({
@@ -276,7 +280,11 @@ export default function QuizPage() {
             ))}
           </ul>
 
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting}
+            className={`${new Date(sessionDetails.endTime) < new Date() && session.data.user.role === "user" ? "hidden" : ""}`}
+          >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
         </div>

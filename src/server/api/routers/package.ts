@@ -93,7 +93,14 @@ export const packageRouter = createTRPCRouter({
             where: {
               packageId: input.packageId,
             },
-            select: { id: true },
+            select: {
+              id: true,
+              subtest: {
+                select: {
+                  type: true,
+                },
+              },
+            },
           },
           userAnswers: {
             where: {
@@ -128,7 +135,7 @@ export const packageRouter = createTRPCRouter({
           name: user.name,
           email: user.email,
           score,
-          quizSessionId: user.quizSession[0].id,
+          quizSession: user.quizSession,
         };
       });
     }),
