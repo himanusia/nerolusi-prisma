@@ -160,88 +160,94 @@ export default function QuizPage() {
   if (isSessionError || isQuestionsError) return <div>Failed to load data</div>;
 
   return (
-    <div className="flex w-full gap-3 p-4">
-      {/* Main Content */}
-      <div className="w-full rounded-md border p-3">
-        <h1 className="text-xl font-bold">Quiz Session</h1>
-        <div className="mt-4">
-          <p>
-            <strong>Subtest:</strong> {sessionDetails?.subtest.type}
-          </p>
-          <p>
-            <strong>Time Left:</strong> {formatTime(timeLeft)}
-          </p>
-        </div>
-
-        {/* Display the current question */}
-        <div className="mt-4 space-y-4">
-          {questions && questions[currentQuestionIndex] && (
-            <div key={questions[currentQuestionIndex].id} className="space-y-2">
-              <p>
-                <strong>
-                  {currentQuestionIndex + 1}.{" "}
-                  {questions[currentQuestionIndex].content}
-                </strong>
-              </p>
-              <Image
-                src={questions[currentQuestionIndex].imageUrl}
-                alt="Question Image"
-                width={300}
-                height={200}
-                className="max-h-[50vh] w-fit"
-              />
-              {questions[currentQuestionIndex].answers.map((answer) => (
-                <label
-                  key={answer.index}
-                  className="flex cursor-pointer flex-row items-center"
-                >
-                  <Input
-                    type="radio"
-                    name={`question-${questions[currentQuestionIndex].id}`}
-                    value={answer.index}
-                    className="mr-2 size-fit"
-                    checked={
-                      selectedAnswers.get(
-                        questions[currentQuestionIndex].id,
-                      ) === answer.index
-                    }
-                    onChange={() =>
-                      handleAnswerSelect(
-                        questions[currentQuestionIndex].id,
-                        answer.index,
-                      )
-                    }
-                  />
-                  {answer.content}
-                </label>
-              ))}
-            </div>
-          )}
-        </div>
+    <div className="flex w-full flex-col gap-3 p-4">
+      <div className="mt-4">
+        <p>
+          <strong>Subtest:</strong> {sessionDetails?.subtest.type}
+        </p>
+        <p>
+          <strong>Time Left:</strong> {formatTime(timeLeft)}
+        </p>
       </div>
 
-      {/* Sidebar for navigating questions */}
-      <div className="flex w-fit flex-col justify-between rounded-md border p-3">
-        <ul className="flex flex-wrap gap-1">
-          {questions?.map((_, index) => (
-            <li key={index}>
-              <Button
-                className={`w-12 ${
-                  selectedAnswers.has(questions[index].id)
-                    ? "bg-green-500 text-white"
-                    : ""
-                }`}
-                onClick={() => setCurrentQuestionIndex(index)}
-              >
-                {index + 1}
-              </Button>
-            </li>
-          ))}
-        </ul>
+      <div className="flex w-full gap-4">
+        {/* Main Content */}
+        <div className="w-full overflow-hidden rounded-md border p-3">
+          <h1 className="text-xl font-bold">Quiz Session</h1>
 
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? "Submitting..." : "Submit"}
-        </Button>
+          {/* Display the current question */}
+          <div className="mt-4 space-y-4">
+            {questions && questions[currentQuestionIndex] && (
+              <div
+                key={questions[currentQuestionIndex].id}
+                className="space-y-2"
+              >
+                <p>
+                  <strong>
+                    {currentQuestionIndex + 1}.{" "}
+                    {questions[currentQuestionIndex].content}
+                  </strong>
+                </p>
+                <Image
+                  src={questions[currentQuestionIndex].imageUrl}
+                  alt="Question Image"
+                  width={300}
+                  height={200}
+                  className="max-h-[50vh] w-fit"
+                />
+                {questions[currentQuestionIndex].answers.map((answer) => (
+                  <label
+                    key={answer.index}
+                    className="flex cursor-pointer flex-row items-center"
+                  >
+                    <Input
+                      type="radio"
+                      name={`question-${questions[currentQuestionIndex].id}`}
+                      value={answer.index}
+                      className="mr-2 size-fit"
+                      checked={
+                        selectedAnswers.get(
+                          questions[currentQuestionIndex].id,
+                        ) === answer.index
+                      }
+                      onChange={() =>
+                        handleAnswerSelect(
+                          questions[currentQuestionIndex].id,
+                          answer.index,
+                        )
+                      }
+                    />
+                    {answer.content}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Sidebar for navigating questions */}
+        <div className="flex w-fit flex-col justify-between gap-3 rounded-md border p-3">
+          <ul className="flex size-fit gap-3">
+            {questions?.map((_, index) => (
+              <li key={index} className="size-fit">
+                <Button
+                  className={`size-fit ${
+                    selectedAnswers.has(questions[index].id)
+                      ? "bg-green-500 text-white"
+                      : ""
+                  }`}
+                  onClick={() => setCurrentQuestionIndex(index)}
+                >
+                  {index + 1}
+                </Button>
+              </li>
+            ))}
+          </ul>
+
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? "Submitting..." : "Submit"}
+          </Button>
+        </div>
       </div>
     </div>
   );

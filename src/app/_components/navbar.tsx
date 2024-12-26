@@ -61,7 +61,7 @@ export default function Navbar() {
   const user = session.data?.user;
 
   return (
-    <div className="sticky left-0 top-0 z-50 flex h-10 w-screen items-center gap-3 bg-background px-12 py-6">
+    <div className="scrollbar scrollbar-none sticky left-0 top-0 z-50 flex h-10 w-screen items-center gap-3 overflow-x-auto bg-background px-12 py-6">
       <Link href={"/"}>
         <Image
           src={"/logo.png"}
