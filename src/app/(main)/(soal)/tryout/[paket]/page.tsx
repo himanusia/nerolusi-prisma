@@ -17,7 +17,7 @@ export default function QuizPage() {
     data: subtests,
     isLoading,
     isError,
-  } = api.subtest.getByPackage.useQuery({ id: Number(paket) });
+  } = api.quiz.getSubtestByPackage.useQuery({ id: Number(paket) });
 
   if (isLoading) return <div>Loading subtests...</div>;
   if (isError) return <div>Failed to load subtests</div>;
