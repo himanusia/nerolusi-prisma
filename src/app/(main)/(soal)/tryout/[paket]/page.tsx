@@ -24,14 +24,17 @@ export default function QuizPage() {
   if (isError) return <div>Failed to load subtests</div>;
 
   return (
-    <div className="p-4">
+    <div className="rounded-lg border p-4">
       <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
+      <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
+      <p>End Time: {new Date(packageData.TOend).toLocaleString()}</p>
       <div className="flex flex-wrap gap-4">
         {packageData.subtests?.map((subtest) => (
           <Button
             key={subtest.id}
             onClick={() => handleSubtestClick(subtest.id, subtest.duration)}
-            className="w-full sm:w-auto"
+            variant="ghost"
+            className="w-full"
           >
             {subtest.type}
           </Button>
