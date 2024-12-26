@@ -96,6 +96,7 @@ model Package {
   subtests    Subtest[]
   userAnswers UserAnswer[]
   class       Class?      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  quizSession QuizSession[]
 }
 
 model Subtest {
@@ -182,13 +183,14 @@ model VerificationToken {
 
 model QuizSession {
   id         Int      @id @default(autoincrement())
-  userId     String   
-  packageId  Int
-  subtestId  Int
   startTime  DateTime @default(now())
   endTime    DateTime?
   duration   Int
+  userId     String   
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId  Int
+  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  subtestId  Int
   subtest    Subtest  @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   userAnswers UserAnswer[]
 

@@ -8,6 +8,18 @@ import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
 
+type Question = {
+  id: number;
+  subtestId: number;
+  index: number;
+  content: string;
+  imageUrl?: string;
+  answers: { id: number; questionId: number; index: number; content: string }[];
+  correctAnswerChoice?: number | null;
+  explanation?: string | null;
+  score?: number | null;
+};
+
 export default function QuizPage() {
   const { paket, sessionId } = useParams();
   const router = useRouter();
@@ -33,7 +45,8 @@ export default function QuizPage() {
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails.endTime) < new Date()
+      new Date(sessionDetails.endTime) < new Date() &&
+      new Date(sessionDetails.package.TOend) >= new Date()
     ) {
       router.push(`/tryout/${paket}`);
     }
@@ -73,7 +86,15 @@ export default function QuizPage() {
     const timer = setInterval(() => {
       setTimeLeft(() => {
         const newTimeLeft = Math.max(endTime - Date.now(), 0);
-        if (newTimeLeft <= 0) {
+        if (
+          newTimeLeft <= 0 &&
+          !isSubmitting &&
+          !isSessionLoading &&
+          !isQuestionsLoading &&
+          !isSessionError &&
+          !isQuestionsError &&
+          new Date(sessionDetails.package.TOend) >= new Date()
+        ) {
           clearInterval(timer);
           handleSubmit();
         }
@@ -110,6 +131,8 @@ export default function QuizPage() {
 
   // Save answer to the backend
   const saveAnswer = async (questionId: number, answerChoice: number) => {
+    if (new Date(sessionDetails.package.TOend) < new Date()) return;
+
     try {
       await saveAnswerMutation.mutateAsync({
         quizSessionId: parseInt(sessionIdString),
@@ -165,16 +188,27 @@ export default function QuizPage() {
         <p>
           <strong>Subtest:</strong> {sessionDetails?.subtest.type}
         </p>
-        <p>
+        <p className={`${timeLeft <= 0 ? "hidden" : ""}`}>
           <strong>Time Left:</strong> {formatTime(timeLeft)}
         </p>
       </div>
 
       <div className="flex w-full gap-4">
         {/* Main Content */}
-        <div className="w-full min-w-96 overflow-hidden rounded-md border p-3">
+        <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
-          <div className="mt-4 space-y-4">
+          {new Date(sessionDetails.endTime) < new Date() && (
+            <p>
+              <strong>
+                Score:{" "}
+                {selectedAnswers.get(questions[currentQuestionIndex].id) ===
+                questions[currentQuestionIndex].correctAnswerChoice
+                  ? questions[currentQuestionIndex].score
+                  : 0}
+              </strong>
+            </p>
+          )}
+          <div className="gap-4">
             {questions && questions[currentQuestionIndex] && (
               <div
                 key={questions[currentQuestionIndex].id}
@@ -200,6 +234,9 @@ export default function QuizPage() {
                   >
                     <Input
                       type="radio"
+                      disabled={
+                        new Date(sessionDetails.package.TOend) < new Date()
+                      }
                       name={`question-${questions[currentQuestionIndex].id}`}
                       value={answer.index}
                       className="mr-2 size-fit"
@@ -221,6 +258,12 @@ export default function QuizPage() {
               </div>
             )}
           </div>
+          {new Date(sessionDetails.endTime) < new Date() && (
+            <p className="font-bold">
+              Explanation:{" "}
+              {questions[currentQuestionIndex].explanation ?? "N/A"}
+            </p>
+          )}
         </div>
 
         {/* Sidebar for navigating questions */}

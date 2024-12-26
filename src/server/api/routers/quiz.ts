@@ -65,32 +65,44 @@ export const quizRouter = createTRPCRouter({
   getQuestionsBySubtest: userProcedure
     .input(z.object({ subtestId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const questions = await ctx.db.question.findMany({
-        where: { subtestId: input.subtestId },
-        orderBy: { index: "asc" },
-        omit: {
-          correctAnswerChoice: true,
-          explanation: true,
-          score: true,
+      const session = await ctx.db.quizSession.findUnique({
+        where: {
+          unique_user_subtest: {
+            subtestId: input.subtestId,
+            userId: ctx.session.user?.id,
+          },
         },
-        include: {
-          answers: true,
-        },
+        include: { package: { select: { TOend: true } } },
       });
-      return questions;
-    }),
 
-  getQuestionsBySubtestwithExplanation: userProcedure
-    .input(z.object({ subtestId: z.number() }))
-    .query(async ({ ctx, input }) => {
-      const questions = await ctx.db.question.findMany({
-        where: { subtestId: input.subtestId },
-        orderBy: { index: "asc" },
-        include: {
-          answers: true,
-        },
-      });
-      return questions;
+      if (!session) {
+        return null;
+      } else if (new Date(session.endTime) > new Date()) {
+        return await ctx.db.question
+          .findMany({
+            where: { subtestId: input.subtestId },
+            orderBy: { index: "asc" },
+            include: {
+              answers: true,
+            },
+          })
+          .then((questions) =>
+            questions.map((question) => ({
+              ...question,
+              correctAnswerChoice: question.correctAnswerChoice ?? null,
+              explanation: question.explanation ?? null,
+              score: question.score ?? null,
+            })),
+          );
+      } else if (new Date(session.package.TOend) < new Date()) {
+        return await ctx.db.question.findMany({
+          where: { subtestId: input.subtestId },
+          orderBy: { index: "asc" },
+          include: {
+            answers: true,
+          },
+        });
+      }
     }),
 
   getSessionDetails: userProcedure
@@ -100,6 +112,7 @@ export const quizRouter = createTRPCRouter({
         where: { id: parseInt(input.sessionId) },
         include: {
           subtest: true,
+          package: { select: { TOend: true } },
           userAnswers: {
             where: { quizSessionId: parseInt(input.sessionId) },
           },
@@ -155,7 +168,21 @@ export const quizRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.quizSession.update({
         where: { id: input.sessionId },
-        data: { endTime: new Date().toISOString() },
+        data: {
+          endTime: new Date().toISOString(),
+          duration: Math.floor(
+            (new Date().getTime() -
+              new Date(
+                (
+                  await ctx.db.quizSession.findUnique({
+                    where: { id: input.sessionId },
+                    select: { startTime: true },
+                  })
+                ).startTime,
+              ).getTime()) /
+              60000,
+          ),
+        },
       });
     }),
 });
