@@ -12,6 +12,7 @@ export default async function layout({
   if (!session) {
     redirect("/signin");
   }
+
   return (
     <div className="size-full">
       <Navbar />
