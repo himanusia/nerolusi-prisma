@@ -1,8 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { faker } from "@faker-js/faker";
 import axios from "axios";
-
-const prisma = new PrismaClient();
+import { db } from "~/server/db";
 
 async function main() {
   console.log("Seeding data...");
@@ -10,7 +8,7 @@ async function main() {
   // Generate Random Users
   const users = await Promise.all(
     Array.from({ length: 10 }).map(() =>
-      prisma.user.create({
+      db.user.create({
         data: {
           name: faker.person.fullName(),
           email: faker.internet.email(),
@@ -24,7 +22,7 @@ async function main() {
   // Generate Random Classes
   const classes = await Promise.all(
     Array.from({ length: 5 }).map(() =>
-      prisma.class.create({
+      db.class.create({
         data: {
           name: faker.commerce.department(),
         },
@@ -35,7 +33,7 @@ async function main() {
   // Connect Random Users to Random Classes
   for (const user of users) {
     const randomClass = faker.helpers.arrayElement(classes);
-    await prisma.class.update({
+    await db.class.update({
       where: { id: randomClass.id },
       data: {
         users: {
@@ -51,7 +49,7 @@ async function main() {
     for (let i = 0; i < 2; i++) {
       const TOstart = faker.date.future();
       const TOend = faker.date.future({ refDate: TOstart });
-      const newPackage = await prisma.package.create({
+      const newPackage = await db.package.create({
         data: {
           name: faker.company.catchPhrase(),
           type: faker.helpers.arrayElement(["tryout", "drill"]),
@@ -67,7 +65,7 @@ async function main() {
   // Generate Random Subtests for Packages
   for (const packageItem of packages) {
     for (let i = 0; i < 3; i++) {
-      const subtest = await prisma.subtest.create({
+      const subtest = await db.subtest.create({
         data: {
           type: faker.helpers.arrayElement([
             "pu",
@@ -84,7 +82,7 @@ async function main() {
 
       // Generate Random Questions and Answers for Subtest
       for (let j = 0; j < 5; j++) {
-        const question = await prisma.question.create({
+        const question = await db.question.create({
           data: {
             index: j + 1,
             content: faker.word.words(),
@@ -99,7 +97,7 @@ async function main() {
         // Generate Answers for Question
         const answers = await Promise.all(
           Array.from({ length: 4 }).map((_, index) =>
-            prisma.answer.create({
+            db.answer.create({
               data: {
                 index: index + 1,
                 content: faker.word.words(),
@@ -111,7 +109,7 @@ async function main() {
 
         // Assign Correct Answer Randomly
         const correctAnswer = faker.helpers.arrayElement(answers);
-        await prisma.question.update({
+        await db.question.update({
           where: { id: question.id },
           data: { correctAnswerChoice: correctAnswer.index },
         });
@@ -122,11 +120,11 @@ async function main() {
   // Generate Random QuizSessions and UserAnswers
   for (const user of users) {
     for (const packageItem of packages) {
-      const subtests = await prisma.subtest.findMany({
+      const subtests = await db.subtest.findMany({
         where: { packageId: packageItem.id },
       });
       for (const subtest of subtests) {
-        const quizSession = await prisma.quizSession.create({
+        const quizSession = await db.quizSession.create({
           data: {
             userId: user.id,
             packageId: packageItem.id,
@@ -138,12 +136,12 @@ async function main() {
           },
         });
 
-        const questions = await prisma.question.findMany({
+        const questions = await db.question.findMany({
           where: { subtestId: subtest.id },
         });
         for (const question of questions) {
           const randomAnswer = faker.number.int({ min: 1, max: 4 });
-          await prisma.userAnswer.create({
+          await db.userAnswer.create({
             data: {
               answerChoice: randomAnswer,
               questionId: question.id,
@@ -192,7 +190,7 @@ async function main() {
   }
 
   try {
-    await prisma.video.createMany({
+    await db.video.createMany({
       data: videos.map((video) => ({
         title: video.title,
         description: video.description,
@@ -210,7 +208,7 @@ async function main() {
   // Generate Random Folders
   const folders = await Promise.all(
     Array.from({ length: 5 }).map(() =>
-      prisma.folder.create({
+      db.folder.create({
         data: {
           name: faker.word.words(),
           description: faker.lorem.sentence(),
@@ -223,7 +221,7 @@ async function main() {
   for (const folder of folders) {
     await Promise.all(
       Array.from({ length: 10 }).map(() =>
-        prisma.file.create({
+        db.file.create({
           data: {
             title: faker.word.words(),
             description: faker.lorem.sentence(),
@@ -247,5 +245,5 @@ main()
     process.exit(1);
   })
   .finally(async () => {
-    await prisma.$disconnect();
+    await db.$disconnect();
   });
