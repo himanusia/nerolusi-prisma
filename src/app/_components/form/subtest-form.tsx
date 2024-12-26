@@ -69,7 +69,7 @@ const SubtestForm: React.FC<SubtestFormProps> = ({
   return (
     <div className="flex flex-col gap-3 rounded-xl border p-6">
       <h3 className="text-xl font-semibold">Subtest {subtestIndex + 1}</h3>
-      <label className="w-fit">
+      <label className="flex w-fit flex-col">
         Subtest Type:
         <Popover>
           <PopoverTrigger asChild>
@@ -93,7 +93,7 @@ const SubtestForm: React.FC<SubtestFormProps> = ({
           </PopoverContent>
         </Popover>
       </label>
-      <label className="flex w-32">
+      <label className="flex w-32 flex-col">
         Duration (minutes):
         <Input
           type="number"

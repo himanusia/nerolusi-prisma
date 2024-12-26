@@ -23,9 +23,8 @@ export default function PackageManagementPage() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <Button
-        asChild
         variant={"outline"}
         onClick={() => router.push("/packageManagement/create")}
       >

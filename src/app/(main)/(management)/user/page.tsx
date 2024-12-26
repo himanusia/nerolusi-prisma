@@ -6,7 +6,7 @@ export default async function Page() {
   const users = await api.user.getAllUsers();
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <CreateClassDialog />
       <UserTable userData={users} />
     </div>

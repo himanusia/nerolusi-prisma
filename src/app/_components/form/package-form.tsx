@@ -231,7 +231,6 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
         ...subtest,
         questions: subtest.questions.map((question) => ({
           ...question,
-          // packageId akan diatur di backend, jadi tidak perlu dikirim dari frontend
         })),
       })),
     };
@@ -245,7 +244,7 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
       <label>
         Name:
         <Input
@@ -254,7 +253,7 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
           onChange={(e) => handleChange("name", e.target.value)}
         />
       </label>
-      <label className="flex w-fit">
+      <label className="flex w-fit flex-col">
         <p>Type:</p>
         <Popover>
           <PopoverTrigger asChild>
@@ -274,20 +273,32 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
           </PopoverContent>
         </Popover>
       </label>
-      <label className="flex w-fit">
-        <p className="w-fit">Start Date:</p>
+      <label className="flex flex-col">
+        <p className="w-full">Class:</p>
+        <Input
+          type="number"
+          min={0}
+          value={formData.classId}
+          onChange={(e) => handleChange("classId", e.target.value)}
+          className="w-fit"
+        />
+      </label>
+      <label className="flex flex-col">
+        <p className="w-full">Start Date:</p>
         <Input
           type="datetime-local"
           value={formData.TOstart}
           onChange={(e) => handleChange("TOstart", e.target.value)}
+          className="w-fit"
         />
       </label>
-      <label className="flex w-fit">
-        <p className="w-fit">End Date:</p>
+      <label className="flex flex-col">
+        <p className="w-full">End Date:</p>
         <Input
           type="datetime-local"
           value={formData.TOend}
           onChange={(e) => handleChange("TOend", e.target.value)}
+          className="w-fit"
         />
       </label>
       {/* Subtests */}

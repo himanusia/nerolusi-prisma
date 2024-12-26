@@ -118,7 +118,7 @@ export default function Navbar() {
           <Link href={"/user"}>Manajemen Akun</Link>
         </Button>
       )}
-      {(user?.role === "admin" || user?.role === "/teacher") && (
+      {user?.role !== "user" && (
         <Button variant={"outline"} asChild>
           <Link href={"/packageManagement"}>Manajemen Soal</Link>
         </Button>

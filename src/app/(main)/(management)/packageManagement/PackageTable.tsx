@@ -110,15 +110,13 @@ export default function PackageTable({
   );
 
   return (
-    <div>
-      <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
-        <AgGridReact
-          rowData={packageData}
-          columnDefs={columnDefs}
-          pagination={true}
-          paginationPageSize={10}
-        />
-      </div>
+    <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+      <AgGridReact
+        rowData={packageData}
+        columnDefs={columnDefs}
+        pagination={true}
+        paginationPageSize={10}
+      />
     </div>
   );
 }
