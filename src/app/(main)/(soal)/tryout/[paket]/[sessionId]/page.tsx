@@ -170,7 +170,7 @@ export default function QuizPage() {
                   alt="Question Image"
                   width={300}
                   height={200}
-                  className="mt-2"
+                  className="max-h-[50vh] w-fit"
                 />
               </p>
               {questions[currentQuestionIndex].answers.map((answer) => (
