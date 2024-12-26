@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/react";
-import { useParams, useRouter } from "next/navigation";
+import { redirect, useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
@@ -19,8 +19,10 @@ export default function QuizPage() {
   const [selectedAnswers, setSelectedAnswers] = useState<Map<number, number>>(
     new Map(),
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const saveAnswerMutation = api.quiz.saveAnswer.useMutation();
+  const submitMutation = api.quiz.submitQuiz.useMutation();
 
   const {
     data: sessionDetails,
@@ -126,15 +128,21 @@ export default function QuizPage() {
 
   // Submit all answers
   const handleSubmit = async () => {
+    setIsSubmitting(true);
     try {
       for (const [questionId, answerChoice] of selectedAnswers.entries()) {
         await saveAnswer(questionId, answerChoice);
       }
+      await submitMutation.mutateAsync({
+        sessionId: parseInt(sessionIdString),
+      });
       toast.success("Quiz submitted successfully!");
-      router.push(`/tryout/${paket}`);
+      redirect(`/tryout/${paket}`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -222,7 +230,9 @@ export default function QuizPage() {
           ))}
         </ul>
 
-        <Button onClick={handleSubmit}>Submit</Button>
+        <Button onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting ? "Submitting..." : "Submit"}
+        </Button>
       </div>
     </div>
   );

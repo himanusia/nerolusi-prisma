@@ -10,7 +10,15 @@ export const quizRouter = createTRPCRouter({
           id: input.id,
         },
         include: {
-          subtests: true,
+          subtests: {
+            include: {
+              quizSession: {
+                where: {
+                  userId: ctx.session.user?.id,
+                },
+              },
+            },
+          },
         },
       });
     }),
@@ -136,5 +144,14 @@ export const quizRouter = createTRPCRouter({
       });
 
       return userAnswer;
+    }),
+
+  submitQuiz: userProcedure
+    .input(z.object({ sessionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.quizSession.update({
+        where: { id: input.sessionId },
+        data: { endTime: new Date().toISOString() },
+      });
     }),
 });

@@ -77,7 +77,7 @@ async function main() {
             "lb",
             "pm",
           ]),
-          duration: faker.number.int({ min: 30, max: 120 }),
+          duration: faker.number.int({ min: 10, max: 60, multipleOf: 5 }),
           packageId: packageItem.id,
         },
       });

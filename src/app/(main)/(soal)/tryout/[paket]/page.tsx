@@ -34,7 +34,11 @@ export default function QuizPage() {
             key={subtest.id}
             onClick={() => handleSubtestClick(subtest.id, subtest.duration)}
             variant="outline"
-            className="w-full"
+            className={`w-full ${subtest.quizSession[0] && "bg-green-600 hover:bg-green-700"}`}
+            disabled={
+              subtest.quizSession[0]?.endTime &&
+              new Date(packageData.TOend) >= new Date()
+            }
           >
             {subtest.type}
           </Button>

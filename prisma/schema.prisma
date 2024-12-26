@@ -186,6 +186,7 @@ model QuizSession {
   packageId  Int
   subtestId  Int
   startTime  DateTime @default(now())
+  endTime    DateTime?
   duration   Int
   user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   subtest    Subtest  @relation(fields: [subtestId], references: [id], onDelete: Cascade)
