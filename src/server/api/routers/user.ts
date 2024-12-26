@@ -6,6 +6,12 @@ import {
 } from "~/server/api/trpc";
 
 export const userRouter = createTRPCRouter({
+  getSessionUser: userProcedure.query(async ({ ctx }) => {
+    return await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+    });
+  }),
+
   getAllUsers: userProcedure.query(async ({ ctx }) => {
     const users = await ctx.db.user.findMany({
       orderBy: {
