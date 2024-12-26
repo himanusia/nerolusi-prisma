@@ -3,14 +3,13 @@
 import { useEffect, useState } from "react";
 import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/react";
-import { redirect, useParams, useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
 
 export default function QuizPage() {
   const { paket, sessionId } = useParams();
-  const router = useRouter();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
 
   const [timeLeft, setTimeLeft] = useState<number>(0);

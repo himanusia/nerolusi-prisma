@@ -100,13 +100,16 @@ export const quizRouter = createTRPCRouter({
         where: { id: parseInt(input.sessionId) },
         include: {
           subtest: true,
-          user: true,
           userAnswers: {
             where: { quizSessionId: parseInt(input.sessionId) },
           },
         },
       });
-      if (!session) throw new Error("Session not found");
+
+      if (!session || session.userId !== ctx.session.user?.id) {
+        return null;
+      }
+
       return session;
     }),
 
