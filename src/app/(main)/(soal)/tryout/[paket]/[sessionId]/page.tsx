@@ -161,7 +161,7 @@ export default function QuizPage() {
 
   return (
     <div className="flex w-full flex-col gap-3 p-4">
-      <div className="mt-4">
+      <div>
         <p>
           <strong>Subtest:</strong> {sessionDetails?.subtest.type}
         </p>
@@ -172,9 +172,7 @@ export default function QuizPage() {
 
       <div className="flex w-full gap-4">
         {/* Main Content */}
-        <div className="w-full overflow-hidden rounded-md border p-3">
-          <h1 className="text-xl font-bold">Quiz Session</h1>
-
+        <div className="w-full min-w-96 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
           <div className="mt-4 space-y-4">
             {questions && questions[currentQuestionIndex] && (
