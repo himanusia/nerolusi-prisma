@@ -1,5 +1,6 @@
 "use client";
 
+import { QuizSession } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -24,9 +25,7 @@ export default function QuizPage() {
 
   return (
     <div className="p-4">
-      {/* Display the package name */}
       <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
-      {/* Render buttons for each subtest */}
       <div className="flex flex-wrap gap-4">
         {packageData.subtests?.map((subtest) => (
           <Button
@@ -53,12 +52,12 @@ export default function QuizPage() {
     try {
       let quizSession;
 
-      try {
-        quizSession = await getSessionMutation.mutateAsync({
-          userId,
-          subtestId,
-        });
-      } catch (error) {
+      quizSession = await getSessionMutation.mutateAsync({
+        userId,
+        subtestId,
+      });
+
+      if (!quizSession) {
         quizSession = await startSessionMutation.mutateAsync({
           userId,
           packageId,
@@ -69,7 +68,10 @@ export default function QuizPage() {
 
       router.push(`/tryout/${paket}/${quizSession.id}`);
     } catch (error) {
-      toast.error("Error creating sessionnn");
+      console.error(error);
+      toast.error("Error creating session", {
+        description: error.message,
+      });
     }
   }
 }

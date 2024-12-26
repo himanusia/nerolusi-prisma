@@ -27,15 +27,13 @@ export const videoRouter = createTRPCRouter({
         throw new Error("URL harus merupakan URL YouTube yang valid.");
       }
 
-      const newVideo = await ctx.db.video.create({
+      return await ctx.db.video.create({
         data: {
           title,
           description,
           url,
         },
       });
-
-      return newVideo;
     }),
 
   deleteVideo: teacherProcedure
@@ -71,11 +69,9 @@ export const videoRouter = createTRPCRouter({
         throw new Error("URL harus merupakan URL YouTube yang valid.");
       }
 
-      const updatedVideo = await ctx.db.video.update({
+      return await ctx.db.video.update({
         where: { id },
         data: { title, description, url },
       });
-
-      return updatedVideo;
     }),
 });

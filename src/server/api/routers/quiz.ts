@@ -23,7 +23,7 @@ export const quizRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const session = await ctx.db.quizSession.findUnique({
+      return await ctx.db.quizSession.findUnique({
         where: {
           unique_user_subtest: {
             userId: input.userId,
@@ -31,7 +31,6 @@ export const quizRouter = createTRPCRouter({
           },
         },
       });
-      return session;
     }),
 
   createSession: userProcedure
@@ -44,7 +43,7 @@ export const quizRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const session = await ctx.db.quizSession.create({
+      return await ctx.db.quizSession.create({
         data: {
           userId: input.userId,
           packageId: input.packageId,
@@ -52,7 +51,6 @@ export const quizRouter = createTRPCRouter({
           duration: input.duration,
         },
       });
-      return session;
     }),
 
   getQuestionsBySubtest: userProcedure
