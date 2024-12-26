@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
+import { PrismaClient } from "@prisma/client";
 import axios from "axios";
-import { db } from "~/server/db";
+
+const db = new PrismaClient();
 
 async function main() {
   console.log("Seeding data...");
@@ -46,9 +48,9 @@ async function main() {
   // Generate Random Packages for Classes
   const packages = [];
   for (const classItem of classes) {
-    for (let i = 0; i < 2; i++) {
-      const TOstart = faker.date.future();
-      const TOend = faker.date.future({ refDate: TOstart });
+    for (let i = 0; i < 5; i++) {
+      const TOstart = faker.date.recent({ days: 7 });
+      const TOend = faker.date.soon({ refDate: TOstart, days: 3 });
       const newPackage = await db.package.create({
         data: {
           name: faker.company.catchPhrase(),
@@ -85,10 +87,10 @@ async function main() {
         const question = await db.question.create({
           data: {
             index: j + 1,
-            content: faker.word.words(),
+            content: faker.word.words({ count: { min: 5, max: 50 } }),
             imageUrl: faker.image.url(),
             type: faker.helpers.arrayElement(["essay", "mulChoice"]),
-            score: faker.number.int({ min: 0, max: 10 }),
+            score: faker.number.int({ min: 5, max: 50 }),
             packageId: packageItem.id,
             subtestId: subtest.id,
           },
@@ -100,7 +102,7 @@ async function main() {
             db.answer.create({
               data: {
                 index: index + 1,
-                content: faker.word.words(),
+                content: faker.word.words({ count: { min: 1, max: 20 } }),
                 questionId: question.id,
               },
             }),
@@ -131,7 +133,8 @@ async function main() {
             subtestId: subtest.id,
             duration: faker.number.int({
               min: 10,
-              max: subtest.duration || 60,
+              max: 60,
+              multipleOf: 10,
             }),
           },
         });
@@ -180,9 +183,9 @@ async function main() {
     }
   };
 
-  const searchQuery = "utbk";
+  const searchQuery = "belajar utbk";
 
-  const videos = await fetchYouTubeVideos(searchQuery, 10);
+  const videos = await fetchYouTubeVideos(searchQuery, 15);
 
   if (videos.length === 0) {
     console.log("No videos fetched from YouTube.");
