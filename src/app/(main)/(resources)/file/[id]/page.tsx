@@ -90,7 +90,7 @@ export default function FilePage() {
         <div key={file.id} className="flex w-full gap-4 border-b p-4">
           <Button
             variant={"ghost"}
-            className="flex w-full flex-col items-start gap-2"
+            className="flex h-fit w-full flex-col items-start"
             onClick={() => window.open(file.url, "_blank")}
           >
             <h2>{file.title}</h2>

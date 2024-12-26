@@ -93,16 +93,11 @@ export default function FolderPage() {
         >
           <Button
             variant={"ghost"}
-            className="size-full"
+            className="flex h-fit w-full flex-col items-start"
             onClick={() => router.push(`/file/${folder.id}`)}
           >
-            <div>
-              <h2>{folder.name}</h2>
-              <p>{folder.description}</p>
-            </div>
-            {session?.user?.role !== "user" && (
-              <div className="mt-6 flex justify-between"></div>
-            )}
+            <h2>{folder.name}</h2>
+            <p>{folder.description}</p>
           </Button>
           <div className="flex gap-4">
             <Dialog
