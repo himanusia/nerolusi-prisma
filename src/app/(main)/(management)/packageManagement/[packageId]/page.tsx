@@ -28,6 +28,24 @@ export default function PackageManagementPage() {
       { headerName: "Name", field: "name", sortable: true, filter: true },
       { headerName: "Email", field: "email", sortable: true, filter: true },
       { headerName: "Score", field: "score", sortable: true, filter: true },
+      {
+        headerName: "Actions",
+        cellRenderer: (params: any) => {
+          return (
+            <div className="flex gap-2">
+              <Button
+                onClick={() =>
+                  router.push(
+                    `/tryout/${packageId}/${params.data.quizSessionId}`,
+                  )
+                }
+              >
+                Manage
+              </Button>
+            </div>
+          );
+        },
+      },
     ],
     [],
   );
@@ -37,6 +55,7 @@ export default function PackageManagementPage() {
   if (!data) return <div>No users found for this package.</div>;
 
   const rowData = data.map((user) => ({
+    quizSessionId: user.quizSessionId,
     name: user.name || "Unnamed User",
     email: user.email || "N/A",
     score: user.score,

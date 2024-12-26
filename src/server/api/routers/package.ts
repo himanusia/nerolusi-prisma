@@ -89,6 +89,12 @@ export const packageRouter = createTRPCRouter({
           id: true,
           name: true,
           email: true,
+          quizSession: {
+            where: {
+              packageId: input.packageId,
+            },
+            select: { id: true },
+          },
           userAnswers: {
             where: {
               packageId: input.packageId,
@@ -122,6 +128,7 @@ export const packageRouter = createTRPCRouter({
           name: user.name,
           email: user.email,
           score,
+          quizSessionId: user.quizSession[0].id,
         };
       });
     }),
@@ -528,7 +535,7 @@ export const packageRouter = createTRPCRouter({
       }
     }),
 
-    deletePackage: teacherProcedure
+  deletePackage: teacherProcedure
     .input(
       z.object({
         id: z.number(),

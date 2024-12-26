@@ -7,22 +7,12 @@ import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
-
-type Question = {
-  id: number;
-  subtestId: number;
-  index: number;
-  content: string;
-  imageUrl?: string;
-  answers: { id: number; questionId: number; index: number; content: string }[];
-  correctAnswerChoice?: number | null;
-  explanation?: string | null;
-  score?: number | null;
-};
+import { useSession } from "next-auth/react";
 
 export default function QuizPage() {
   const { paket, sessionId } = useParams();
   const router = useRouter();
+  const session = useSession();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
 
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -235,7 +225,8 @@ export default function QuizPage() {
                     <Input
                       type="radio"
                       disabled={
-                        new Date(sessionDetails.package.TOend) < new Date()
+                        new Date(sessionDetails.package.TOend) < new Date() &&
+                        session.data?.user?.role === "user"
                       }
                       name={`question-${questions[currentQuestionIndex].id}`}
                       value={answer.index}
