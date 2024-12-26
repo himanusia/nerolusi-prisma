@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn } from "next-auth/react";
-import { Button } from "../_components/ui/button";
+import { Button } from "../../_components/ui/button";
 import { FaGoogle } from "react-icons/fa";
 
 export default function AuthPage() {
