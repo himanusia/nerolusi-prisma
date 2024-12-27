@@ -11,19 +11,25 @@ import {
 import { Button } from "~/app/_components/ui/button";
 import { useState } from "react";
 import { api } from "~/trpc/react";
+import { toast } from "sonner";
+import { Input } from "~/app/_components/ui/input";
 
 export default function CreateClassDialog() {
   const [className, setClassName] = useState("");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const createClassApi = api.class.createClass.useMutation();
+  const createClass = api.class.createClass.useMutation();
 
   const handleSubmit = async () => {
     setIsDialogOpen(false);
     try {
-      await createClassApi.mutateAsync({ name: className });
+      await createClass.mutateAsync({ name: className });
       setClassName("");
+      toast.success("Class created successfully!");
     } catch (error) {
       console.error(error);
+      toast.error("Error creating class", {
+        description: error.message,
+      });
     }
   };
 
@@ -36,7 +42,7 @@ export default function CreateClassDialog() {
         <DialogHeader>
           <DialogTitle>Create New Class</DialogTitle>
         </DialogHeader>
-        <input
+        <Input
           type="text"
           value={className}
           onChange={(e) => setClassName(e.target.value)}

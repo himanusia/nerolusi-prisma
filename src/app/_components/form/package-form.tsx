@@ -16,6 +16,7 @@ import {
 import { PackageFormData } from "~/lib/types";
 import { toast } from "sonner";
 import SubtestForm from "./subtest-form";
+import { api } from "~/trpc/react";
 
 interface PackageFormProps {
   initialData?: PackageFormData;
@@ -23,6 +24,9 @@ interface PackageFormProps {
 }
 
 const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
+  const { data: classes, isLoading: isLoadingClasses } =
+    api.class.getAllClasses.useQuery();
+
   const [formData, setFormData] = useState<PackageFormData>({
     id: initialData?.id,
     name: initialData?.name || "",
@@ -243,7 +247,9 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
     onSubmit(preparedFormData);
   };
 
-  return (
+  return isLoadingClasses ? (
+    <div></div>
+  ) : (
     <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
       <label>
         Name:
@@ -274,14 +280,29 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
         </Popover>
       </label>
       <label className="flex flex-col">
-        <p className="w-full">Class:</p>
-        <Input
-          type="number"
-          min={0}
-          value={formData.classId}
-          onChange={(e) => handleChange("classId", e.target.value)}
-          className="w-fit"
-        />
+        Class:
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline">
+              {classes?.find((cls) => cls.id === formData.classId)?.name ||
+                "Select Class"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-full">
+            <Command>
+              <CommandList>
+                {classes?.map((cls) => (
+                  <CommandItem
+                    key={cls.id}
+                    onSelect={() => handleChange("classId", cls.id)}
+                  >
+                    {cls.name}
+                  </CommandItem>
+                ))}
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
       </label>
       <label className="flex flex-col">
         <p className="w-full">Start Date:</p>

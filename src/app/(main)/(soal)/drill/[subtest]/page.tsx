@@ -69,7 +69,7 @@ export default function DrillPage() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-3">
-      <h1>
+      <h1 className="text-2xl font-bold">
         Drill {""}
         {(() => {
           switch (subtest) {
@@ -90,7 +90,7 @@ export default function DrillPage() {
           }
         })()}
       </h1>
-      <p>Pilih paket:</p>
+      <p>Select a drill package to start</p>
       <div className="gap- flex flex-col rounded-lg border">
         {packages.map((pkg) => (
           <Button

@@ -9,6 +9,17 @@ export const userRouter = createTRPCRouter({
   getSessionUser: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.user.findUnique({
       where: { id: ctx.session.user.id },
+      select: {
+        image: true,
+        name: true,
+        email: true,
+        role: true,
+        class: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
   }),
 

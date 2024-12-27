@@ -49,51 +49,53 @@ export default function MainPage() {
         </Avatar>
         <div className="flex flex-col gap-2 border-l p-3">
           <p>{user.name}</p>
-          {user.classid && <p>{user.classid}</p>}
           <p>{user.email}</p>
+          {user.class.name && <p>{user.class.name}</p>}
         </div>
       </div>
       <div className="flex flex-col items-center gap-4 rounded-lg border p-5">
         <h1 className="text-2xl">{announcement?.title}</h1>
         <p>{announcement?.content}</p>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button>Edit</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogTitle>Edit Announcement</DialogTitle>
-            <form
-              className="flex flex-col gap-4"
-              onSubmit={(e) => {
-                e.preventDefault();
-                const form = e.target as HTMLFormElement;
-                const title = form.elements.namedItem(
-                  "title",
-                ) as HTMLInputElement;
-                const content = form.elements.namedItem(
-                  "content",
-                ) as HTMLTextAreaElement;
-                updateAnnouncement.mutate({
-                  title: title.value,
-                  content: content.value,
-                });
-              }}
-            >
-              <Input
-                name="title"
-                defaultValue={announcement?.title}
-                placeholder="Title"
-              />
-              <Textarea
-                name="content"
-                defaultValue={announcement?.content}
-                placeholder="Content"
-                className="h-72"
-              />
-              <Button type="submit">Save</Button>
-            </form>
-          </DialogContent>
-        </Dialog>
+        {user.role === "admin" && (
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button>Edit</Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogTitle>Edit Announcement</DialogTitle>
+              <form
+                className="flex flex-col gap-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const form = e.target as HTMLFormElement;
+                  const title = form.elements.namedItem(
+                    "title",
+                  ) as HTMLInputElement;
+                  const content = form.elements.namedItem(
+                    "content",
+                  ) as HTMLTextAreaElement;
+                  updateAnnouncement.mutate({
+                    title: title.value,
+                    content: content.value,
+                  });
+                }}
+              >
+                <Input
+                  name="title"
+                  defaultValue={announcement?.title}
+                  placeholder="Title"
+                />
+                <Textarea
+                  name="content"
+                  defaultValue={announcement?.content}
+                  placeholder="Content"
+                  className="h-72"
+                />
+                <Button type="submit">Save</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
     </div>
   );
