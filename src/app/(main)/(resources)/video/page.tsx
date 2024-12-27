@@ -78,9 +78,9 @@ export default function VideoGallery() {
   };
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto flex flex-col gap-5 p-4">
       {/* Header Section */}
-      <div className="mb-8 flex items-center justify-between">
+      <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold">Video Gallery</h1>
         {session?.user?.role !== "user" && (
           <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
@@ -125,7 +125,7 @@ export default function VideoGallery() {
             >
               <DialogTrigger asChild>
                 <Button
-                  className="flex size-full flex-col transition-shadow hover:shadow-lg focus:outline-none"
+                  className="flex size-full flex-col border transition-shadow hover:shadow-lg focus:outline-none"
                   variant="ghost"
                 >
                   <div className="relative aspect-video w-full">

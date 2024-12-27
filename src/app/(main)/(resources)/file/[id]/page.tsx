@@ -68,69 +68,76 @@ export default function FilePage() {
     );
 
   return (
-    <div className="flex size-full flex-col gap-4">
-      <h1 className="mb-4 text-2xl font-semibold">Files</h1>
-      {session?.user?.role !== "user" && (
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center">
-              <PlusIcon className="mr-2 h-5 w-5" />
-              Add File
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-xl p-6">
-            <DialogHeader>
-              <DialogTitle>Add New File</DialogTitle>
-            </DialogHeader>
-            <FileForm mode="add" onSubmit={handleAddFile} />
-          </DialogContent>
-        </Dialog>
-      )}
-      {files.map((file) => (
-        <div key={file.id} className="flex w-full gap-4 border-b p-4">
-          <Button
-            variant={"ghost"}
-            className="flex h-fit w-full flex-col items-start"
-            onClick={() => window.open(file.url, "_blank")}
+    <div className="mx-auto flex size-full flex-col gap-4 p-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold">Files</h1>
+        {session?.user?.role !== "user" && (
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center">
+                <PlusIcon className="mr-2 h-5 w-5" />
+                Add File
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-xl p-6">
+              <DialogHeader>
+                <DialogTitle>Add New File</DialogTitle>
+              </DialogHeader>
+              <FileForm mode="add" onSubmit={handleAddFile} />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+      <div className="flex flex-col rounded-lg border">
+        {files.map((file) => (
+          <div
+            key={file.id}
+            className="flex w-full items-center gap-4 border-b"
           >
-            <h2>{file.title}</h2>
-            <p>{file.description}</p>
-          </Button>
-          <div className="flex gap-4">
-            <Dialog
-              open={editDialogOpen === file.id}
-              onOpenChange={(open) => {
-                if (open) {
-                  setEditDialogOpen(file.id);
-                } else {
-                  setEditDialogOpen(null);
-                }
-              }}
-            >
-              <DialogTrigger asChild className="w-full">
-                <Button>Edit</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-xl p-6">
-                <DialogHeader>
-                  <DialogTitle>Edit Folder</DialogTitle>
-                </DialogHeader>
-                <FileForm
-                  mode="edit"
-                  initialValues={file}
-                  onSubmit={handleEditFile}
-                />
-              </DialogContent>
-            </Dialog>
             <Button
-              variant="destructive"
-              className="flex items-center"
-              onClick={() => handleDelete(file.id!)}
+              variant={"ghost"}
+              className="flex h-fit w-full flex-col items-start rounded-none"
+              onClick={() => window.open(file.url, "_blank")}
             >
-              <Trash2Icon />
+              <h2 className="text-xl font-semibold">{file.title}</h2>
+              <p>{file.description}</p>
             </Button>
+            <div className="flex gap-4">
+              <Dialog
+                open={editDialogOpen === file.id}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setEditDialogOpen(file.id);
+                  } else {
+                    setEditDialogOpen(null);
+                  }
+                }}
+              >
+                <DialogTrigger asChild className="w-full">
+                  <Button>Edit</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-xl p-6">
+                  <DialogHeader>
+                    <DialogTitle>Edit Folder</DialogTitle>
+                  </DialogHeader>
+                  <FileForm
+                    mode="edit"
+                    initialValues={file}
+                    onSubmit={handleEditFile}
+                  />
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="destructive"
+                className="flex items-center"
+                onClick={() => handleDelete(file.id!)}
+              >
+                <Trash2Icon />
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

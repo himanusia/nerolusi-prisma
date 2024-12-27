@@ -68,72 +68,75 @@ export default function FolderPage() {
     );
 
   return (
-    <div className="flex size-full flex-col">
-      <h1 className="mb-4 text-2xl font-semibold">Folders</h1>
-      {session?.user?.role !== "user" && (
-        <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="flex items-center">
-              <PlusIcon className="mr-2 h-5 w-5" />
-              Add Folder
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-xl p-6">
-            <DialogHeader>
-              <DialogTitle>Add New Folder</DialogTitle>
-            </DialogHeader>
-            <FolderForm mode="add" onSubmit={handleAddFolder} />
-          </DialogContent>
-        </Dialog>
-      )}
-      {folders.map((folder) => (
-        <div
-          key={folder.id}
-          className="flex w-full items-center justify-between gap-4 border-b p-4"
-        >
-          <Button
-            variant={"ghost"}
-            className="flex h-fit w-full flex-col items-start"
-            onClick={() => router.push(`/file/${folder.id}`)}
+    <div className="container mx-auto flex flex-col p-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-4xl font-bold">Folders</h1>
+        {session?.user?.role !== "user" && (
+          <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="flex items-center">
+                <PlusIcon className="mr-2 h-5 w-5" />
+                Add Folder
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-xl p-6">
+              <DialogHeader>
+                <DialogTitle>Add New Folder</DialogTitle>
+              </DialogHeader>
+              <FolderForm mode="add" onSubmit={handleAddFolder} />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+      <div className="mt-4 flex flex-col rounded-lg border">
+        {folders.map((folder) => (
+          <div
+            key={folder.id}
+            className="flex w-full items-center justify-between gap-4 border-b"
           >
-            <h2>{folder.name}</h2>
-            <p>{folder.description}</p>
-          </Button>
-          <div className="flex gap-4">
-            <Dialog
-              open={editDialogOpen === folder.id}
-              onOpenChange={(open) => {
-                if (open) {
-                  setEditDialogOpen(folder.id);
-                } else {
-                  setEditDialogOpen(null);
-                }
-              }}
-            >
-              <DialogTrigger asChild>
-                <Button>Edit</Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-xl p-6">
-                <DialogHeader>
-                  <DialogTitle>Edit Folder</DialogTitle>
-                </DialogHeader>
-                <FolderForm
-                  mode="edit"
-                  initialValues={folder}
-                  onSubmit={handleEditFolder}
-                />
-              </DialogContent>
-            </Dialog>
             <Button
-              variant="destructive"
-              className="flex items-center"
-              onClick={() => handleDelete(folder.id!)}
+              variant={"ghost"}
+              className="flex h-fit w-full flex-col items-start rounded-none"
+              onClick={() => router.push(`/file/${folder.id}`)}
             >
-              <Trash2Icon />
+              <h2>{folder.name}</h2>
+              <p>{folder.description}</p>
             </Button>
+            <div className="flex gap-4">
+              <Dialog
+                open={editDialogOpen === folder.id}
+                onOpenChange={(open) => {
+                  if (open) {
+                    setEditDialogOpen(folder.id);
+                  } else {
+                    setEditDialogOpen(null);
+                  }
+                }}
+              >
+                <DialogTrigger asChild>
+                  <Button>Edit</Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-xl p-6">
+                  <DialogHeader>
+                    <DialogTitle>Edit Folder</DialogTitle>
+                  </DialogHeader>
+                  <FolderForm
+                    mode="edit"
+                    initialValues={folder}
+                    onSubmit={handleEditFolder}
+                  />
+                </DialogContent>
+              </Dialog>
+              <Button
+                variant="destructive"
+                onClick={() => handleDelete(folder.id!)}
+              >
+                <Trash2Icon />
+              </Button>
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
