@@ -2,6 +2,16 @@
 
 import { api } from "~/trpc/react";
 import { Avatar, AvatarFallback, AvatarImage } from "../_components/ui/avatar";
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "../_components/ui/dialog";
+import { Button } from "../_components/ui/button";
+import { Input } from "../_components/ui/input";
+import { Textarea } from "../_components/ui/textarea";
+import { toast } from "sonner";
 
 export default function MainPage() {
   const {
@@ -13,7 +23,18 @@ export default function MainPage() {
     data: announcement,
     isLoading: announcementLoading,
     isError: announcementError,
+    refetch: refetchAnnouncement,
   } = api.quiz.getAnnouncement.useQuery();
+
+  const updateAnnouncement = api.quiz.upsertAnnouncement.useMutation({
+    onSuccess: () => {
+      toast.success("Announcement edited successfully!");
+      refetchAnnouncement();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to edit announcement.");
+    },
+  });
 
   return sessionError || announcementError ? (
     <div>error</div>
@@ -30,12 +51,49 @@ export default function MainPage() {
           <p>{user.name}</p>
           {user.classid && <p>{user.classid}</p>}
           <p>{user.email}</p>
-          <p>{user.role}</p>
         </div>
       </div>
       <div className="flex flex-col items-center gap-4 rounded-lg border p-5">
         <h1 className="text-2xl">{announcement?.title}</h1>
         <p>{announcement?.content}</p>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button>Edit</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Edit Announcement</DialogTitle>
+            <form
+              className="flex flex-col gap-4"
+              onSubmit={(e) => {
+                e.preventDefault();
+                const form = e.target as HTMLFormElement;
+                const title = form.elements.namedItem(
+                  "title",
+                ) as HTMLInputElement;
+                const content = form.elements.namedItem(
+                  "content",
+                ) as HTMLTextAreaElement;
+                updateAnnouncement.mutate({
+                  title: title.value,
+                  content: content.value,
+                });
+              }}
+            >
+              <Input
+                name="title"
+                defaultValue={announcement?.title}
+                placeholder="Title"
+              />
+              <Textarea
+                name="content"
+                defaultValue={announcement?.content}
+                placeholder="Content"
+                className="h-72"
+              />
+              <Button type="submit">Save</Button>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
