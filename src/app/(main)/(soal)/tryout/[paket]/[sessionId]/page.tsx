@@ -187,7 +187,7 @@ export default function QuizPage() {
         </p>
       </div>
 
-      <div className="flex w-full gap-4">
+      <div className="flex w-full flex-col gap-4 md:flex-row">
         {/* Main Content */}
         <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
@@ -262,7 +262,7 @@ export default function QuizPage() {
         </div>
 
         {/* Sidebar for navigating questions */}
-        <div className="flex w-fit flex-col justify-between gap-3 rounded-md border p-3">
+        <div className="flex w-full flex-col justify-between gap-3 rounded-md border p-3 md:w-fit">
           <ul className="flex size-fit gap-3">
             {questions?.map((_, index) => (
               <li key={index} className="size-fit">
