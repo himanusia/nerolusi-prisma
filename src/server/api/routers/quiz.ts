@@ -153,7 +153,8 @@ export const quizRouter = createTRPCRouter({
   saveAnswer: userProcedure
     .input(
       z.object({
-        answerChoice: z.number(),
+        answerChoice: z.number().nullable(),
+        essayAnswer: z.string().nullable(),
         questionId: z.number(),
         userId: z.string(),
         packageId: z.number(),
@@ -161,8 +162,18 @@ export const quizRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { answerChoice, questionId, userId, packageId, quizSessionId } =
-        input;
+      const {
+        answerChoice,
+        essayAnswer,
+        questionId,
+        userId,
+        packageId,
+        quizSessionId,
+      } = input;
+
+      if (answerChoice === null && essayAnswer === null) {
+        throw new Error("Either answerChoice or essayAnswer must be provided.");
+      }
 
       const userAnswer = await ctx.db.userAnswer.upsert({
         where: {
@@ -174,9 +185,11 @@ export const quizRouter = createTRPCRouter({
         },
         update: {
           answerChoice,
+          essayAnswer,
         },
         create: {
           answerChoice,
+          essayAnswer,
           questionId,
           userId,
           packageId,

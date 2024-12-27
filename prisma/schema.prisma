@@ -136,7 +136,8 @@ model Answer {
 
 model UserAnswer {
   id          Int          @id @default(autoincrement())
-  answerChoice Int      
+  essayAnswer String?
+  answerChoice Int?      
   questionId  Int
   question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
   userId      String 

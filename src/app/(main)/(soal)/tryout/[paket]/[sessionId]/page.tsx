@@ -18,9 +18,9 @@ export default function QuizPage() {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [endTime, setEndTime] = useState<number>(0);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [selectedAnswers, setSelectedAnswers] = useState<Map<number, number>>(
-    new Map(),
-  );
+  const [selectedAnswers, setSelectedAnswers] = useState<
+    Map<number, number | string>
+  >(new Map());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const saveAnswerMutation = api.quiz.saveAnswer.useMutation();
@@ -62,9 +62,13 @@ export default function QuizPage() {
       setTimeLeft(Math.max(calculatedEndTime - Date.now(), 0));
 
       if (sessionDetails.userAnswers) {
-        const initialSelectedAnswers = new Map<number, number>();
+        const initialSelectedAnswers = new Map<number, number | string>();
         sessionDetails.userAnswers.forEach((ua) => {
-          initialSelectedAnswers.set(ua.questionId, ua.answerChoice);
+          if (ua.essayAnswer !== null) {
+            initialSelectedAnswers.set(ua.questionId, ua.essayAnswer);
+          } else {
+            initialSelectedAnswers.set(ua.questionId, ua.answerChoice);
+          }
         });
         setSelectedAnswers(initialSelectedAnswers);
       }
@@ -74,22 +78,7 @@ export default function QuizPage() {
   // Countdown timer
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(() => {
-        const newTimeLeft = Math.max(endTime - Date.now(), 0);
-        if (
-          newTimeLeft <= 0 &&
-          !isSubmitting &&
-          !isSessionLoading &&
-          !isQuestionsLoading &&
-          !isSessionError &&
-          !isQuestionsError &&
-          new Date(sessionDetails.package.TOend) >= new Date()
-        ) {
-          clearInterval(timer);
-          handleSubmit();
-        }
-        return newTimeLeft;
-      });
+      setTimeLeft(() => Math.max(endTime - Date.now(), 0));
     }, 1000);
 
     return () => clearInterval(timer);
@@ -105,52 +94,39 @@ export default function QuizPage() {
       .padStart(2, "0")}`;
   };
 
-  // Handle answer selection and save
-  const handleAnswerSelect = (questionId: number, answerChoice: number) => {
-    setSelectedAnswers((prev) => {
-      const updatedAnswers = new Map(prev);
-
-      if (updatedAnswers.get(questionId) !== answerChoice) {
-        updatedAnswers.set(questionId, answerChoice);
-        saveAnswer(questionId, answerChoice);
-      }
-
-      return updatedAnswers;
-    });
-  };
-
   // Save answer to the backend
-  const saveAnswer = async (questionId: number, answerChoice: number) => {
-    if (
-      new Date(sessionDetails.package.TOend) < new Date() &&
-      session.data.user.role === "user"
-    )
-      return;
-
+  const saveAnswer = async (
+    questionId: number,
+    answerValue: string | number,
+  ) => {
     try {
       await saveAnswerMutation.mutateAsync({
         quizSessionId: parseInt(sessionIdString),
         questionId,
-        answerChoice,
         packageId: sessionDetails?.packageId ?? 0,
         userId: sessionDetails?.userId ?? "",
+        answerChoice: typeof answerValue === "number" ? answerValue : null,
+        essayAnswer: typeof answerValue === "string" ? answerValue : null,
       });
+      // toast.success("Answer saved successfully.");
     } catch (error) {
       console.error("Failed to save answer:", error);
       toast.error("Failed to save answer. Please try again.");
     }
   };
 
-  // Autosave
-  useEffect(() => {
-    const autosaveInterval = setInterval(() => {
-      selectedAnswers.forEach((answerChoice, questionId) => {
-        saveAnswer(questionId, answerChoice);
-      });
-    }, 5000);
-
-    return () => clearInterval(autosaveInterval);
-  }, [selectedAnswers, sessionIdString]);
+  // Handle answer selection or essay input
+  const handleAnswerChange = (
+    questionId: number,
+    answerValue: string | number,
+  ) => {
+    setSelectedAnswers((prev) => {
+      const updatedAnswers = new Map(prev);
+      updatedAnswers.set(questionId, answerValue);
+      saveAnswer(questionId, answerValue);
+      return updatedAnswers;
+    });
+  };
 
   // Submit all answers
   const handleSubmit = async () => {
@@ -191,37 +167,42 @@ export default function QuizPage() {
         {/* Main Content */}
         <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
-          {new Date(sessionDetails.endTime) < new Date() && (
-            <p>
-              <strong>
-                Score:{" "}
-                {selectedAnswers.get(questions[currentQuestionIndex].id) ===
-                questions[currentQuestionIndex].correctAnswerChoice
-                  ? questions[currentQuestionIndex].score
-                  : 0}
-              </strong>
-            </p>
-          )}
-          <div className="gap-4">
-            {questions && questions[currentQuestionIndex] && (
-              <div
-                key={questions[currentQuestionIndex].id}
-                className="space-y-2"
-              >
-                <p>
-                  <strong>
-                    {currentQuestionIndex + 1}.{" "}
-                    {questions[currentQuestionIndex].content}
-                  </strong>
-                </p>
-                <Image
-                  src={questions[currentQuestionIndex].imageUrl}
-                  alt="Question Image"
-                  width={300}
-                  height={200}
-                  className="max-h-[50vh] w-fit"
+          {questions && questions[currentQuestionIndex] && (
+            <div key={questions[currentQuestionIndex].id} className="space-y-2">
+              <p>
+                <strong>
+                  {currentQuestionIndex + 1}.{" "}
+                  {questions[currentQuestionIndex].content}
+                </strong>
+              </p>
+              <Image
+                src={questions[currentQuestionIndex].imageUrl}
+                alt="Question Image"
+                width={300}
+                height={200}
+                className="max-h-[50vh] w-fit"
+              />
+              {questions[currentQuestionIndex].type === "essay" ? (
+                <Input
+                  className="w-full rounded border p-2"
+                  placeholder="Write your answer here..."
+                  value={
+                    selectedAnswers.get(questions[currentQuestionIndex].id) ||
+                    ""
+                  }
+                  onChange={(e) =>
+                    handleAnswerChange(
+                      questions[currentQuestionIndex].id,
+                      e.target.value,
+                    )
+                  }
+                  disabled={
+                    new Date(sessionDetails.package.TOend) < new Date() &&
+                    session.data?.user?.role === "user"
+                  }
                 />
-                {questions[currentQuestionIndex].answers.map((answer) => (
+              ) : (
+                questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
                     className="flex cursor-pointer flex-row items-center"
@@ -241,7 +222,7 @@ export default function QuizPage() {
                         ) === answer.index
                       }
                       onChange={() =>
-                        handleAnswerSelect(
+                        handleAnswerChange(
                           questions[currentQuestionIndex].id,
                           answer.index,
                         )
@@ -249,15 +230,9 @@ export default function QuizPage() {
                     />
                     {answer.content}
                   </label>
-                ))}
-              </div>
-            )}
-          </div>
-          {new Date(sessionDetails.endTime) < new Date() && (
-            <p className="font-bold">
-              Explanation:{" "}
-              {questions[currentQuestionIndex].explanation ?? "N/A"}
-            </p>
+                ))
+              )}
+            </div>
           )}
         </div>
 
