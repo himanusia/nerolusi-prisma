@@ -35,7 +35,7 @@ export default function QuizPage() {
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails.endTime) < new Date() &&
+      new Date(sessionDetails?.endTime) < new Date() &&
       new Date(sessionDetails.package.TOend) >= new Date()
     ) {
       router.push(`/tryout/${packageId}`);
@@ -184,7 +184,7 @@ export default function QuizPage() {
         {/* Main Content */}
         <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
-          {new Date(sessionDetails.endTime) < new Date() && (
+          {new Date(sessionDetails?.endTime) < new Date() && (
             <p>
               <strong>
                 Score:{" "}
@@ -271,7 +271,7 @@ export default function QuizPage() {
               )}
 
               {/* Display Explanation */}
-              {new Date(sessionDetails.endTime) < new Date() && (
+              {new Date(sessionDetails?.endTime) < new Date() && (
                 <p className="font-bold">
                   Explanation:{" "}
                   {questions[currentQuestionIndex].explanation ?? "N/A"}
@@ -303,7 +303,7 @@ export default function QuizPage() {
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`${new Date(sessionDetails.endTime) < new Date() && session.data.user.role === "user" ? "hidden" : ""}`}
+            className={`${new Date(sessionDetails?.endTime) < new Date() && session.data.user.role === "user" ? "hidden" : ""}`}
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
