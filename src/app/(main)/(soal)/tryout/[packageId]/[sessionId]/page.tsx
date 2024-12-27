@@ -152,7 +152,7 @@ export default function QuizPage() {
   if (isSessionError || isQuestionsError) return <div>Failed to load data</div>;
 
   return (
-    <div className="flex w-full flex-col gap-3 p-4">
+    <div className="mx-auto flex w-full flex-col gap-3 p-4">
       <div>
         <p>
           <strong>Subtest: </strong>
@@ -182,25 +182,23 @@ export default function QuizPage() {
 
       <div className="flex w-full flex-col gap-4 md:flex-row">
         {/* Main Content */}
-        <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
+        <div className="flex w-full flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
           {new Date(sessionDetails?.endTime) < new Date() && (
-            <p>
-              <strong>
-                Score:{" "}
-                {questions[currentQuestionIndex].type === "essay"
-                  ? selectedAnswers
-                      .get(questions[currentQuestionIndex].id)
-                      ?.toString()
-                      .trim() ===
-                    questions[currentQuestionIndex].answers[0].content.trim()
-                    ? questions[currentQuestionIndex].score
-                    : 0
-                  : selectedAnswers.get(questions[currentQuestionIndex].id) ===
-                      questions[currentQuestionIndex].correctAnswerChoice
-                    ? questions[currentQuestionIndex].score
-                    : 0}
-              </strong>
+            <p className="font-bold">
+              Score:{" "}
+              {questions[currentQuestionIndex].type === "essay"
+                ? selectedAnswers
+                    .get(questions[currentQuestionIndex].id)
+                    ?.toString()
+                    .trim() ===
+                  questions[currentQuestionIndex].answers[0].content.trim()
+                  ? questions[currentQuestionIndex].score
+                  : 0
+                : selectedAnswers.get(questions[currentQuestionIndex].id) ===
+                    questions[currentQuestionIndex].correctAnswerChoice
+                  ? questions[currentQuestionIndex].score
+                  : 0}
             </p>
           )}
 

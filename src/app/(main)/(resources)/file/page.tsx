@@ -88,7 +88,7 @@ export default function FolderPage() {
           </Dialog>
         )}
       </div>
-      <div className="mt-4 flex flex-col rounded-lg border">
+      <div className="mt-4 flex w-full flex-col rounded-lg border">
         {folders.map((folder) => (
           <div
             key={folder.id}
@@ -96,11 +96,15 @@ export default function FolderPage() {
           >
             <Button
               variant={"ghost"}
-              className="flex h-fit w-full flex-col items-start rounded-none"
+              className="flex h-fit w-full flex-col items-start overflow-hidden rounded-none"
               onClick={() => router.push(`/file/${folder.id}`)}
             >
-              <h2>{folder.name}</h2>
-              <p>{folder.description}</p>
+              <h2 className="flex w-full justify-start truncate text-xl font-semibold">
+                {folder.name}
+              </h2>
+              <p className="flex w-full justify-start truncate">
+                {folder.description}
+              </p>
             </Button>
             <div className="flex gap-4">
               <Dialog

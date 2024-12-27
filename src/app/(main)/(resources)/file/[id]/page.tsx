@@ -88,7 +88,7 @@ export default function FilePage() {
           </Dialog>
         )}
       </div>
-      <div className="flex flex-col rounded-lg border">
+      <div className="flex w-full flex-col rounded-lg border">
         {files.map((file) => (
           <div
             key={file.id}
@@ -96,11 +96,15 @@ export default function FilePage() {
           >
             <Button
               variant={"ghost"}
-              className="flex h-fit w-full flex-col items-start rounded-none"
+              className="flex h-fit w-full flex-col items-start overflow-hidden rounded-none"
               onClick={() => window.open(file.url, "_blank")}
             >
-              <h2 className="text-xl font-semibold">{file.title}</h2>
-              <p>{file.description}</p>
+              <h2 className="flex w-full justify-start truncate text-xl font-semibold">
+                {file.title}
+              </h2>
+              <p className="flex w-full justify-start truncate">
+                {file.description}
+              </p>
             </Button>
             <div className="flex gap-4">
               <Dialog

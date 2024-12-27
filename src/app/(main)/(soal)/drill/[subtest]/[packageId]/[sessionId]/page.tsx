@@ -182,7 +182,7 @@ export default function QuizPage() {
 
       <div className="flex w-full flex-col gap-4 md:flex-row">
         {/* Main Content */}
-        <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
+        <div className="flex w-full flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
           {new Date(sessionDetails.endTime) < new Date() && (
             <p>
