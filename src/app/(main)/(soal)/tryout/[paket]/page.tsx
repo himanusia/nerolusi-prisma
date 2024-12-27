@@ -24,10 +24,12 @@ export default function QuizPage() {
   if (isError) return <div>Failed to load subtests</div>;
 
   return (
-    <div className="rounded-lg border p-4">
-      <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
-      <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
-      <p>End Time: {new Date(packageData.TOend).toLocaleString()}</p>
+    <div className="flex flex-col gap-4 rounded-lg border p-4">
+      <div className="flex flex-col items-center gap-2 border-b p-4">
+        <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
+        <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
+        <p>End Time: {new Date(packageData.TOend).toLocaleString()}</p>
+      </div>
       <div className="flex flex-wrap gap-4">
         {packageData.subtests?.map((subtest) => (
           <Button
@@ -40,7 +42,24 @@ export default function QuizPage() {
               new Date(packageData.TOend) >= new Date()
             }
           >
-            {subtest.type}
+            {(() => {
+              switch (subtest.type) {
+                case "pu":
+                  return "Kemampuan Penalaran Umum";
+                case "ppu":
+                  return "Pengetahuan dan Pemahaman Umum";
+                case "pbm":
+                  return "Kemampuan Memahami Bacaan dan Menulis";
+                case "pk":
+                  return "Pengetahuan Kuantitatif";
+                case "lb":
+                  return "Literasi Bahasa Indonesia dan Bahasa Inggris";
+                case "pm":
+                  return "Penalaran Matematika";
+                default:
+                  return subtest.type;
+              }
+            })()}
           </Button>
         ))}
       </div>
