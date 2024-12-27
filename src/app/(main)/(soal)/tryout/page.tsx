@@ -1,9 +1,13 @@
-import Link from "next/link";
-import { auth } from "~/server/auth";
-import { api } from "~/trpc/server";
+"use client";
 
-export default async function TryoutListPage() {
-  const session = await auth();
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Button } from "~/app/_components/ui/button";
+import { api } from "~/trpc/react";
+
+export default function TryoutListPage() {
+  const { data: session } = useSession();
+  const router = useRouter();
 
   if (!session || !session.user) {
     return (
@@ -29,22 +33,40 @@ export default async function TryoutListPage() {
     );
   }
 
-  const data = await api.package.getTryoutPackages({ classId });
+  const {
+    data: packages,
+    isLoading,
+    isError,
+  } = api.package.getTryoutPackages.useQuery({ classId });
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error fetching packages.</div>;
+  }
 
   return (
-    <div className="flex flex-col gap-3">
-      {data?.map((pkg) => (
-        <Link
-          key={pkg.id}
-          href={`/tryout/${pkg.id}`}
-          className="flex flex-col rounded-xl border bg-inherit p-3"
-        >
-          <h3>{pkg.name}</h3>
-          <p>Type: {pkg.type}</p>
-          {pkg.TOstart && <p>Start Date: {pkg.TOstart.toLocaleString()}</p>}
-          {pkg.TOend && <p>End Date: {pkg.TOend.toLocaleString()}</p>}
-        </Link>
-      ))}
+    <div className="flex flex-col items-center gap-4">
+      <h1 className="text-2xl font-bold">Tryout List</h1>
+      <p>Select a tryout package to start</p>
+      <div className="flex flex-col rounded-lg border">
+        {packages?.map((pkg) => (
+          <Button
+            key={pkg.id}
+            variant="ghost"
+            onClick={() => {
+              router.push(`/tryout/${pkg.id}`);
+            }}
+            className="flex size-fit w-full flex-col rounded-none border-b p-3"
+          >
+            <h3 className="font-bold">{pkg.name}</h3>
+            {pkg.TOstart && <p>Start Date: {pkg.TOstart.toLocaleString()}</p>}
+            {pkg.TOend && <p>End Date: {pkg.TOend.toLocaleString()}</p>}
+          </Button>
+        ))}
+      </div>
     </div>
   );
 }

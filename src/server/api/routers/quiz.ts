@@ -225,14 +225,14 @@ export const quizRouter = createTRPCRouter({
     }),
 
   getDrillSubtest: userProcedure
-    .input(z.object({ subtes: z.nativeEnum(SubtestType) }))
+    .input(z.object({ subtest: z.nativeEnum(SubtestType) }))
     .query(async ({ ctx, input }) => {
       return await ctx.db.subtest.findMany({
         where: {
           package: {
             type: "drill",
           },
-          type: input.subtes,
+          type: input.subtest,
         },
         select: {
           id: true,

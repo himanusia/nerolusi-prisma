@@ -2,29 +2,21 @@
 
 import { Button } from "~/app/_components/ui/button";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import { api } from "~/trpc/react";
 import { SubtestType } from "@prisma/client";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 
 export default function DrillPage() {
-  const { subtes } = useParams();
+  const { subtest } = useParams();
   const router = useRouter();
   const session = useSession();
-
-  if (
-    Array.isArray(subtes) ||
-    !["pu", "ppu", "pbm", "pk", "lb", "pm"].includes(subtes)
-  ) {
-    return <div>Error: Invalid subtest type</div>;
-  }
 
   const {
     data: packages,
     isLoading,
     isError,
-  } = api.quiz.getDrillSubtest.useQuery({ subtes: subtes as SubtestType });
+  } = api.quiz.getDrillSubtest.useQuery({ subtest: subtest as SubtestType });
 
   const startSessionMutation = api.quiz.createSession.useMutation();
   const getSessionMutation = api.quiz.getSession.useMutation();
@@ -58,7 +50,7 @@ export default function DrillPage() {
         });
       }
 
-      router.push(`/drill/${subtes}/${packageId}/${quizSession.id}`);
+      router.push(`/drill/${subtest}/${packageId}/${quizSession.id}`);
     } catch (error) {
       console.error(error);
       toast.error("Error creating session", {
@@ -77,21 +69,42 @@ export default function DrillPage() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-3">
-      <h1>Subtest {subtes}</h1>
+      <h1>
+        Drill {""}
+        {(() => {
+          switch (subtest) {
+            case "pu":
+              return "Kemampuan Penalaran Umum";
+            case "ppu":
+              return "Pengetahuan dan Pemahaman Umum";
+            case "pbm":
+              return "Kemampuan Memahami Bacaan dan Menulis";
+            case "pk":
+              return "Pengetahuan Kuantitatif";
+            case "lb":
+              return "Literasi Bahasa Indonesia dan Bahasa Inggris";
+            case "pm":
+              return "Penalaran Matematika";
+            default:
+              return subtest;
+          }
+        })()}
+      </h1>
       <p>Pilih paket:</p>
-      <ul className="flex flex-wrap gap-3">
+      <div className="gap- flex flex-col rounded-lg border">
         {packages.map((pkg) => (
-          <li key={pkg.id}>
-            <Button
-              onClick={() =>
-                handleSubtestClick(pkg.id, pkg.duration, pkg.package.id)
-              }
-            >
-              {pkg.package.name}
-            </Button>
-          </li>
+          <Button
+            key={pkg.id}
+            className="rounded-none border-b"
+            variant="ghost"
+            onClick={() =>
+              handleSubtestClick(pkg.id, pkg.duration, pkg.package.id)
+            }
+          >
+            {pkg.package.name}
+          </Button>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
