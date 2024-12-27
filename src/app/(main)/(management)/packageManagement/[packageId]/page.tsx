@@ -77,7 +77,7 @@ export default function PackageManagementPage() {
   }));
 
   return (
-    <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+    <div className="ag-theme-alpine size-full h-[80vh]">
       <h1 className="text-xl font-bold">Package ID: {packageId}</h1>
       <Button
         onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
@@ -88,7 +88,7 @@ export default function PackageManagementPage() {
         rowData={rowData}
         columnDefs={columnDefs}
         pagination={true}
-        paginationPageSize={10}
+        paginationPageSize={15}
       />
     </div>
   );

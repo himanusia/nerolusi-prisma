@@ -129,8 +129,7 @@ export default function FolderPage() {
               className="flex items-center"
               onClick={() => handleDelete(folder.id!)}
             >
-              <Trash2Icon className="mr-2 h-5 w-5" />
-              Delete
+              <Trash2Icon />
             </Button>
           </div>
         </div>

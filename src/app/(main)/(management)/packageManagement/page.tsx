@@ -24,11 +24,8 @@ export default function PackageManagementPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button
-        variant={"outline"}
-        onClick={() => router.push("/packageManagement/create")}
-      >
-        Create
+      <Button onClick={() => router.push("/packageManagement/create")}>
+        Create Package
       </Button>
       <PackageTable packageData={packages} refetchPackages={refetch} />
     </div>

@@ -126,8 +126,7 @@ export default function FilePage() {
               className="flex items-center"
               onClick={() => handleDelete(file.id!)}
             >
-              <Trash2Icon className="mr-2 h-5 w-5" />
-              Delete
+              <Trash2Icon />
             </Button>
           </div>
         </div>

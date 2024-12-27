@@ -7,7 +7,7 @@ import {
 } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { signIn, signOut, useSession } from "next-auth/react";
-import { FaSignOutAlt } from "react-icons/fa";
+import { CiLogout } from "react-icons/ci";
 
 export default function AuthDialog() {
   const session = useSession();
@@ -17,7 +17,7 @@ export default function AuthDialog() {
     <Dialog>
       <DialogTrigger asChild>
         <Button variant={"ghost"} className="border">
-          <FaSignOutAlt />
+          <CiLogout className="rotate-180 transform" />
         </Button>
       </DialogTrigger>
       <DialogContent>
@@ -33,13 +33,17 @@ export default function AuthDialog() {
             Sign In
           </Button>
         ) : (
-          <Button
-            variant={"ghost"}
-            onClick={() => signOut({ callbackUrl: "/signin" })}
-            className="border"
-          >
-            Sign Out
-          </Button>
+          <div className="flex size-full flex-col gap-3">
+            Are you sure you want to sign out?
+            <Button
+              variant={"ghost"}
+              onClick={() => signOut({ callbackUrl: "/signin" })}
+              className="gap-3 border"
+            >
+              <CiLogout className="rotate-180 transform" />
+              Sign Out
+            </Button>
+          </div>
         )}
       </DialogContent>
     </Dialog>

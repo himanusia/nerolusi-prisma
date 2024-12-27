@@ -30,9 +30,7 @@ export default function CreateClassDialog() {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogTrigger asChild>
-        <Button variant={"ghost"} className="border">
-          Create Class
-        </Button>
+        <Button className="border">Create Class</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

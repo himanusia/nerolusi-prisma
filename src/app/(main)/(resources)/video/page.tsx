@@ -170,8 +170,7 @@ export default function VideoGallery() {
                       className="flex items-center"
                       onClick={() => handleDelete(video.id!)}
                     >
-                      <Trash2Icon className="mr-2 h-5 w-5" />
-                      Delete
+                      <Trash2Icon />
                     </Button>
                     <Dialog
                       open={editDialogOpen}
