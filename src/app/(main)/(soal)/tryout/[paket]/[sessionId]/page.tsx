@@ -108,7 +108,6 @@ export default function QuizPage() {
         answerChoice: typeof answerValue === "number" ? answerValue : null,
         essayAnswer: typeof answerValue === "string" ? answerValue : null,
       });
-      // toast.success("Answer saved successfully.");
     } catch (error) {
       console.error("Failed to save answer:", error);
       toast.error("Failed to save answer. Please try again.");
@@ -156,7 +155,25 @@ export default function QuizPage() {
     <div className="flex w-full flex-col gap-3 p-4">
       <div>
         <p>
-          <strong>Subtest:</strong> {sessionDetails?.subtest.type}
+          <strong>Subtest: </strong>
+          {(() => {
+            switch (sessionDetails?.subtest.type) {
+              case "pu":
+                return "Kemampuan Penalaran Umum";
+              case "ppu":
+                return "Pengetahuan dan Pemahaman Umum";
+              case "pbm":
+                return "Kemampuan Memahami Bacaan dan Menulis";
+              case "pk":
+                return "Pengetahuan Kuantitatif";
+              case "lb":
+                return "Literasi Bahasa Indonesia dan Bahasa Inggris";
+              case "pm":
+                return "Penalaran Matematika";
+              default:
+                return sessionDetails?.subtest.type;
+            }
+          })()}
         </p>
         <p className={`${timeLeft <= 0 ? "hidden" : ""}`}>
           <strong>Time Left:</strong> {formatTime(timeLeft)}
@@ -167,6 +184,26 @@ export default function QuizPage() {
         {/* Main Content */}
         <div className="flex w-full min-w-96 flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
+          {new Date(sessionDetails.endTime) < new Date() && (
+            <p>
+              <strong>
+                Score:{" "}
+                {questions[currentQuestionIndex].type === "essay"
+                  ? selectedAnswers
+                      .get(questions[currentQuestionIndex].id)
+                      ?.toString()
+                      .trim() ===
+                    questions[currentQuestionIndex].answers[0].content.trim()
+                    ? questions[currentQuestionIndex].score
+                    : 0
+                  : selectedAnswers.get(questions[currentQuestionIndex].id) ===
+                      questions[currentQuestionIndex].correctAnswerChoice
+                    ? questions[currentQuestionIndex].score
+                    : 0}
+              </strong>
+            </p>
+          )}
+
           {questions && questions[currentQuestionIndex] && (
             <div key={questions[currentQuestionIndex].id} className="space-y-2">
               <p>
@@ -231,6 +268,14 @@ export default function QuizPage() {
                     {answer.content}
                   </label>
                 ))
+              )}
+
+              {/* Display Explanation */}
+              {new Date(sessionDetails.endTime) < new Date() && (
+                <p className="font-bold">
+                  Explanation:{" "}
+                  {questions[currentQuestionIndex].explanation ?? "N/A"}
+                </p>
               )}
             </div>
           )}

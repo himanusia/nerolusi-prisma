@@ -111,9 +111,15 @@ export const packageRouter = createTRPCRouter({
                 select: {
                   correctAnswerChoice: true,
                   score: true,
+                  answers: {
+                    select: {
+                      content: true,
+                    },
+                  },
                 },
               },
               answerChoice: true,
+              essayAnswer: true,
             },
           },
         },
@@ -122,12 +128,22 @@ export const packageRouter = createTRPCRouter({
       // Calculate scores for each user
       return users.map((user) => {
         const score = user.userAnswers.reduce((total, answer) => {
-          return (
-            total +
-            (answer.answerChoice === answer.question.correctAnswerChoice
-              ? answer.question.score
-              : 0)
-          );
+          if (answer.question.correctAnswerChoice !== null) {
+            // Multiple Choice Scoring
+            return (
+              total +
+              (answer.answerChoice === answer.question.correctAnswerChoice
+                ? answer.question.score
+                : 0)
+            );
+          } else if (answer.essayAnswer !== null) {
+            // Essay Scoring
+            const isEssayCorrect =
+              answer.essayAnswer.trim().toLowerCase() ===
+              answer.question.answers[0]?.content.trim().toLowerCase();
+            return total + (isEssayCorrect ? answer.question.score : 0);
+          }
+          return total;
         }, 0);
 
         return {
