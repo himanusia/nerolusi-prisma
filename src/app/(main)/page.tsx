@@ -21,17 +21,19 @@ export default function MainPage() {
     <div>loading</div>
   ) : (
     <div className="flex size-full flex-col items-center justify-center gap-4">
-      <div className="flex flex-col items-center gap-2">
-        <Avatar>
+      <div className="flex items-center gap-5 rounded-lg border px-5">
+        <Avatar className="border">
           <AvatarImage src={`${user.image}`} />
           <AvatarFallback>{user.name}</AvatarFallback>
         </Avatar>
-        <p>{user.name}</p>
-        {user.classid && <p>{user.classid}</p>}
-        <p>{user.email}</p>
-        <p>{user.role}</p>
+        <div className="flex flex-col gap-2 border-l p-3">
+          <p>{user.name}</p>
+          {user.classid && <p>{user.classid}</p>}
+          <p>{user.email}</p>
+          <p>{user.role}</p>
+        </div>
       </div>
-      <div className="flex flex-col items-center gap-4">
+      <div className="flex flex-col items-center gap-4 rounded-lg border p-5">
         <h1 className="text-2xl">{announcement?.title}</h1>
         <p>{announcement?.content}</p>
       </div>
