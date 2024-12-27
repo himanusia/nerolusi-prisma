@@ -1,3 +1,4 @@
+import { SubtestType } from "@prisma/client";
 import { z } from "zod";
 import {
   createTRPCRouter,
@@ -219,6 +220,29 @@ export const quizRouter = createTRPCRouter({
               ).getTime()) /
               60000,
           ),
+        },
+      });
+    }),
+
+  getDrillSubtest: userProcedure
+    .input(z.object({ subtes: z.nativeEnum(SubtestType) }))
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.subtest.findMany({
+        where: {
+          package: {
+            type: "drill",
+          },
+          type: input.subtes,
+        },
+        select: {
+          id: true,
+          duration: true,
+          package: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       });
     }),

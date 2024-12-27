@@ -10,7 +10,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 
 export default function QuizPage() {
-  const { paket, sessionId } = useParams();
+  const { packageId, sessionId } = useParams();
   const router = useRouter();
   const session = useSession();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
@@ -38,9 +38,9 @@ export default function QuizPage() {
       new Date(sessionDetails.endTime) < new Date() &&
       new Date(sessionDetails.package.TOend) >= new Date()
     ) {
-      router.push(`/tryout/${paket}`);
+      router.push(`/tryout/${packageId}`);
     }
-  }, [sessionDetails, router, paket]);
+  }, [sessionDetails, router, packageId]);
 
   const {
     data: questions,
@@ -138,7 +138,7 @@ export default function QuizPage() {
         sessionId: parseInt(sessionIdString),
       });
       toast.success("Quiz submitted successfully!");
-      router.push(`/tryout/${paket}`);
+      router.push(`/tryout/${packageId}`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");

@@ -8,7 +8,7 @@ import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/react";
 
 export default function QuizPage() {
-  const { paket } = useParams();
+  const { packageId } = useParams();
   const startSessionMutation = api.quiz.createSession.useMutation();
   const getSessionMutation = api.quiz.getSession.useMutation();
   const router = useRouter();
@@ -18,7 +18,7 @@ export default function QuizPage() {
     data: packageData,
     isLoading,
     isError,
-  } = api.quiz.getPackageWithSubtest.useQuery({ id: Number(paket) });
+  } = api.quiz.getPackageWithSubtest.useQuery({ id: Number(packageId) });
 
   if (isLoading) return <div>Loading subtests...</div>;
   if (isError) return <div>Failed to load subtests</div>;
@@ -73,7 +73,7 @@ export default function QuizPage() {
     }
 
     const userId = session.data.user.id;
-    const packageId = Number(paket);
+    const packageIdInt = Number(packageId);
 
     try {
       let quizSession;
@@ -86,13 +86,13 @@ export default function QuizPage() {
       if (!quizSession) {
         quizSession = await startSessionMutation.mutateAsync({
           userId,
-          packageId,
+          packageId: packageIdInt,
           subtestId,
           duration: duration ?? 10000,
         });
       }
 
-      router.push(`/tryout/${paket}/${quizSession.id}`);
+      router.push(`/tryout/${packageId}/${quizSession.id}`);
     } catch (error) {
       console.error(error);
       toast.error("Error creating session", {
