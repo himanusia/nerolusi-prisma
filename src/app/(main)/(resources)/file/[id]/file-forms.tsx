@@ -108,7 +108,7 @@ export default function FileForm({
         {uploadedUrl && (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             className="mt-2 w-full"
             onClick={() => window.open(uploadedUrl, "_blank")}
           >

@@ -8,6 +8,8 @@ import "ag-grid-community/styles/ag-theme-alpine.css";
 import { useMemo } from "react";
 import { ColDef } from "ag-grid-community";
 import { Button } from "~/app/_components/ui/button";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 export default function PackageManagementPage() {
   const params = useParams();
@@ -17,7 +19,7 @@ export default function PackageManagementPage() {
     10,
   );
 
-  const { data, isLoading, error } = api.package.getUsersByPackage.useQuery({
+  const { data, isLoading, isError } = api.package.getUsersByPackage.useQuery({
     packageId,
   });
 
@@ -65,8 +67,6 @@ export default function PackageManagementPage() {
     [],
   );
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
   if (!data) return <div>No users found for this package.</div>;
 
   const rowData = data.map((user) => ({
@@ -76,7 +76,11 @@ export default function PackageManagementPage() {
     score: user.score,
   }));
 
-  return (
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="ag-theme-alpine size-full h-[80vh]">
       <h1 className="text-xl font-bold">Package ID: {packageId}</h1>
       <Button

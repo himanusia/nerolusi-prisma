@@ -6,6 +6,8 @@ import { api } from "~/trpc/react";
 import { SubtestType } from "@prisma/client";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 export default function DrillPage() {
   const { subtest } = useParams();
@@ -59,15 +61,11 @@ export default function DrillPage() {
     }
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (isError) {
-    return <div>Error fetching packages.</div>;
-  }
-
-  return (
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="flex flex-col items-center justify-center gap-3">
       <h1 className="text-2xl font-bold">
         Drill {""}

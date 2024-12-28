@@ -6,6 +6,8 @@ import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import PackageForm from "~/app/_components/form/package-form";
 import { PackageFormData } from "~/lib/types";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 const EditPackagePage: React.FC = () => {
   const router = useRouter();
@@ -13,7 +15,7 @@ const EditPackagePage: React.FC = () => {
 
   const parsedPackageId = packageId ? Number(packageId) : undefined;
 
-  const { data, isLoading, isError, error } = api.package.getPackage.useQuery(
+  const { data, isLoading, isError } = api.package.getPackage.useQuery(
     { id: parsedPackageId ?? 0 },
     {
       enabled: !!parsedPackageId,
@@ -49,8 +51,6 @@ const EditPackagePage: React.FC = () => {
     }
   };
 
-  if (isLoading) return <p>Loading...</p>;
-  if (isError) return <p>Error: {error.message}</p>;
   if (!data) return <p>Package not found</p>;
 
   const sanitizedData: PackageFormData = {
@@ -82,7 +82,11 @@ const EditPackagePage: React.FC = () => {
     })),
   };
 
-  return (
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div>
       <h1 className="flex justify-center text-2xl font-semibold">
         Edit Package

@@ -8,6 +8,8 @@ import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 export default function QuizPage() {
   const { packageId, sessionId } = useParams();
@@ -28,8 +30,8 @@ export default function QuizPage() {
 
   const {
     data: sessionDetails,
-    isLoading: isSessionLoading,
-    isError: isSessionError,
+    isLoading,
+    isError,
   } = api.quiz.getSessionDetails.useQuery({ sessionId: sessionIdString });
 
   useEffect(() => {
@@ -147,11 +149,11 @@ export default function QuizPage() {
     }
   };
 
-  // Render loading or error state
-  if (isSessionLoading || isQuestionsLoading) return <div>Loading...</div>;
-  if (isSessionError || isQuestionsError) return <div>Failed to load data</div>;
-
-  return (
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="flex w-full flex-col gap-3 p-4">
       <div>
         <p>

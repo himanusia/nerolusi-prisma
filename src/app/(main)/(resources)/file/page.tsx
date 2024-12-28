@@ -14,6 +14,8 @@ import { PlusIcon, Trash2Icon } from "lucide-react";
 import { toast } from "sonner";
 import FolderForm, { FolderInput } from "./folder-form";
 import { useState } from "react";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 export default function FolderPage() {
   const { data: session } = useSession();
@@ -59,15 +61,11 @@ export default function FolderPage() {
     refetch();
   };
 
-  if (isLoading) return <div className="mt-10 text-center">Loading...</div>;
-  if (isError)
-    return (
-      <div className="mt-10 text-center text-red-500">
-        Error fetching folders.
-      </div>
-    );
-
-  return (
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="container mx-auto flex flex-col p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold">Folders</h1>
