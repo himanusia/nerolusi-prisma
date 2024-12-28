@@ -24,9 +24,9 @@ export default function TryoutListPage() {
 
   if (!classId) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center">
+      <div className="flex h-[70vh] flex-col items-center justify-center">
         <h1 className="text-2xl font-bold">
-          You are not enrolled in any class
+          You are not enrolled in any classsss
         </h1>
         <p className="mt-2">
           Please contact your administrator to assign you to a class.
