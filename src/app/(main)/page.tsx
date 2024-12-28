@@ -50,7 +50,7 @@ export default function MainPage() {
         <div className="flex flex-col gap-2 border-l p-3">
           <p>{user.name}</p>
           <p>{user.email}</p>
-          {user.class.name && <p>{user.class.name}</p>}
+          {user?.class?.name && <p>{user.class.name}</p>}
         </div>
       </div>
       <div className="flex flex-col items-center gap-4 rounded-lg border p-5">

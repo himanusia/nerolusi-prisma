@@ -7,7 +7,7 @@ import {
 } from "~/server/api/trpc";
 
 export const quizRouter = createTRPCRouter({
-  getAnnouncement: userProcedure.query(async ({ ctx, input }) => {
+  getAnnouncement: userProcedure.query(async ({ ctx }) => {
     return await ctx.db.announcement.findFirst();
   }),
 
