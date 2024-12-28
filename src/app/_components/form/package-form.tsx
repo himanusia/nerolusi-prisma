@@ -17,6 +17,8 @@ import { PackageFormData } from "~/lib/types";
 import { toast } from "sonner";
 import SubtestForm from "./subtest-form";
 import { api } from "~/trpc/react";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 interface PackageFormProps {
   initialData?: PackageFormData;
@@ -24,8 +26,11 @@ interface PackageFormProps {
 }
 
 const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
-  const { data: classes, isLoading: isLoadingClasses } =
-    api.class.getAllClasses.useQuery();
+  const {
+    data: classes,
+    isLoading,
+    isError,
+  } = api.class.getAllClasses.useQuery();
 
   const [formData, setFormData] = useState<PackageFormData>({
     id: initialData?.id,
@@ -247,8 +252,10 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
     onSubmit(preparedFormData);
   };
 
-  return isLoadingClasses ? (
-    <div></div>
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
   ) : (
     <form onSubmit={handleSubmit} className="flex flex-col items-center gap-3">
       <label>

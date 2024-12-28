@@ -17,6 +17,8 @@ import VideoForm, { VideoInput } from "./video-form";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
 
 interface Video {
   id?: number;
@@ -50,14 +52,6 @@ export default function VideoGallery() {
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const editVideoMutation = api.video.editVideo.useMutation();
 
-  if (isLoading) return <div className="mt-10 text-center">Loading...</div>;
-  if (isError)
-    return (
-      <div className="mt-10 text-center text-red-500">
-        Error fetching videos.
-      </div>
-    );
-
   const handleAddVideo = async (data: VideoInput) => {
     await addVideoMutation.mutateAsync(data);
     setAddDialogOpen(false);
@@ -77,7 +71,11 @@ export default function VideoGallery() {
     }
   };
 
-  return (
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="container mx-auto flex flex-col gap-5 p-4">
       {/* Header Section */}
       <div className="flex items-center justify-between">
