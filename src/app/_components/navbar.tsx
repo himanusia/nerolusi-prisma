@@ -16,7 +16,6 @@ import { useSession } from "next-auth/react";
 import AuthDialog from "./auth-dialog";
 import { GoFile, GoVideo } from "react-icons/go";
 import React from "react";
-import { useRouter } from "next/navigation";
 
 const soals: { title: string; href: string; description: string }[] = [
   {
@@ -59,7 +58,6 @@ const soals: { title: string; href: string; description: string }[] = [
 
 export default function Navbar() {
   const session = useSession();
-  const router = useRouter();
   const user = session.data?.user;
 
   return (
@@ -114,23 +112,13 @@ export default function Navbar() {
         </NavigationMenuList>
       </NavigationMenu>
       {user?.role === "admin" && (
-        <Button
-          className="hidden md:block"
-          variant={"outline"}
-          onClick={() => router.push("/user")}
-          asChild
-        >
-          Manajemen Akun
+        <Button variant={"outline"} asChild>
+          <Link href={"/user"}>Manajemen Akun</Link>
         </Button>
       )}
       {user?.role !== "user" && (
-        <Button
-          className="hidden md:block"
-          variant={"outline"}
-          onClick={() => router.push("/packageManagement")}
-          asChild
-        >
-          Manajemen Soal
+        <Button variant={"outline"} asChild>
+          <Link href={"/packageManagement"}>Manajemen Soal</Link>
         </Button>
       )}
       <AuthDialog />
