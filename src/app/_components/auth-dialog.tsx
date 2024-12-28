@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Dialog,
   DialogTrigger,
@@ -8,9 +10,11 @@ import {
 import { Button } from "./ui/button";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { CiLogout } from "react-icons/ci";
+import { useRouter } from "next/navigation";
 
 export default function AuthDialog() {
   const session = useSession();
+  const router = useRouter();
   const user = session.data?.user;
 
   return (
@@ -43,6 +47,26 @@ export default function AuthDialog() {
               <CiLogout className="rotate-180 transform" />
               Sign Out
             </Button>
+            {user?.role === "admin" && (
+              <Button
+                className="md:hidden"
+                variant={"outline"}
+                onClick={() => router.push("/user")}
+                asChild
+              >
+                Manajemen Akun
+              </Button>
+            )}
+            {user?.role !== "user" && (
+              <Button
+                className="md:hidden"
+                variant={"outline"}
+                onClick={() => router.push("/packageManagement")}
+                asChild
+              >
+                Manajemen Soal
+              </Button>
+            )}
           </div>
         )}
       </DialogContent>
