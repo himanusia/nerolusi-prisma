@@ -15,8 +15,6 @@ import FileForm, { FileInput } from "./file-forms";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
-import ErrorPage from "~/app/error";
-import LoadingPage from "~/app/loading";
 
 export default function FilePage() {
   const { id } = useParams();
@@ -61,11 +59,15 @@ export default function FilePage() {
     refetch();
   };
 
-  return isError ? (
-    <ErrorPage />
-  ) : isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isLoading) return <div className="mt-10 text-center">Loading...</div>;
+  if (isError)
+    return (
+      <div className="mt-10 text-center text-red-500">
+        Error fetching files.
+      </div>
+    );
+
+  return (
     <div className="mx-auto flex size-full flex-col gap-4 p-4">
       <div className="flex items-center justify-between">
         <h1 className="text-4xl font-bold">Files</h1>

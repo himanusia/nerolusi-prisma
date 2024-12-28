@@ -3,8 +3,6 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Button } from "~/app/_components/ui/button";
-import ErrorPage from "~/app/error";
-import LoadingPage from "~/app/loading";
 import { api } from "~/trpc/react";
 
 export default function TryoutListPage() {
@@ -41,11 +39,15 @@ export default function TryoutListPage() {
     isError,
   } = api.package.getTryoutPackages.useQuery({ classId });
 
-  return isError ? (
-    <ErrorPage />
-  ) : isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (isError) {
+    return <div>Error fetching packages.</div>;
+  }
+
+  return (
     <div className="flex flex-col items-center gap-4">
       <h1 className="text-2xl font-bold">Tryout List</h1>
       <p>Select a tryout package to start</p>

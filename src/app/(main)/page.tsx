@@ -12,8 +12,6 @@ import { Button } from "../_components/ui/button";
 import { Input } from "../_components/ui/input";
 import { Textarea } from "../_components/ui/textarea";
 import { toast } from "sonner";
-import ErrorPage from "../error";
-import LoadingPage from "../loading";
 
 export default function MainPage() {
   const {
@@ -39,9 +37,9 @@ export default function MainPage() {
   });
 
   return sessionError || announcementError ? (
-    <ErrorPage />
+    <div>error</div>
   ) : sessionLoading || announcementLoading ? (
-    <LoadingPage />
+    <div>loading</div>
   ) : (
     <div className="flex size-full flex-col items-center justify-center gap-4">
       <div className="flex items-center gap-5 rounded-lg border px-5">

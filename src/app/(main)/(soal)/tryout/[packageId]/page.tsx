@@ -5,8 +5,6 @@ import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "~/app/_components/ui/button";
-import ErrorPage from "~/app/error";
-import LoadingPage from "~/app/loading";
 import { api } from "~/trpc/react";
 
 export default function QuizPage() {
@@ -22,11 +20,10 @@ export default function QuizPage() {
     isError,
   } = api.quiz.getPackageWithSubtest.useQuery({ id: Number(packageId) });
 
-  return isError ? (
-    <ErrorPage />
-  ) : isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isLoading) return <div>Loading subtests...</div>;
+  if (isError) return <div>Failed to load subtests</div>;
+
+  return (
     <div className="flex flex-col gap-4 rounded-lg border p-4">
       <div className="flex flex-col items-center gap-2 border-b p-4">
         <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>

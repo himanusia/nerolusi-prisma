@@ -21,11 +21,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>
+      <body className="size-full">
         <SessionProvider>
           <TRPCReactProvider>
             <NextSSRPlugin routerConfig={extractRouterConfig(ourFileRouter)} />
             {children}
+
             <Toaster />
           </TRPCReactProvider>
         </SessionProvider>
