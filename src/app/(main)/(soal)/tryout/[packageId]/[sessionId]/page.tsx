@@ -212,13 +212,15 @@ export default function QuizPage() {
                   {questions[currentQuestionIndex].content}
                 </strong>
               </p>
-              <Image
-                src={questions[currentQuestionIndex].imageUrl}
-                alt="Question Image"
-                width={300}
-                height={200}
-                className="max-h-[50vh] w-fit"
-              />
+              {questions[currentQuestionIndex].imageUrl && (
+                <Image
+                  src={questions[currentQuestionIndex].imageUrl}
+                  alt="Question Image"
+                  width={300}
+                  height={200}
+                  className="max-h-[50vh] w-fit"
+                />
+              )}
               {questions[currentQuestionIndex].type === "essay" ? (
                 <Input
                   className="w-full rounded border p-2"
