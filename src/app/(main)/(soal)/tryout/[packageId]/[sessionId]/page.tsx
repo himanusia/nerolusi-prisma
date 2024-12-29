@@ -49,10 +49,7 @@ export default function QuizPage() {
     isLoading: isQuestionsLoading,
     isError: isQuestionsError,
   } = api.quiz.getQuestionsBySubtest.useQuery(
-    {
-      subtestId: sessionDetails?.subtestId ?? 0,
-      userId: session.data?.user?.id,
-    },
+    { subtestId: sessionDetails?.subtestId ?? 0 },
     { enabled: !!sessionDetails },
   );
 

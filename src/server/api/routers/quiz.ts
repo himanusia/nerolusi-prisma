@@ -88,13 +88,13 @@ export const quizRouter = createTRPCRouter({
     }),
 
   getQuestionsBySubtest: userProcedure
-    .input(z.object({ subtestId: z.number(), userId: z.string() }))
+    .input(z.object({ subtestId: z.number() }))
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findUnique({
         where: {
           unique_user_subtest: {
             subtestId: input.subtestId,
-            userId: input.userId,
+            userId: ctx.session.user?.id,
           },
         },
         include: { package: { select: { TOend: true } } },
