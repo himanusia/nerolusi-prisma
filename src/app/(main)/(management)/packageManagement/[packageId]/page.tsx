@@ -42,7 +42,7 @@ export default function PackageManagementPage() {
                     const selectedSessionId = e.target.value;
                     if (selectedSessionId) {
                       router.push(
-                        `/tryout/${packageId}/${selectedSessionId}?userId=${params.data.id}`,
+                        `/drill/666/${packageId}/${selectedSessionId}?userId=${params.data.id}`,
                       );
                     }
                   }}
