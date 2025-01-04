@@ -104,7 +104,9 @@ export default function FolderPage() {
                 {folder.description}
               </p>
             </Button>
-            <div className="flex gap-4">
+            <div
+              className={`flex gap-4 ${session?.user?.role === "user" ? "hidden" : ""}`}
+            >
               <Dialog
                 open={editDialogOpen === folder.id}
                 onOpenChange={(open) => {
