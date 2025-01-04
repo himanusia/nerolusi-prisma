@@ -32,15 +32,17 @@ export default function QuizPage() {
     data: sessionDetails,
     isLoading,
     isError,
-  } = api.quiz.getSessionDetails.useQuery({ sessionId: sessionIdString });
+  } = api.quiz.getSessionDetails.useQuery({
+    sessionId: parseInt(sessionIdString),
+  });
 
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails.endTime) < new Date() &&
+      new Date(sessionDetails?.endTime) < new Date() &&
       new Date(sessionDetails.package.TOend) >= new Date()
     ) {
-      router.push(`/tryout/${packageId}`);
+      router.push(`/drill/${sessionDetails.subtest.type}`);
     }
   }, [sessionDetails, router, packageId]);
 
@@ -140,7 +142,7 @@ export default function QuizPage() {
         sessionId: parseInt(sessionIdString),
       });
       toast.success("Quiz submitted successfully!");
-      router.push(`/tryout/${packageId}`);
+      router.push(`/drill/${sessionDetails?.subtest.type}`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
@@ -149,12 +151,12 @@ export default function QuizPage() {
     }
   };
 
-  return isError ? (
+  return isError || isQuestionsError ? (
     <ErrorPage />
-  ) : isLoading ? (
+  ) : isLoading || isQuestionsLoading ? (
     <LoadingPage />
   ) : (
-    <div className="flex w-full flex-col gap-3 p-4">
+    <div className="mx-auto flex w-full flex-col gap-3 p-4">
       <div>
         <p>
           <strong>Subtest: </strong>
@@ -186,23 +188,21 @@ export default function QuizPage() {
         {/* Main Content */}
         <div className="flex w-full flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
-          {new Date(sessionDetails.endTime) < new Date() && (
-            <p>
-              <strong>
-                Score:{" "}
-                {questions[currentQuestionIndex].type === "essay"
-                  ? selectedAnswers
-                      .get(questions[currentQuestionIndex].id)
-                      ?.toString()
-                      .trim() ===
-                    questions[currentQuestionIndex].answers[0].content.trim()
-                    ? questions[currentQuestionIndex].score
-                    : 0
-                  : selectedAnswers.get(questions[currentQuestionIndex].id) ===
-                      questions[currentQuestionIndex].correctAnswerChoice
-                    ? questions[currentQuestionIndex].score
-                    : 0}
-              </strong>
+          {new Date(sessionDetails?.endTime) < new Date() && (
+            <p className="font-bold">
+              Score:{" "}
+              {questions[currentQuestionIndex].type === "essay"
+                ? selectedAnswers
+                    .get(questions[currentQuestionIndex].id)
+                    ?.toString()
+                    .trim() ===
+                  questions[currentQuestionIndex].answers[0].content.trim()
+                  ? questions[currentQuestionIndex].score
+                  : 0
+                : selectedAnswers.get(questions[currentQuestionIndex].id) ===
+                    questions[currentQuestionIndex].correctAnswerChoice
+                  ? questions[currentQuestionIndex].score
+                  : 0}
             </p>
           )}
 
@@ -214,13 +214,15 @@ export default function QuizPage() {
                   {questions[currentQuestionIndex].content}
                 </strong>
               </p>
-              <Image
-                src={questions[currentQuestionIndex].imageUrl}
-                alt="Question Image"
-                width={300}
-                height={200}
-                className="max-h-[50vh] w-fit"
-              />
+              {questions[currentQuestionIndex].imageUrl && (
+                <Image
+                  src={questions[currentQuestionIndex].imageUrl}
+                  alt="Question Image"
+                  width={300}
+                  height={200}
+                  className="max-h-[50vh] w-fit"
+                />
+              )}
               {questions[currentQuestionIndex].type === "essay" ? (
                 <Input
                   className="w-full rounded border p-2"
@@ -244,17 +246,30 @@ export default function QuizPage() {
                 questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
-                    className="flex cursor-pointer flex-row items-center"
+                    className={`flex cursor-pointer flex-row items-center rounded-lg px-5 py-1 ${
+                      questions[currentQuestionIndex].correctAnswerChoice ===
+                        answer.index ||
+                      (new Date(sessionDetails.endTime) > new Date() &&
+                        selectedAnswers.get(
+                          questions[currentQuestionIndex].id,
+                        ) === answer.index)
+                        ? "bg-green-500"
+                        : selectedAnswers.get(
+                              questions[currentQuestionIndex].id,
+                            ) === answer.index
+                          ? "bg-red-500"
+                          : ""
+                    }`}
                   >
                     <Input
                       type="radio"
                       disabled={
-                        new Date(sessionDetails.package.TOend) < new Date() &&
+                        new Date(sessionDetails.endTime) < new Date() &&
                         session.data?.user?.role === "user"
                       }
                       name={`question-${questions[currentQuestionIndex].id}`}
                       value={answer.index}
-                      className="mr-2 size-fit"
+                      className={`hidden`}
                       checked={
                         selectedAnswers.get(
                           questions[currentQuestionIndex].id,
@@ -273,7 +288,7 @@ export default function QuizPage() {
               )}
 
               {/* Display Explanation */}
-              {new Date(sessionDetails.endTime) < new Date() && (
+              {new Date(sessionDetails?.endTime) < new Date() && (
                 <p className="font-bold">
                   Explanation:{" "}
                   {questions[currentQuestionIndex].explanation ?? "N/A"}
@@ -291,7 +306,7 @@ export default function QuizPage() {
                 <Button
                   className={`size-fit ${
                     selectedAnswers.has(questions[index].id)
-                      ? "bg-green-500 text-white"
+                      ? "bg-green-500 text-white hover:bg-green-600"
                       : ""
                   }`}
                   onClick={() => setCurrentQuestionIndex(index)}
@@ -305,7 +320,7 @@ export default function QuizPage() {
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting}
-            className={`${new Date(sessionDetails.endTime) < new Date() && session.data.user.role === "user" ? "hidden" : ""}`}
+            className={`${new Date(sessionDetails?.endTime) < new Date() && session.data.user.role === "user" ? "hidden" : ""}`}
           >
             {isSubmitting ? "Submitting..." : "Submit"}
           </Button>
