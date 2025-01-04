@@ -179,7 +179,9 @@ export default function QuizPage() {
             }
           })()}
         </p>
-        <p className={`${timeLeft <= 0 ? "hidden" : ""}`}>
+        <p
+          className={`${timeLeft <= 0 || new Date(sessionDetails?.endTime) < new Date() ? "hidden" : ""}`}
+        >
           <strong>Time Left:</strong> {formatTime(timeLeft)}
         </p>
       </div>
@@ -247,8 +249,9 @@ export default function QuizPage() {
                   <label
                     key={answer.index}
                     className={`flex cursor-pointer flex-row items-center rounded-lg px-5 py-1 ${
-                      questions[currentQuestionIndex].correctAnswerChoice ===
-                        answer.index ||
+                      (new Date(sessionDetails.endTime) < new Date() &&
+                        questions[currentQuestionIndex].correctAnswerChoice ===
+                          answer.index) ||
                       (new Date(sessionDetails.endTime) > new Date() &&
                         selectedAnswers.get(
                           questions[currentQuestionIndex].id,
