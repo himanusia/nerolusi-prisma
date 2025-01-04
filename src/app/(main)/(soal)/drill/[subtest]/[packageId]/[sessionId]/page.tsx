@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "~/app/_components/ui/button";
 import { api } from "~/trpc/react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { Input } from "~/app/_components/ui/input";
 import Image from "next/image";
@@ -13,6 +13,8 @@ import LoadingPage from "~/app/loading";
 
 export default function QuizPage() {
   const { packageId, sessionId } = useParams();
+  const searchParams = useSearchParams();
+  const userId = searchParams.get("userId");
   const router = useRouter();
   const session = useSession();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
@@ -51,7 +53,10 @@ export default function QuizPage() {
     isLoading: isQuestionsLoading,
     isError: isQuestionsError,
   } = api.quiz.getQuestionsBySubtest.useQuery(
-    { subtestId: sessionDetails?.subtestId ?? 0 },
+    {
+      subtestId: sessionDetails?.subtestId ?? 0,
+      userId: userId ?? session.data?.user?.id,
+    },
     { enabled: !!sessionDetails },
   );
 
@@ -240,7 +245,7 @@ export default function QuizPage() {
                     )
                   }
                   disabled={
-                    new Date(sessionDetails.package.TOend) < new Date() &&
+                    new Date(sessionDetails.endTime) < new Date() &&
                     session.data?.user?.role === "user"
                   }
                 />

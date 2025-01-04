@@ -41,7 +41,9 @@ export default function PackageManagementPage() {
                   onChange={(e) => {
                     const selectedSessionId = e.target.value;
                     if (selectedSessionId) {
-                      router.push(`/tryout/${packageId}/${selectedSessionId}`);
+                      router.push(
+                        `/drill/admin/${packageId}/${selectedSessionId}?userId=${params.data.id}`,
+                      );
                     }
                   }}
                   defaultValue=""
@@ -71,6 +73,7 @@ export default function PackageManagementPage() {
 
   const rowData = data.map((user) => ({
     quizSession: user.quizSession,
+    id: user.id,
     name: user.name || "Unnamed User",
     email: user.email || "N/A",
     score: user.score,

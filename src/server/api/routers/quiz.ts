@@ -175,7 +175,10 @@ export const quizRouter = createTRPCRouter({
       const session = await ctx.db.quizSession.findFirst({
         where: {
           subtestId: input.subtestId,
-          userId: input.userId ?? ctx.session.user?.id,
+          userId:
+            ctx.session.user.role === "admin"
+              ? (input.userId ?? ctx.session.user?.id)
+              : ctx.session.user?.id,
         },
         select: { endTime: true, package: { select: { TOend: true } } },
       });
@@ -224,7 +227,11 @@ export const quizRouter = createTRPCRouter({
         },
       });
 
-      if (!session || session.userId !== ctx.session.user?.id) {
+      if (
+        !session ||
+        (session.userId !== ctx.session.user?.id &&
+          ctx.session.user?.role !== "admin")
+      ) {
         return null;
       }
 
