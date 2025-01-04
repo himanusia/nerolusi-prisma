@@ -253,7 +253,7 @@ export default function QuizPage() {
                 questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
-                    className={`flex cursor-pointer flex-row items-center rounded-lg px-5 py-1 ${
+                    className={`flex flex-row items-center rounded-lg px-5 py-1 ${
                       (new Date(sessionDetails.endTime) < new Date() &&
                         questions[currentQuestionIndex].correctAnswerChoice ===
                           answer.index) ||
@@ -267,6 +267,11 @@ export default function QuizPage() {
                             ) === answer.index
                           ? "bg-red-500"
                           : ""
+                    } ${
+                      !(
+                        new Date(sessionDetails.endTime) < new Date() &&
+                        session.data?.user?.role === "user"
+                      ) && "cursor-pointer hover:bg-green-600"
                     }`}
                   >
                     <Input
