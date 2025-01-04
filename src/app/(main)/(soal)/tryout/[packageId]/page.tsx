@@ -31,7 +31,7 @@ export default function QuizPage() {
         <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
         {new Date(packageData.TOend) < new Date() && (
           <h2 className="mb-4 text-lg font-semibold">
-            Score: {packageData.totalScore}
+            Score: {packageData.totalScore / packageData.subtests.length}
           </h2>
         )}
         <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
