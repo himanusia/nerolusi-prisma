@@ -32,7 +32,9 @@ export default function QuizPage() {
     data: sessionDetails,
     isLoading,
     isError,
-  } = api.quiz.getSessionDetails.useQuery({ sessionId: sessionIdString });
+  } = api.quiz.getSessionDetails.useQuery({
+    sessionId: parseInt(sessionIdString),
+  });
 
   useEffect(() => {
     if (
@@ -244,17 +246,30 @@ export default function QuizPage() {
                 questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
-                    className="flex cursor-pointer flex-row items-center"
+                    className={`flex cursor-pointer flex-row items-center rounded-lg px-5 py-1 ${
+                      questions[currentQuestionIndex].correctAnswerChoice ===
+                        answer.index ||
+                      (new Date(sessionDetails.endTime) > new Date() &&
+                        selectedAnswers.get(
+                          questions[currentQuestionIndex].id,
+                        ) === answer.index)
+                        ? "bg-green-500"
+                        : selectedAnswers.get(
+                              questions[currentQuestionIndex].id,
+                            ) === answer.index
+                          ? "bg-red-500"
+                          : ""
+                    }`}
                   >
                     <Input
                       type="radio"
                       disabled={
-                        new Date(sessionDetails.package.TOend) < new Date() &&
+                        new Date(sessionDetails.endTime) < new Date() &&
                         session.data?.user?.role === "user"
                       }
                       name={`question-${questions[currentQuestionIndex].id}`}
                       value={answer.index}
-                      className="mr-2 size-fit"
+                      className={`hidden`}
                       checked={
                         selectedAnswers.get(
                           questions[currentQuestionIndex].id,
@@ -291,7 +306,7 @@ export default function QuizPage() {
                 <Button
                   className={`size-fit ${
                     selectedAnswers.has(questions[index].id)
-                      ? "bg-green-500 text-white"
+                      ? "bg-green-500 text-white hover:bg-green-600"
                       : ""
                   }`}
                   onClick={() => setCurrentQuestionIndex(index)}

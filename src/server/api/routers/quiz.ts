@@ -47,6 +47,7 @@ export const quizRouter = createTRPCRouter({
                 },
                 select: {
                   endTime: true,
+                  package: { select: { TOend: true } },
                   userAnswers: {
                     where: {
                       packageId: input.id,
@@ -85,15 +86,15 @@ export const quizRouter = createTRPCRouter({
         if (!quizSession) {
           return {
             ...subtest,
-            quizSession: false,
+            quizSession: null,
             score: null,
           };
         }
 
-        if (new Date(quizSession.endTime) > new Date()) {
+        if (new Date(quizSession.package.TOend) > new Date()) {
           return {
             ...subtest,
-            quizSession: true,
+            quizSession: quizSession.endTime,
             score: null,
           };
         }
@@ -119,7 +120,7 @@ export const quizRouter = createTRPCRouter({
 
         return {
           ...subtest,
-          quizSession: true,
+          quizSession: quizSession.endTime,
           score,
         };
       });
@@ -139,12 +140,10 @@ export const quizRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.quizSession.findUnique({
+      return await ctx.db.quizSession.findFirst({
         where: {
-          unique_user_subtest: {
-            userId: input.userId,
-            subtestId: input.subtestId,
-          },
+          userId: input.userId,
+          subtestId: input.subtestId,
         },
       });
     }),
@@ -173,19 +172,17 @@ export const quizRouter = createTRPCRouter({
   getQuestionsBySubtest: userProcedure
     .input(z.object({ subtestId: z.number(), userId: z.string().optional() }))
     .query(async ({ ctx, input }) => {
-      const session = await ctx.db.quizSession.findUnique({
+      const session = await ctx.db.quizSession.findFirst({
         where: {
-          unique_user_subtest: {
-            subtestId: input.subtestId,
-            userId: input.userId ?? ctx.session.user?.id,
-          },
+          subtestId: input.subtestId,
+          userId: input.userId ?? ctx.session.user?.id,
         },
-        include: { package: { select: { TOend: true } } },
+        select: { endTime: true, package: { select: { TOend: true } } },
       });
 
       if (!session) {
         return null;
-      } else if (new Date(session.endTime) > new Date()) {
+      } else if (new Date(session.package.TOend) > new Date()) {
         return await ctx.db.question
           .findMany({
             where: { subtestId: input.subtestId },
@@ -197,9 +194,9 @@ export const quizRouter = createTRPCRouter({
           .then((questions) =>
             questions.map((question) => ({
               ...question,
-              correctAnswerChoice: question.correctAnswerChoice ?? null,
-              explanation: question.explanation ?? null,
-              score: question.score ?? null,
+              correctAnswerChoice: null,
+              explanation: null,
+              score: null,
             })),
           );
       } else if (new Date(session.package.TOend) < new Date()) {
@@ -214,15 +211,15 @@ export const quizRouter = createTRPCRouter({
     }),
 
   getSessionDetails: userProcedure
-    .input(z.object({ sessionId: z.string() }))
+    .input(z.object({ sessionId: z.number() }))
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findUnique({
-        where: { id: parseInt(input.sessionId) },
+        where: { id: input.sessionId },
         include: {
           subtest: true,
           package: { select: { TOend: true } },
           userAnswers: {
-            where: { quizSessionId: parseInt(input.sessionId) },
+            where: { quizSessionId: input.sessionId },
           },
         },
       });
@@ -291,18 +288,6 @@ export const quizRouter = createTRPCRouter({
         where: { id: input.sessionId },
         data: {
           endTime: new Date().toISOString(),
-          duration: Math.floor(
-            (new Date().getTime() -
-              new Date(
-                (
-                  await ctx.db.quizSession.findUnique({
-                    where: { id: input.sessionId },
-                    select: { startTime: true },
-                  })
-                ).startTime,
-              ).getTime()) /
-              60000,
-          ),
         },
       });
     }),

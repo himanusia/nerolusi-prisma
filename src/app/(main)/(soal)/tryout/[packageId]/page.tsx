@@ -1,6 +1,5 @@
 "use client";
 
-import { QuizSession } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -46,8 +45,10 @@ export default function QuizPage() {
             variant="outline"
             className={`w-full ${subtest.quizSession && "bg-green-600 hover:bg-green-700"}`}
             disabled={
-              new Date(subtest.quizSession[0]?.endTime) < new Date() &&
-              new Date(packageData.TOend) >= new Date()
+              (subtest.quizSession &&
+                new Date(subtest?.quizSession) < new Date() &&
+                new Date(packageData.TOend) >= new Date()) ||
+              (new Date(packageData.TOend) < new Date() && !subtest.quizSession)
             }
           >
             {(() => {
@@ -69,7 +70,9 @@ export default function QuizPage() {
               }
             })()}{" "}
             {subtest.duration && `(durasi: ${subtest.duration} menit)`}{" "}
-            {subtest.score && `(score: ${subtest.score})`}
+            <div className={`${!subtest.score && "hidden"}`}>
+              (Score: {subtest.score})
+            </div>
           </Button>
         ))}
       </div>
