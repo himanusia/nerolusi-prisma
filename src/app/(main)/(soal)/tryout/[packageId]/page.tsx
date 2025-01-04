@@ -30,6 +30,11 @@ export default function QuizPage() {
     <div className="flex flex-col gap-4 rounded-lg border p-4">
       <div className="flex flex-col items-center gap-2 border-b p-4">
         <h1 className="mb-4 text-xl font-bold">{packageData.name}</h1>
+        {new Date(packageData.TOend) < new Date() && (
+          <h2 className="mb-4 text-lg font-semibold">
+            Score: {packageData.totalScore}
+          </h2>
+        )}
         <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
         <p>End Time: {new Date(packageData.TOend).toLocaleString()}</p>
       </div>
@@ -39,7 +44,7 @@ export default function QuizPage() {
             key={subtest.id}
             onClick={() => handleSubtestClick(subtest.id, subtest.duration)}
             variant="outline"
-            className={`w-full ${subtest.quizSession[0] && "bg-green-600 hover:bg-green-700"}`}
+            className={`w-full ${subtest.quizSession && "bg-green-600 hover:bg-green-700"}`}
             disabled={
               new Date(subtest.quizSession[0]?.endTime) < new Date() &&
               new Date(packageData.TOend) >= new Date()
@@ -62,7 +67,9 @@ export default function QuizPage() {
                 default:
                   return subtest.type;
               }
-            })()}
+            })()}{" "}
+            {subtest.duration && `(durasi: ${subtest.duration} menit)`}{" "}
+            {subtest.score && `(score: ${subtest.score})`}
           </Button>
         ))}
       </div>

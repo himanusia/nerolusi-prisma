@@ -30,9 +30,13 @@ export const quizRouter = createTRPCRouter({
   getPackageWithSubtest: userProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.package.findUnique({
+      const packageData = await ctx.db.package.findUnique({
         where: {
           id: input.id,
+        },
+        omit: {
+          id: true,
+          classId: true,
         },
         include: {
           subtests: {
@@ -41,11 +45,90 @@ export const quizRouter = createTRPCRouter({
                 where: {
                   userId: ctx.session.user?.id,
                 },
+                select: {
+                  endTime: true,
+                  userAnswers: {
+                    where: {
+                      packageId: input.id,
+                    },
+                    select: {
+                      question: {
+                        select: {
+                          correctAnswerChoice: true,
+                          score: true,
+                          answers: {
+                            select: {
+                              content: true,
+                            },
+                          },
+                        },
+                      },
+                      answerChoice: true,
+                      essayAnswer: true,
+                    },
+                  },
+                },
               },
             },
           },
         },
       });
+
+      if (!packageData) {
+        throw new Error("Package not found");
+      }
+
+      let totalScore = 0;
+
+      const subtestsWithScores = packageData.subtests.map((subtest) => {
+        const quizSession = subtest.quizSession[0];
+        if (!quizSession) {
+          return {
+            ...subtest,
+            quizSession: false,
+            score: null,
+          };
+        }
+
+        if (new Date(quizSession.endTime) > new Date()) {
+          return {
+            ...subtest,
+            quizSession: true,
+            score: null,
+          };
+        }
+
+        const score = quizSession.userAnswers.reduce((total, answer) => {
+          if (answer.question.correctAnswerChoice !== null) {
+            return (
+              total +
+              (answer.answerChoice === answer.question.correctAnswerChoice
+                ? answer.question.score
+                : 0)
+            );
+          } else if (answer.essayAnswer !== null) {
+            const isEssayCorrect =
+              answer.essayAnswer.trim().toLowerCase() ===
+              answer.question.answers[0]?.content.trim().toLowerCase();
+            return total + (isEssayCorrect ? answer.question.score : 0);
+          }
+          return total;
+        }, 0);
+
+        totalScore += score;
+
+        return {
+          ...subtest,
+          quizSession: true,
+          score,
+        };
+      });
+
+      return {
+        ...packageData,
+        totalScore,
+        subtests: subtestsWithScores,
+      };
     }),
 
   getSession: userProcedure
@@ -88,13 +171,13 @@ export const quizRouter = createTRPCRouter({
     }),
 
   getQuestionsBySubtest: userProcedure
-    .input(z.object({ subtestId: z.number() }))
+    .input(z.object({ subtestId: z.number(), userId: z.string().optional() }))
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findUnique({
         where: {
           unique_user_subtest: {
             subtestId: input.subtestId,
-            userId: ctx.session.user?.id,
+            userId: input.userId ?? ctx.session.user?.id,
           },
         },
         include: { package: { select: { TOend: true } } },
