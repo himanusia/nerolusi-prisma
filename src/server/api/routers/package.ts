@@ -95,6 +95,11 @@ export const packageRouter = createTRPCRouter({
             },
             select: {
               id: true,
+              package: {
+                select: {
+                  _count: { select: { subtests: true } },
+                },
+              },
               subtest: {
                 select: {
                   type: true,
@@ -150,7 +155,7 @@ export const packageRouter = createTRPCRouter({
           id: user.id,
           name: user.name,
           email: user.email,
-          score,
+          score: score / user.quizSession[0].package._count.subtests,
           quizSession: user.quizSession,
         };
       });
