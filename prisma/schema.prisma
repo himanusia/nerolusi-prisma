@@ -1,10 +1,10 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["omitApi"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -57,12 +57,12 @@ model Account {
   type                     String
   provider                 String
   providerAccountId        String
-  refresh_token            String?
-  access_token             String?
+  refresh_token            String? @db.Text
+  access_token             String? @db.Text
   expires_at               Int?
   token_type               String?
   scope                    String?
-  id_token                 String?
+  id_token                 String? @db.Text
   session_state            String?
   refresh_token_expires_in Int?
   user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -81,7 +81,7 @@ model Session {
 model Class {
   id        Int           @id @default(autoincrement())
   name      String
-  createdAt DateTime       @default(now())
+  createdAt DateTime      @default(now())
   users     User[]
   packages  Package[]
 }
@@ -95,7 +95,7 @@ model Package {
   TOend       DateTime?
   subtests    Subtest[]
   userAnswers UserAnswer[]
-  class       Class?      @relation(fields: [classId], references: [id], onDelete: Cascade)
+  class       Class?       @relation(fields: [classId], references: [id], onDelete: Cascade)
   quizSession QuizSession[]
 }
 
@@ -110,68 +110,67 @@ model Subtest {
 }
 
 model Question {
-  id                    Int           @id @default(autoincrement())
-  index                 Int
-  content               String
-  imageUrl              String?
-  type                  QuestionType
-  score                 Int
-  explanation           String?
-  answers               Answer[]    
-  correctAnswerChoice   Int?
-  packageId             Int
-  subtestId             Int         
-  subtest               Subtest      @relation(fields: [subtestId], references: [id], onDelete: Cascade)
-  userAnswers           UserAnswer[] 
+  id                  Int           @id @default(autoincrement())
+  index               Int
+  content             String        @db.Text
+  imageUrl            String?
+  type                QuestionType
+  score               Int
+  explanation         String?
+  answers             Answer[]    
+  correctAnswerChoice Int?
+  packageId           Int
+  subtestId           Int         
+  subtest             Subtest      @relation(fields: [subtestId], references: [id], onDelete: Cascade)
+  userAnswers         UserAnswer[] 
 }
 
-
 model Answer {
-  id          Int          @id @default(autoincrement())
-  content     String      
-  index       Int       
-  questionId  Int
-  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  id         Int      @id @default(autoincrement())
+  content    String   @db.Text
+  index      Int       
+  questionId Int
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 }
 
 model UserAnswer {
-  id          Int          @id @default(autoincrement())
-  essayAnswer String?
-  answerChoice Int?      
-  questionId  Int
-  question    Question     @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userId      String 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId   Int
-  package     Package      @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  id            Int         @id @default(autoincrement())
+  essayAnswer   String?
+  answerChoice  Int?      
+  questionId    Int
+  question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId        String 
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId     Int
+  package       Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   quizSessionId Int
-  quizSession QuizSession  @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
+  quizSession   QuizSession @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
 
   @@unique([userId, quizSessionId, questionId], name: "userId_quizSessionId_questionId")
 }
 
 model Video {
-  id          Int       @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   title       String
   description String?
   url         String
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 }
 
 model Folder {
-  id          Int       @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   name        String
   description String?
   files       File[]
 }
 
 model File {
-  id          Int       @id @default(autoincrement())
+  id          Int     @id @default(autoincrement())
   title       String
   description String?
   url         String
   folderId    Int
-  folder      Folder    @relation(fields: [folderId], references: [id], onDelete: Cascade)
+  folder      Folder  @relation(fields: [folderId], references: [id], onDelete: Cascade)
 }
 
 model VerificationToken {
@@ -183,25 +182,25 @@ model VerificationToken {
 }
 
 model QuizSession {
-  id         Int      @id @default(autoincrement())
-  startTime  DateTime @default(now())
-  endTime    DateTime?
-  duration   Int
-  userId     String   
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId  Int
-  package    Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  subtestId  Int
-  subtest    Subtest  @relation(fields: [subtestId], references: [id], onDelete: Cascade)
-  userAnswers UserAnswer[]
-
+  id           Int         @id @default(autoincrement())
+  startTime    DateTime    @default(now())
+  endTime      DateTime?
+  duration     Int
+  userId       String   
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId    Int
+  package      Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  subtestId    Int
+  subtest      Subtest     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
+  userAnswers  UserAnswer[]
+  
   @@unique([userId, subtestId], name: "unique_user_subtest")
 }
 
 model Announcement {
-  id          Int       @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   title       String?
-  content     String?
+  content     String?  @db.Text
   url         String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime @default(now())
 }
