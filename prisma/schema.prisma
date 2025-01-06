@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -57,12 +57,12 @@ model Account {
   type                     String
   provider                 String
   providerAccountId        String
-  refresh_token            String? @db.Text
-  access_token             String? @db.Text
+  refresh_token            String? 
+  access_token             String? 
   expires_at               Int?
   token_type               String?
   scope                    String?
-  id_token                 String? @db.Text
+  id_token                 String? 
   session_state            String?
   refresh_token_expires_in Int?
   user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -112,7 +112,7 @@ model Subtest {
 model Question {
   id                  Int           @id @default(autoincrement())
   index               Int
-  content             String        @db.Text
+  content             String        
   imageUrl            String?
   type                QuestionType
   score               Int
@@ -127,7 +127,7 @@ model Question {
 
 model Answer {
   id         Int      @id @default(autoincrement())
-  content    String   @db.Text
+  content    String   
   index      Int       
   questionId Int
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
@@ -200,7 +200,7 @@ model QuizSession {
 model Announcement {
   id          Int      @id @default(autoincrement())
   title       String?
-  content     String?  @db.Text
+  content     String?  
   url         String?
   createdAt   DateTime @default(now())
 }
