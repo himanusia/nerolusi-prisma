@@ -195,7 +195,7 @@ export default function QuizPage() {
         {/* Main Content */}
         <div className="flex w-full flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
-          {new Date(sessionDetails?.endTime) < new Date() && (
+          {/* {new Date(sessionDetails?.endTime) < new Date() && (
             <p className="font-bold">
               Score:{" "}
               {questions[currentQuestionIndex].type === "essay"
@@ -211,7 +211,7 @@ export default function QuizPage() {
                   ? questions[currentQuestionIndex].score
                   : 0}
             </p>
-          )}
+          )} */}
 
           {questions && questions[currentQuestionIndex] && (
             <div key={questions[currentQuestionIndex].id} className="space-y-2">
