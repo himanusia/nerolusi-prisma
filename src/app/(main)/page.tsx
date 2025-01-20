@@ -55,7 +55,7 @@ export default function MainPage() {
           {user?.class?.name && <p>{user.class.name}</p>}
         </div>
       </div>
-      <div className="flex flex-col items-center gap-4 rounded-lg border p-5">
+      <div className="flex flex-col items-center gap-4 rounded-lg border p-5 lg:max-w-[50%]">
         <h1 className="text-2xl">{announcement?.title}</h1>
         <p>{announcement?.content}</p>
         {user.role === "admin" && (
