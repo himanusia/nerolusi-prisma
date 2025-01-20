@@ -266,7 +266,7 @@ export default function QuizPage() {
                               questions[currentQuestionIndex].id,
                             ) === answer.index
                           ? "bg-red-500"
-                          : ""
+                          : "hover:bg-slate-300"
                     } ${
                       !(
                         new Date(sessionDetails.endTime) < new Date() &&
@@ -313,11 +313,11 @@ export default function QuizPage() {
 
         {/* Sidebar for navigating questions */}
         <div className="flex w-full flex-col justify-between gap-3 rounded-md border p-3 md:w-fit">
-          <ul className="flex size-fit gap-3">
+          <ul className="flex size-fit flex-wrap gap-3">
             {questions?.map((_, index) => (
               <li key={index} className="size-fit">
                 <Button
-                  className={`size-fit ${
+                  className={`size-9 ${
                     selectedAnswers.has(questions[index].id)
                       ? "bg-green-500 text-white hover:bg-green-600"
                       : ""
