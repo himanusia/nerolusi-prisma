@@ -10,6 +10,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
+import Editor from "~/app/_components/editor";
 
 export default function QuizPage() {
   const { packageId, sessionId } = useParams();
@@ -215,12 +216,8 @@ export default function QuizPage() {
 
           {questions && questions[currentQuestionIndex] && (
             <div key={questions[currentQuestionIndex].id} className="space-y-2">
-              <p>
-                <strong>
-                  {currentQuestionIndex + 1}.{" "}
-                  {questions[currentQuestionIndex].content}
-                </strong>
-              </p>
+              <strong>{currentQuestionIndex + 1}. </strong>
+              <Editor content={questions[currentQuestionIndex].content} />
               {questions[currentQuestionIndex].imageUrl && (
                 <Image
                   src={questions[currentQuestionIndex].imageUrl}
@@ -253,7 +250,7 @@ export default function QuizPage() {
                 questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
-                    className={`flex flex-row items-center rounded-lg px-5 py-1 ${
+                    className={`flex flex-row items-center rounded-lg px-5 ${
                       (new Date(sessionDetails.endTime) < new Date() &&
                         questions[currentQuestionIndex].correctAnswerChoice ===
                           answer.index) ||
@@ -295,16 +292,18 @@ export default function QuizPage() {
                         )
                       }
                     />
-                    {answer.content}
+                    <Editor content={answer.content} />
                   </label>
                 ))
               )}
 
               {/* Display Explanation */}
               {new Date(sessionDetails?.endTime) < new Date() && (
-                <p className="font-bold">
+                <p>
                   Explanation:{" "}
-                  {questions[currentQuestionIndex].explanation ?? "N/A"}
+                  <Editor
+                    content={questions[currentQuestionIndex].explanation ?? ""}
+                  />
                 </p>
               )}
             </div>
