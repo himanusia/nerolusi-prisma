@@ -11,48 +11,37 @@ import {
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import { Button } from "./ui/button";
+import { Separator } from "./ui/separator";
 import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import AuthDialog from "./auth-dialog";
 import { GoFile, GoVideo } from "react-icons/go";
 import React from "react";
 
-const soals: { title: string; href: string; description: string }[] = [
+const soals: { title: string; href: string }[] = [
   {
     title: "Kemampuan Penalaran Umum",
     href: "/drill/pu",
-    description:
-      "Mengukur kemampuan berpikir logis, analitis, dan sistematis dalam menyelesaikan masalah.",
   },
   {
     title: "Pengetahuan dan Pemahaman Umum",
     href: "/drill/ppu",
-    description:
-      "Menilai wawasan dan pengetahuan umum serta pemahaman mengenai berbagai isu terkini.",
   },
   {
     title: "Kemampuan Memahami Bacaan dan Menulis",
     href: "/drill/pbm",
-    description:
-      "Mengukur kemampuan dalam memahami teks bacaan dan menyusun tulisan dengan baik dan benar.",
   },
   {
     title: "Pengetahuan Kuantitatif",
     href: "/drill/pk",
-    description:
-      "Menilai kemampuan mengaplikasikan konsep matematika dasar dalam kehidupan sehari-hari.",
   },
   {
     title: "Literasi Bahasa Indonesia dan Bahasa Inggris",
     href: "/drill/lb",
-    description:
-      "Mengukur kemampuan memahami teks dan konteks dalam Bahasa Indonesia dan Bahasa Inggris.",
   },
   {
     title: "Penalaran Matematika",
     href: "/drill/pm",
-    description:
-      "Mengukur kemampuan penalaran matematis dalam menyelesaikan masalah yang lebih kompleks.",
   },
 ];
 
@@ -61,7 +50,7 @@ export default function Navbar() {
   const user = session.data?.user;
 
   return (
-    <div className="sticky left-0 top-0 z-50 flex h-10 w-screen items-center justify-center gap-3 bg-background py-6 scrollbar scrollbar-none">
+    <div className="sticky left-0 top-0 z-50 flex h-10 w-screen items-center justify-center gap-3 bg-background py-6 shadow-lg scrollbar scrollbar-none">
       <Link href={"/"}>
         <Image
           src={"/logo.png"}
@@ -70,29 +59,30 @@ export default function Navbar() {
           height={"36"}
         ></Image>
       </Link>
+      <Separator orientation="vertical" className="py-3" />
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
             <NavigationMenuTrigger>Drill</NavigationMenuTrigger>
             <NavigationMenuContent>
-              <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+              <ul className="grid gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
                 {soals.map((soal) => (
                   <ListItem
                     key={soal.title}
                     title={soal.title}
                     href={soal.href}
-                  >
-                    {soal.description}
-                  </ListItem>
+                  ></ListItem>
                 ))}
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
+          <Separator orientation="vertical" className="py-3" />
           <NavigationMenuItem>
             <Link href="/tryout" legacyBehavior passHref>
               <Button variant={"ghost"}>Try Out</Button>
             </Link>
           </NavigationMenuItem>
+          <Separator orientation="vertical" className="py-3" />
           <NavigationMenuItem>
             <Link href="/video" legacyBehavior passHref>
               <Button variant={"ghost"} className="flex gap-2">
@@ -101,6 +91,7 @@ export default function Navbar() {
               </Button>
             </Link>
           </NavigationMenuItem>
+          <Separator orientation="vertical" className="py-3" />
           <NavigationMenuItem>
             <Link href="/file" legacyBehavior passHref>
               <Button variant={"ghost"} className="flex gap-2">
@@ -112,15 +103,16 @@ export default function Navbar() {
         </NavigationMenuList>
       </NavigationMenu>
       {user?.role === "admin" && (
-        <Button variant={"outline"} asChild>
-          <Link href={"/user"}>Manajemen Akun</Link>
-        </Button>
+        <Link href={"/user"} className="rounded-lg border p-2">
+          Manajemen Akun
+        </Link>
       )}
       {user?.role !== "user" && (
-        <Button variant={"outline"} asChild>
-          <Link href={"/packageManagement"}>Manajemen Soal</Link>
-        </Button>
+        <Link href={"/packageManagement"} className="rounded-lg border p-2">
+          Manajemen Soal
+        </Link>
       )}
+      <Separator orientation="vertical" className="py-3" />
       <AuthDialog />
     </div>
   );
@@ -136,7 +128,7 @@ const ListItem = React.forwardRef<
         <a
           ref={ref}
           className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            "block select-none space-y-1 rounded-md border p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className,
           )}
           {...props}
