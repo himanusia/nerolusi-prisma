@@ -34,8 +34,8 @@ export default function QuizPage() {
             Score: {packageData.totalScore / packageData.subtests.length}
           </h2>
         )}
-        <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
-        <p>End Time: {new Date(packageData.TOend).toLocaleString()}</p>
+        {/* <p>Start Time: {new Date(packageData.TOstart).toLocaleString()}</p>
+        <p>End Time: {new Date(packageData.TOend).toLocaleString()}</p> */}
       </div>
       <div className="flex flex-wrap gap-4">
         {packageData.subtests?.map((subtest) => (

@@ -60,8 +60,20 @@ export default function TryoutListPage() {
             className="flex size-fit w-full flex-col rounded-none border-b p-3"
           >
             <h3 className="font-bold">{pkg.name}</h3>
-            {pkg.TOstart && <p>Start Date: {pkg.TOstart.toLocaleString()}</p>}
-            {pkg.TOend && <p>End Date: {pkg.TOend.toLocaleString()}</p>}
+            {pkg.TOstart && (
+              <p
+                className={`${new Date(pkg.TOend) < new Date() ? "hidden" : ""}`}
+              >
+                Start Date: {pkg.TOstart.toLocaleString()}
+              </p>
+            )}
+            {pkg.TOend && (
+              <p
+                className={`${new Date(pkg.TOend) < new Date() ? "hidden" : ""}`}
+              >
+                End Date: {pkg.TOend.toLocaleString()}
+              </p>
+            )}
           </Button>
         ))}
       </div>
