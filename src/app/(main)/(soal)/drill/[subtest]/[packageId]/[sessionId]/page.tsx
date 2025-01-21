@@ -162,7 +162,7 @@ export default function QuizPage() {
   ) : isLoading || isQuestionsLoading ? (
     <LoadingPage />
   ) : (
-    <div className="mx-auto flex w-full flex-col gap-3 p-4">
+    <div className="mx-auto flex w-full flex-col gap-3 p-4 lg:w-3/5">
       <div>
         <p>
           <strong>Subtest: </strong>
@@ -311,7 +311,7 @@ export default function QuizPage() {
         </div>
 
         {/* Sidebar for navigating questions */}
-        <div className="flex w-full flex-col justify-between gap-3 rounded-md border p-3 md:w-fit">
+        <div className="flex w-full flex-col justify-between gap-3 rounded-md border p-3">
           <ul className="flex size-fit flex-wrap gap-3">
             {questions?.map((_, index) => (
               <li key={index} className="size-fit">
