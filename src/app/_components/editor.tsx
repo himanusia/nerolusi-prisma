@@ -13,12 +13,15 @@ import { cn } from "~/lib/utils";
 export default function Editor({
   isEdit,
   content,
+  onContentChange,
   className,
+  ...props
 }: {
   isEdit?: boolean;
   content: string;
   className?: React.HTMLAttributes<HTMLDivElement>;
-}) {
+  onContentChange?: (content: string) => void;
+} & React.HTMLAttributes<HTMLDivElement>) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -33,14 +36,16 @@ export default function Editor({
     content: content,
     editable: isEdit ?? false,
     immediatelyRender: false,
+    onUpdate: ({ editor }) => {
+      const updatedContent = editor.getHTML().replace(/<p>\s*<\/p>$/, "");
+      onContentChange?.(updatedContent);
+    },
   });
   return (
     <EditorContent
       editor={editor}
-      className={cn(
-        "m-0 h-fit overflow-scroll scrollbar scrollbar-thumb-current scrollbar-w-1 hover:scrollbar-thumb-foreground/50",
-        className,
-      )}
+      className={cn("h-fit", className)}
+      {...props}
     ></EditorContent>
   );
 }

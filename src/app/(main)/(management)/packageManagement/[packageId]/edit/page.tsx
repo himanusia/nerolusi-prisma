@@ -51,7 +51,7 @@ const EditPackagePage: React.FC = () => {
     }
   };
 
-  if (!data) return <p>Package not found</p>;
+  if (!data) return <LoadingPage />;
 
   const sanitizedData: PackageFormData = {
     id: data.id,

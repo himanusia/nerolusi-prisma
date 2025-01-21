@@ -69,7 +69,7 @@ export default function PackageManagementPage() {
     [],
   );
 
-  if (!data) return <div>No users found for this package.</div>;
+  if (!data) return <LoadingPage />;
 
   const rowData = data.map((user) => ({
     quizSession: user.quizSession,
@@ -85,12 +85,14 @@ export default function PackageManagementPage() {
     <LoadingPage />
   ) : (
     <div className="ag-theme-alpine size-full h-[80vh]">
-      <h1 className="text-xl font-bold">Package ID: {packageId}</h1>
-      <Button
-        onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
-      >
-        Edit
-      </Button>
+      <div className="mb-4 flex w-full items-center justify-between">
+        <h1 className="text-xl font-bold">Package ID: {packageId}</h1>
+        <Button
+          onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
+        >
+          Edit
+        </Button>
+      </div>
       <AgGridReact
         rowData={rowData}
         columnDefs={columnDefs}

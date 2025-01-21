@@ -164,6 +164,7 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
                 { index: 2, content: "" },
                 { index: 3, content: "" },
                 { index: 4, content: "" },
+                { index: 5, content: "" },
               ],
               correctAnswerChoice: 1,
             },
@@ -187,6 +188,7 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
         { index: 2, content: "" },
         { index: 3, content: "" },
         { index: 4, content: "" },
+        { index: 5, content: "" },
       ],
       correctAnswerChoice: 1,
     });
