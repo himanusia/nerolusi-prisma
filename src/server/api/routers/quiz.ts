@@ -82,6 +82,9 @@ export const quizRouter = createTRPCRouter({
       let totalScore = 0;
 
       const subtestsWithScores = packageData.subtests.map((subtest) => {
+        let totalCorrect = 0;
+        let totalQuestion = 0;
+
         const quizSession = subtest.quizSession[0];
         if (!quizSession) {
           return {
@@ -100,7 +103,13 @@ export const quizRouter = createTRPCRouter({
         }
 
         const score = quizSession.userAnswers.reduce((total, answer) => {
+          totalQuestion++;
+
           if (answer.question.correctAnswerChoice !== null) {
+            totalCorrect +=
+              answer.question.correctAnswerChoice === answer.answerChoice
+                ? 1
+                : 0;
             return (
               total +
               (answer.answerChoice === answer.question.correctAnswerChoice
@@ -111,6 +120,7 @@ export const quizRouter = createTRPCRouter({
             const isEssayCorrect =
               answer.essayAnswer.trim().toLowerCase() ===
               answer.question.answers[0]?.content.trim().toLowerCase();
+            totalCorrect += isEssayCorrect ? 1 : 0;
             return total + (isEssayCorrect ? answer.question.score : 0);
           }
           return total;
@@ -121,6 +131,8 @@ export const quizRouter = createTRPCRouter({
         return {
           ...subtest,
           quizSession: quizSession.endTime,
+          totalCorrect,
+          totalQuestion,
           score,
         };
       });
