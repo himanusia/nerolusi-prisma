@@ -7,6 +7,8 @@ import Highlight from "@tiptap/extension-highlight";
 import TextStyle from "@tiptap/extension-text-style";
 import TextAlign from "@tiptap/extension-text-align";
 import MathExtension from "@aarkue/tiptap-math-extension";
+import "katex/dist/katex.min.css";
+
 import {
   LuBold,
   LuStrikethrough,
@@ -42,7 +44,11 @@ export default function Editor({
   const editor = useEditor({
     extensions: [
       StarterKit,
-      MathExtension,
+      MathExtension.configure({
+        evaluation: false,
+        katexOptions: { macros: { "\\B": "\\mathbb{B}" } },
+        delimiters: "dollar",
+      }),
       Underline,
       TextStyle,
       TextAlign.configure({
