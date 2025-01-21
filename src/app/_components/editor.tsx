@@ -60,7 +60,10 @@ export default function Editor({
   });
 
   return (
-    <div className="flex h-full w-full flex-col rounded-lg border">
+    <div
+      className={cn("flex h-full w-full flex-col rounded-lg border", className)}
+      {...props}
+    >
       <div
         className={`flex h-9 flex-row overflow-auto border-b scrollbar scrollbar-none ${!isEdit && "hidden"}`}
       >
@@ -229,11 +232,7 @@ export default function Editor({
           <LuListOrdered className="size-5 flex-shrink-0" />
         </Button>
       </div>
-      <EditorContent
-        editor={editor}
-        className={cn("h-fit", className)}
-        {...props}
-      ></EditorContent>
+      <EditorContent editor={editor} className="p-2"></EditorContent>
     </div>
   );
 }

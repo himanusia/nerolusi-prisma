@@ -243,7 +243,7 @@ export default function QuizPage() {
                 questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
-                    className={`flex h-fit flex-row items-center rounded-lg px-5 ${
+                    className={`flex h-fit flex-row items-center rounded-lg ${
                       questions[currentQuestionIndex].correctAnswerChoice ===
                         answer.index ||
                       (new Date(sessionDetails.endTime) > new Date() &&
@@ -291,12 +291,12 @@ export default function QuizPage() {
 
               {/* Display Explanation */}
               {new Date(sessionDetails?.endTime) < new Date() && (
-                <p>
+                <div>
                   Explanation:{" "}
                   <Editor
                     content={questions[currentQuestionIndex].explanation ?? ""}
                   />
-                </p>
+                </div>
               )}
             </div>
           )}
