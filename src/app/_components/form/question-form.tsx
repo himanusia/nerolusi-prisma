@@ -93,7 +93,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               updatedContent,
             )
           }
-          className={"rounded-lg border p-2"}
+          className={"p-2"}
         />
       </div>
       <div>
@@ -109,7 +109,7 @@ const QuestionForm: React.FC<QuestionFormProps> = ({
               updatedContent,
             )
           }
-          className={"rounded-lg border p-2"}
+          className={"p-2"}
         />
       </div>
       <div>

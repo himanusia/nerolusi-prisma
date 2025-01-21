@@ -54,7 +54,7 @@ const AnswerForm: React.FC<AnswerFormProps> = ({
             updatedContent,
           )
         }
-        className="w-full rounded border p-2"
+        className="p-2"
       />
       <Button
         type="button"
