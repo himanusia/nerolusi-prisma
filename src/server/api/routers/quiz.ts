@@ -302,23 +302,88 @@ export const quizRouter = createTRPCRouter({
   getDrillSubtest: userProcedure
     .input(z.object({ subtest: z.nativeEnum(SubtestType) }))
     .query(async ({ ctx, input }) => {
-      return await ctx.db.subtest.findMany({
-        where: {
-          package: {
-            type: "drill",
+      const userId = ctx.session.user.id;
+
+      return await ctx.db.subtest
+        .findMany({
+          where: {
+            package: {
+              type: "drill",
+            },
+            type: input.subtest,
           },
-          type: input.subtest,
-        },
-        select: {
-          id: true,
-          duration: true,
-          package: {
-            select: {
-              id: true,
-              name: true,
+          select: {
+            id: true,
+            duration: true,
+            _count: {
+              select: {
+                questions: true,
+              },
+            },
+            package: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+            questions: {
+              select: {
+                id: true,
+                userAnswers: {
+                  where: {
+                    userId: userId,
+                  },
+                  select: {
+                    answerChoice: true,
+                    essayAnswer: true,
+                  },
+                },
+                correctAnswerChoice: true,
+                answers: true,
+              },
+            },
+            quizSession: {
+              where: {
+                userId: userId,
+              },
+              select: {
+                id: true,
+              },
             },
           },
-        },
-      });
+        })
+        .then((subtests) => {
+          return subtests.map((subtest) => {
+            let correctCount = 0;
+
+            subtest.questions.forEach((question) => {
+              question.userAnswers.forEach((userAnswer) => {
+                if (question.correctAnswerChoice !== null) {
+                  if (
+                    userAnswer.answerChoice === question.correctAnswerChoice
+                  ) {
+                    correctCount++;
+                  }
+                } else if (userAnswer.essayAnswer !== null) {
+                  const correctEssayAnswer =
+                    userAnswer.essayAnswer.trim().toLowerCase() ===
+                    question.answers[0]?.content.trim().toLowerCase();
+                  if (correctEssayAnswer) {
+                    correctCount++;
+                  }
+                }
+              });
+            });
+
+            return {
+              ...subtest,
+              hasQuizSession: subtest.quizSession.length > 0,
+              _count: {
+                questions: subtest._count.questions,
+                correct: correctCount,
+              },
+            };
+          });
+        });
     }),
 });

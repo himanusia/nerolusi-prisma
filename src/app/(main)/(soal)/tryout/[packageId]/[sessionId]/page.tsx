@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
 import Editor from "~/app/_components/editor";
+import { Separator } from "~/app/_components/ui/separator";
 
 export default function QuizPage() {
   const { packageId, sessionId } = useParams();
@@ -208,21 +209,27 @@ export default function QuizPage() {
           )} */}
 
           {questions && questions[currentQuestionIndex] && (
-            <div key={questions[currentQuestionIndex].id} className="space-y-2">
+            <div key={questions[currentQuestionIndex].id} className="gap-3">
               <strong>{currentQuestionIndex + 1}. </strong>
-              <Editor content={questions[currentQuestionIndex].content} />
-              {questions[currentQuestionIndex].imageUrl && (
-                <Image
-                  src={questions[currentQuestionIndex].imageUrl}
-                  alt="Question Image"
-                  width={300}
-                  height={200}
-                  className="max-h-[50vh] w-fit"
+              <div className="rounded-lg border pb-5">
+                <Editor
+                  content={questions[currentQuestionIndex].content}
+                  className={"border-none"}
                 />
-              )}
+                {questions[currentQuestionIndex].imageUrl && (
+                  <Image
+                    src={questions[currentQuestionIndex].imageUrl}
+                    alt="Question Image"
+                    width={300}
+                    height={300}
+                    className="max-h-[50vh] w-fit"
+                  />
+                )}
+              </div>
+              <Separator className="mt-3" />
               {questions[currentQuestionIndex].type === "essay" ? (
                 <Input
-                  className="w-full rounded border p-2"
+                  className="mt-3 w-full rounded border p-2"
                   placeholder="Write your answer here..."
                   value={
                     selectedAnswers.get(questions[currentQuestionIndex].id) ||
@@ -243,7 +250,7 @@ export default function QuizPage() {
                 questions[currentQuestionIndex].answers.map((answer) => (
                   <label
                     key={answer.index}
-                    className={`flex h-fit flex-row items-center rounded-lg ${
+                    className={`mt-3 flex flex-row items-center rounded-lg ${
                       questions[currentQuestionIndex].correctAnswerChoice ===
                         answer.index ||
                       (new Date(sessionDetails.endTime) > new Date() &&
