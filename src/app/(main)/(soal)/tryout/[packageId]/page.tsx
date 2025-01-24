@@ -52,7 +52,7 @@ export default function QuizPage() {
               (new Date(packageData.TOend) < new Date() && !subtest.quizSession)
             }
           >
-            <div className="w-full text-left">
+            <div className="w-full truncate text-left">
               {(() => {
                 switch (subtest.type) {
                   case "pu":
