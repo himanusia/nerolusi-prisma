@@ -84,34 +84,37 @@ export default function Navbar() {
               <Button variant={"ghost"}>Try Out</Button>
             </Link>
           </NavigationMenuItem>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger>Drill</NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <ul className="grid gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                {soal.map((e) => (
-                  <ListItem
-                    key={e.title}
-                    title={e.title}
-                    href={e.href}
-                  ></ListItem>
-                ))}
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
+          {user?.classid && (
+            <NavigationMenuItem>
+              <NavigationMenuTrigger>Drill</NavigationMenuTrigger>
+              <NavigationMenuContent>
+                <ul className="grid gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                  {soal.map((e) => (
+                    <ListItem
+                      key={e.title}
+                      title={e.title}
+                      href={e.href}
+                    ></ListItem>
+                  ))}
+                </ul>
+              </NavigationMenuContent>
+            </NavigationMenuItem>
+          )}
           <NavigationMenuItem>
             <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid w-[240px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                {menu.map((e) => (
-                  <ListItem
-                    key={e.title}
-                    title={e.title}
-                    href={e.href}
-                    className="flex gap-2"
-                  >
-                    {e.logo}
-                  </ListItem>
-                ))}
+                {user?.classid &&
+                  menu.map((e) => (
+                    <ListItem
+                      key={e.title}
+                      title={e.title}
+                      href={e.href}
+                      className="flex gap-2"
+                    >
+                      {e.logo}
+                    </ListItem>
+                  ))}
                 <AuthDialog />
                 {user?.role === "admin" && (
                   <Link
