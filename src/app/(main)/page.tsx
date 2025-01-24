@@ -64,7 +64,7 @@ export default function MainPage() {
       </div>
       <div className="flex flex-col items-center gap-4 rounded-lg border p-5 lg:max-w-[50%]">
         <h1 className="text-2xl">{announcement?.title}</h1>
-        <Editor content={announcement?.content} />
+        <Editor content={announcement?.content} className={"border-none"} />
         {user.role === "admin" && (
           <Dialog>
             <DialogTrigger asChild>
