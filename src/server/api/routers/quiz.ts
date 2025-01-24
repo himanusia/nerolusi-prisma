@@ -399,7 +399,7 @@ export const quizRouter = createTRPCRouter({
         });
     }),
 
-  getDrill: userProcedure.query(async ({ ctx, input }) => {
+  getDrill: userProcedure.query(async ({ ctx }) => {
     const userId = ctx.session.user.id;
 
     return await ctx.db.subtest
@@ -485,5 +485,145 @@ export const quizRouter = createTRPCRouter({
           };
         });
       });
+  }),
+
+  getTryout: userProcedure.query(async ({ ctx }) => {
+    const userId = ctx.session.user.id;
+
+    const tryouts = await ctx.db.package
+      .findMany({
+        where: {
+          type: "tryout",
+          quizSession: {
+            some: {
+              userId: userId,
+            },
+          },
+        },
+        select: {
+          id: true,
+          name: true,
+          TOstart: true,
+          TOend: true,
+          quizSession: {
+            where: {
+              userId: userId,
+            },
+            select: {
+              id: true,
+              userAnswers: {
+                select: {
+                  questionId: true,
+                  answerChoice: true,
+                  essayAnswer: true,
+                  question: {
+                    select: {
+                      id: true,
+                      correctAnswerChoice: true,
+                      score: true,
+                      answers: {
+                        select: {
+                          content: true,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+          subtests: {
+            select: {
+              id: true,
+              type: true,
+              packageId: true,
+              questions: {
+                select: {
+                  id: true,
+                  correctAnswerChoice: true,
+                  score: true,
+                  type: true,
+                  answers: {
+                    select: {
+                      content: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      })
+      .then((packages) => {
+        return packages.map((pkg) => {
+          const subtests = pkg.subtests.map((subtest) => {
+            let correctCount = 0;
+            let totalScore = 0;
+            let totalQuestions = 0;
+
+            subtest.questions.forEach((question) => {
+              const userAnswersForQuestion = pkg.quizSession.flatMap(
+                (session) =>
+                  session.userAnswers.filter(
+                    (userAnswer) => userAnswer.questionId === question.id,
+                  ),
+              );
+
+              userAnswersForQuestion.forEach((userAnswer) => {
+                totalQuestions++;
+
+                if (question.correctAnswerChoice !== null) {
+                  if (
+                    userAnswer.answerChoice === question.correctAnswerChoice
+                  ) {
+                    correctCount++;
+                    totalScore += question.score;
+                  }
+                } else if (userAnswer.essayAnswer !== null) {
+                  const isEssayCorrect =
+                    userAnswer.essayAnswer.trim().toLowerCase() ===
+                    question.answers[0]?.content.trim().toLowerCase();
+                  if (isEssayCorrect) {
+                    correctCount++;
+                    totalScore += question.score;
+                  }
+                }
+              });
+            });
+
+            return {
+              id: subtest.id,
+              name: subtest.type,
+              correct: correctCount,
+              all: totalQuestions,
+              score: totalScore,
+            };
+          });
+
+          const totalCorrect = subtests.reduce(
+            (total, subtest) => total + subtest.correct,
+            0,
+          );
+          const totalAll = subtests.reduce(
+            (total, subtest) => total + subtest.all,
+            0,
+          );
+          const totalScore = subtests.reduce(
+            (total, subtest) => total + subtest.score,
+            0,
+          );
+
+          return {
+            id: pkg.id,
+            name: pkg.name,
+            correct: totalCorrect,
+            all: totalAll,
+            score: totalScore,
+            subtest: subtests,
+          };
+        });
+      });
+
+    return tryouts;
   }),
 });

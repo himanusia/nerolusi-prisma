@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { Button } from "~/app/_components/ui/button";
 import { Separator } from "~/app/_components/ui/separator";
 import {
@@ -12,97 +13,46 @@ import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
 import { api } from "~/trpc/react";
 
-const toResult: {
-  id: number;
-  title: string;
-  correct: number;
-  all: number;
-  score: number;
-  subtest: {
-    id: number;
-    title: string;
-    correct: number;
-    all: number;
-    score: number;
-  }[];
-}[] = [
-  {
-    id: 1,
-    title: "Try Out 1",
-    correct: 98,
-    all: 170,
-    score: 718,
-    subtest: [
-      {
-        id: 1,
-        title: "Kemampuan Penalaran Umum",
-        correct: 10,
-        all: 20,
-        score: 50,
-      },
-      {
-        id: 2,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-      {
-        id: 3,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-      {
-        id: 4,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-      {
-        id: 5,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-      {
-        id: 6,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-      {
-        id: 7,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-      {
-        id: 8,
-        title: "Pengetahuan dan Pemahaman Umum",
-        correct: 5,
-        all: 10,
-        score: 50,
-      },
-    ],
-  },
-];
-
 export default function MyScoresPage() {
+  const { data: session } = useSession();
   const {
-    data: packages,
+    data: packagesDrill,
     isLoading: isLoadingDrill,
     isError: isErrorDrill,
   } = api.quiz.getDrill.useQuery();
+  const {
+    data: packagesTryout,
+    isLoading: isLoaddingTryout,
+    isError: isErrorTryout,
+  } = api.quiz.getTryout.useQuery();
 
-  return isErrorDrill ? (
+  if (!session || !session.user) {
+    return (
+      <div className="flex h-screen flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold">You are not authenticated</h1>
+        <p className="mt-2">Please log in to access this page.</p>
+      </div>
+    );
+  }
+
+  const classId = session.user.classid;
+
+  if (!classId) {
+    return (
+      <div className="flex h-[70vh] flex-col items-center justify-center">
+        <h1 className="text-2xl font-bold">
+          You are not enrolled in any classsss
+        </h1>
+        <p className="mt-2">
+          Please contact your administrator to assign you to a class.
+        </p>
+      </div>
+    );
+  }
+
+  return isErrorDrill || isErrorTryout ? (
     <ErrorPage />
-  ) : isLoadingDrill ? (
+  ) : isLoadingDrill || isLoaddingTryout ? (
     <LoadingPage />
   ) : (
     <div className="mx-auto flex flex-col gap-4 rounded-lg border lg:w-3/5">
@@ -113,11 +63,11 @@ export default function MyScoresPage() {
         </TabsList>
         <TabsContent value="try-out" className="min-h-[80vh] px-5 py-1">
           <ul className="grid gap-4">
-            {toResult.map((result) => (
+            {packagesTryout.map((result) => (
               <li key={result.id} className="flex rounded-lg border">
                 <div className="rounded-lg border-r">
                   <div className="flex justify-center border-b p-1">
-                    {result.title}
+                    {result.name}
                   </div>
                   <div className="flex h-28 w-36 items-center justify-center border-b text-5xl font-bold">
                     {result.score}
@@ -134,7 +84,7 @@ export default function MyScoresPage() {
                         className="flex rounded-lg border px-3 py-1 text-sm"
                       >
                         <div className="w-full truncate font-semibold">
-                          {subtest.title}
+                          {subtest.name}
                         </div>
                         <div
                           className={`flex gap-2 ${!subtest.score && "hidden"} `}
@@ -167,11 +117,11 @@ export default function MyScoresPage() {
         <TabsContent value="drilling" className="min-h-[80vh] px-5 py-1">
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="flex flex-col gap-5">
-              {packages.map((pkg) => (
+              {packagesDrill.map((pkg) => (
                 <Button
                   key={pkg.id}
-                  className={`flex min-h-32 min-w-72 flex-col border text-2xl font-bold ${pkg.hasQuizSession ? "bg-green-500 hover:bg-green-600" : "bg-slate-200"}`}
                   variant="ghost"
+                  className={`flex min-h-32 min-w-72 flex-col border text-2xl font-bold ${pkg.hasQuizSession ? "bg-green-500 hover:bg-green-600" : "bg-slate-200"}`}
                   // onClick={() =>
                   //   handleSubtestClick(pkg.id, pkg.duration, pkg.package.id)
                   // }
