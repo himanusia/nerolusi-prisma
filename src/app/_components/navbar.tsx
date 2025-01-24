@@ -15,9 +15,10 @@ import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import AuthDialog from "./auth-dialog";
 import { GoFile, GoVideo } from "react-icons/go";
+import { GrScorecard } from "react-icons/gr";
 import React from "react";
 
-const soals: { title: string; href: string }[] = [
+const soal: { title: string; href: string }[] = [
   {
     title: "Kemampuan Penalaran Umum",
     href: "/drill/pu",
@@ -44,6 +45,24 @@ const soals: { title: string; href: string }[] = [
   },
 ];
 
+const menu: { title: string; href: string; logo: JSX.Element }[] = [
+  {
+    title: "File",
+    href: "/file",
+    logo: <GoFile />,
+  },
+  {
+    title: "Video",
+    href: "/video",
+    logo: <GoVideo />,
+  },
+  {
+    title: "My Scores",
+    href: "/my-scores",
+    logo: <GrScorecard />,
+  },
+];
+
 export default function Navbar() {
   const session = useSession();
   const user = session.data?.user;
@@ -61,53 +80,57 @@ export default function Navbar() {
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
+            <Link href="/tryout" legacyBehavior passHref>
+              <Button variant={"ghost"}>Try Out</Button>
+            </Link>
+          </NavigationMenuItem>
+          <NavigationMenuItem>
             <NavigationMenuTrigger>Drill</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul className="grid gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                {soals.map((soal) => (
+                {soal.map((e) => (
                   <ListItem
-                    key={soal.title}
-                    title={soal.title}
-                    href={soal.href}
+                    key={e.title}
+                    title={e.title}
+                    href={e.href}
                   ></ListItem>
                 ))}
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
           <NavigationMenuItem>
-            <Link href="/tryout" legacyBehavior passHref>
-              <Button variant={"ghost"}>Try Out</Button>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/video" legacyBehavior passHref>
-              <Button variant={"ghost"} className="flex gap-2">
-                <GoVideo />
-                <div className="hidden md:block">Video</div>
-              </Button>
-            </Link>
-          </NavigationMenuItem>
-          <NavigationMenuItem>
-            <Link href="/file" legacyBehavior passHref>
-              <Button variant={"ghost"} className="flex gap-2">
-                <GoFile />
-                <div className="hidden md:block">File</div>
-              </Button>
-            </Link>
+            <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
+            <NavigationMenuContent>
+              <ul className="grid w-[240px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                {menu.map((e) => (
+                  <ListItem
+                    key={e.title}
+                    title={e.title}
+                    href={e.href}
+                    className="flex gap-2"
+                  >
+                    {e.logo}
+                  </ListItem>
+                ))}
+                <AuthDialog />
+                {user?.role === "admin" && (
+                  <Link href={"/user"} className="rounded-lg border p-2">
+                    Manajemen Akun
+                  </Link>
+                )}
+                {user?.role !== "user" && (
+                  <Link
+                    href={"/packageManagement"}
+                    className="rounded-lg border p-2"
+                  >
+                    Manajemen Soal
+                  </Link>
+                )}
+              </ul>
+            </NavigationMenuContent>
           </NavigationMenuItem>
         </NavigationMenuList>
       </NavigationMenu>
-      {user?.role === "admin" && (
-        <Link href={"/user"} className="rounded-lg border p-2">
-          Manajemen Akun
-        </Link>
-      )}
-      {user?.role !== "user" && (
-        <Link href={"/packageManagement"} className="rounded-lg border p-2">
-          Manajemen Soal
-        </Link>
-      )}
-      <AuthDialog />
     </div>
   );
 }
@@ -122,15 +145,13 @@ const ListItem = React.forwardRef<
         <a
           ref={ref}
           className={cn(
-            "flex size-full select-none items-center justify-center space-y-1 rounded-md border p-3 text-center leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
+            "flex size-full select-none items-center justify-center gap-1 rounded-md border p-3 text-center leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground",
             className,
           )}
           {...props}
         >
+          {children}
           <div className="text-sm font-medium leading-none">{title}</div>
-          <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-            {children}
-          </p>
         </a>
       </NavigationMenuLink>
     </li>
