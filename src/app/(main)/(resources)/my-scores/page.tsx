@@ -1,5 +1,6 @@
 "use client";
 
+import { Button } from "~/app/_components/ui/button";
 import { Separator } from "~/app/_components/ui/separator";
 import {
   Tabs,
@@ -7,6 +8,9 @@ import {
   TabsList,
   TabsTrigger,
 } from "~/app/_components/ui/tabs";
+import ErrorPage from "~/app/error";
+import LoadingPage from "~/app/loading";
+import { api } from "~/trpc/react";
 
 const toResult: {
   id: number;
@@ -90,7 +94,12 @@ const toResult: {
 ];
 
 export default function MyScoresPage() {
-  return (
+  const { data: packages, isLoading, isError } = api.quiz.getDrill.useQuery();
+  return isError ? (
+    <ErrorPage />
+  ) : isLoading ? (
+    <LoadingPage />
+  ) : (
     <div className="mx-auto flex flex-col gap-4 rounded-lg border lg:w-3/5">
       <Tabs defaultValue="try-out" className="w-full">
         <TabsList className="grid w-full grid-cols-2 border-b">
@@ -151,57 +160,25 @@ export default function MyScoresPage() {
           </ul>
         </TabsContent>
         <TabsContent value="drilling" className="min-h-[80vh] px-5 py-1">
-          <ul className="grid gap-4">
-            {toResult.map((result) => (
-              <li key={result.id} className="flex rounded-lg border">
-                <div className="rounded-lg border-r">
-                  <div className="flex justify-center border-b p-1">
-                    {result.title}
+          <div className="flex flex-col items-center justify-center gap-3">
+            <div className="flex flex-col gap-5">
+              {packages.map((pkg) => (
+                <Button
+                  key={pkg.id}
+                  className={`flex min-h-32 min-w-72 flex-col border text-2xl font-bold ${pkg.hasQuizSession ? "bg-green-500 hover:bg-green-600" : "bg-slate-200"}`}
+                  variant="ghost"
+                  // onClick={() =>
+                  //   handleSubtestClick(pkg.id, pkg.duration, pkg.package.id)
+                  // }
+                >
+                  <div>{pkg.package.name}</div>
+                  <div className={`${!pkg.hasQuizSession && "hidden"}`}>
+                    {pkg._count.correct}/{pkg._count.questions}
                   </div>
-                  <div className="flex h-28 w-36 items-center justify-center border-b text-5xl font-bold">
-                    {result.score}
-                  </div>
-                  <div className="flex justify-center p-1">
-                    Benar {result.correct}/{result.all}
-                  </div>
-                </div>
-                <ul className="m-3 h-[153px] w-full overflow-auto rounded-lg border px-2 py-1">
-                  <div className="flex size-full flex-col gap-2 overflow-auto p-1 scrollbar scrollbar-thumb-current scrollbar-w-1 hover:scrollbar-thumb-foreground/50">
-                    {result.subtest.map((subtest) => (
-                      <li
-                        key={subtest.id}
-                        className="flex rounded-lg border px-3 py-1 text-sm"
-                      >
-                        <div className="w-full truncate font-semibold">
-                          {subtest.title}
-                        </div>
-                        <div
-                          className={`flex gap-2 ${!subtest.score && "hidden"} `}
-                        >
-                          <Separator
-                            orientation="vertical"
-                            className="border"
-                          />
-                          <div className={`flex min-w-12 justify-center`}>
-                            {subtest.correct}/{subtest.all}
-                          </div>
-                          <Separator
-                            orientation="vertical"
-                            className="border"
-                          />
-                          <div
-                            className={`flex min-w-12 justify-center rounded-lg border bg-green-500 font-bold`}
-                          >
-                            {subtest.score}
-                          </div>
-                        </div>
-                      </li>
-                    ))}
-                  </div>
-                </ul>
-              </li>
-            ))}
-          </ul>
+                </Button>
+              ))}
+            </div>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
