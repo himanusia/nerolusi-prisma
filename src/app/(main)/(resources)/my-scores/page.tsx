@@ -118,19 +118,15 @@ export default function MyScoresPage() {
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="flex flex-col gap-5">
               {packagesDrill.map((pkg) => (
-                <Button
+                <div
                   key={pkg.id}
-                  variant="ghost"
-                  className={`flex min-h-32 min-w-72 flex-col border text-2xl font-bold ${pkg.hasQuizSession ? "bg-green-500 hover:bg-green-600" : "bg-slate-200"}`}
-                  // onClick={() =>
-                  //   handleSubtestClick(pkg.id, pkg.duration, pkg.package.id)
-                  // }
+                  className={`flex min-h-32 min-w-72 flex-col items-center justify-center rounded-lg border text-2xl font-bold ${pkg.hasQuizSession ? "bg-green-500" : "bg-slate-200"}`}
                 >
                   <div>{pkg.package.name}</div>
                   <div className={`${!pkg.hasQuizSession && "hidden"}`}>
                     {pkg._count.correct}/{pkg._count.questions}
                   </div>
-                </Button>
+                </div>
               ))}
             </div>
           </div>
