@@ -494,6 +494,9 @@ export const quizRouter = createTRPCRouter({
       .findMany({
         where: {
           type: "tryout",
+          TOend: {
+            lte: new Date(),
+          },
           quizSession: {
             some: {
               userId: userId,
