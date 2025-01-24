@@ -88,7 +88,7 @@ export default function Navbar() {
             <NavigationMenuItem>
               <NavigationMenuTrigger>Drill</NavigationMenuTrigger>
               <NavigationMenuContent>
-                <ul className="grid gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+                <ul className="grid gap-3 p-4 lg:w-[600px] lg:grid-cols-2">
                   {soal.map((e) => (
                     <ListItem
                       key={e.title}
@@ -103,7 +103,9 @@ export default function Navbar() {
           <NavigationMenuItem>
             <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
             <NavigationMenuContent>
-              <ul className="grid w-[240px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+              <ul
+                className={`grid w-[240px] gap-3 p-4 ${user.classid && "lg:w-[600px] lg:grid-cols-2"}`}
+              >
                 {user?.classid &&
                   menu.map((e) => (
                     <ListItem
