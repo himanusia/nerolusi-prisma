@@ -27,12 +27,7 @@ export default function MyScoresPage() {
   } = api.quiz.getTryout.useQuery();
 
   if (!session || !session.user) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold">You are not authenticated</h1>
-        <p className="mt-2">Please log in to access this page.</p>
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   const classId = session.user.classid;
@@ -61,10 +56,13 @@ export default function MyScoresPage() {
           <TabsTrigger value="try-out">Try Outs</TabsTrigger>
           <TabsTrigger value="drilling">Drilling</TabsTrigger>
         </TabsList>
-        <TabsContent value="try-out" className="min-h-[80vh] px-5 py-1">
-          <ul className="grid gap-4">
+        <TabsContent value="try-out" className="min-h-[80vh] w-full px-5 py-1">
+          <ul className="grid w-full gap-4">
             {packagesTryout.map((result) => (
-              <li key={result.id} className="flex rounded-lg border">
+              <li
+                key={result.id}
+                className="flex w-full overflow-auto rounded-lg border"
+              >
                 <div className="rounded-lg border-r">
                   <div className="flex justify-center border-b p-1">
                     {result.name}
@@ -81,10 +79,27 @@ export default function MyScoresPage() {
                     {result.subtest.map((subtest) => (
                       <li
                         key={subtest.id}
-                        className="flex rounded-lg border px-3 py-1 text-sm"
+                        className="flex w-full rounded-lg border px-3 py-1 text-sm"
                       >
                         <div className="w-full truncate font-semibold">
-                          {subtest.name}
+                          {(() => {
+                            switch (subtest.name) {
+                              case "pu":
+                                return "Kemampuan Penalaran Umum";
+                              case "ppu":
+                                return "Pengetahuan dan Pemahaman Umum";
+                              case "pbm":
+                                return "Kemampuan Memahami Bacaan dan Menulis";
+                              case "pk":
+                                return "Pengetahuan Kuantitatif";
+                              case "lb":
+                                return "Literasi Bahasa Indonesia dan Bahasa Inggris";
+                              case "pm":
+                                return "Penalaran Matematika";
+                              default:
+                                return subtest.name;
+                            }
+                          })()}
                         </div>
                         <div
                           className={`flex gap-2 ${!subtest.score && "hidden"} `}

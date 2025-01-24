@@ -12,12 +12,7 @@ export default function TryoutListPage() {
   const router = useRouter();
 
   if (!session || !session.user) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold">You are not authenticated</h1>
-        <p className="mt-2">Please log in to access this page.</p>
-      </div>
-    );
+    return <LoadingPage />;
   }
 
   const classId = session.user.classid;
