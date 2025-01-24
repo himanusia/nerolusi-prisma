@@ -408,6 +408,11 @@ export const quizRouter = createTRPCRouter({
           package: {
             type: "drill",
           },
+          quizSession: {
+            some: {
+              userId: userId,
+            },
+          },
         },
         select: {
           id: true,

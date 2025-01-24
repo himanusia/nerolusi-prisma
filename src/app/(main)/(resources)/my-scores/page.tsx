@@ -94,10 +94,15 @@ const toResult: {
 ];
 
 export default function MyScoresPage() {
-  const { data: packages, isLoading, isError } = api.quiz.getDrill.useQuery();
-  return isError ? (
+  const {
+    data: packages,
+    isLoading: isLoadingDrill,
+    isError: isErrorDrill,
+  } = api.quiz.getDrill.useQuery();
+
+  return isErrorDrill ? (
     <ErrorPage />
-  ) : isLoading ? (
+  ) : isLoadingDrill ? (
     <LoadingPage />
   ) : (
     <div className="mx-auto flex flex-col gap-4 rounded-lg border lg:w-3/5">
