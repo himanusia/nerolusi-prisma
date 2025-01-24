@@ -11,7 +11,6 @@ import {
   NavigationMenuTrigger,
 } from "./ui/navigation-menu";
 import { Button } from "./ui/button";
-import { Separator } from "./ui/separator";
 import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 import AuthDialog from "./auth-dialog";
@@ -59,7 +58,6 @@ export default function Navbar() {
           height={"36"}
         ></Image>
       </Link>
-      <Separator orientation="vertical" className="py-3" />
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -76,13 +74,11 @@ export default function Navbar() {
               </ul>
             </NavigationMenuContent>
           </NavigationMenuItem>
-          <Separator orientation="vertical" className="py-3" />
           <NavigationMenuItem>
             <Link href="/tryout" legacyBehavior passHref>
               <Button variant={"ghost"}>Try Out</Button>
             </Link>
           </NavigationMenuItem>
-          <Separator orientation="vertical" className="py-3" />
           <NavigationMenuItem>
             <Link href="/video" legacyBehavior passHref>
               <Button variant={"ghost"} className="flex gap-2">
@@ -91,7 +87,6 @@ export default function Navbar() {
               </Button>
             </Link>
           </NavigationMenuItem>
-          <Separator orientation="vertical" className="py-3" />
           <NavigationMenuItem>
             <Link href="/file" legacyBehavior passHref>
               <Button variant={"ghost"} className="flex gap-2">
@@ -112,7 +107,6 @@ export default function Navbar() {
           Manajemen Soal
         </Link>
       )}
-      <Separator orientation="vertical" className="py-3" />
       <AuthDialog />
     </div>
   );
