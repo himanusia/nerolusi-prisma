@@ -114,14 +114,17 @@ export default function Navbar() {
                 ))}
                 <AuthDialog />
                 {user?.role === "admin" && (
-                  <Link href={"/user"} className="rounded-lg border p-2">
+                  <Link
+                    href={"/user"}
+                    className="flex justify-center rounded-lg border p-2"
+                  >
                     Manajemen Akun
                   </Link>
                 )}
                 {user?.role !== "user" && (
                   <Link
                     href={"/packageManagement"}
-                    className="rounded-lg border p-2"
+                    className="flex justify-center rounded-lg border p-2"
                   >
                     Manajemen Soal
                   </Link>
