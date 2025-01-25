@@ -104,7 +104,7 @@ export default function Navbar() {
             <NavigationMenuTrigger>Menu</NavigationMenuTrigger>
             <NavigationMenuContent>
               <ul
-                className={`grid w-[240px] gap-3 p-4 ${user.classid && "lg:w-[600px] lg:grid-cols-2"}`}
+                className={`grid w-[240px] gap-3 p-4 ${user?.classid && "lg:w-[600px] lg:grid-cols-2"}`}
               >
                 {user?.classid &&
                   menu.map((e) => (
