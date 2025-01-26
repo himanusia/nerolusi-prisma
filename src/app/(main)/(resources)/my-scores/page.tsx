@@ -83,7 +83,9 @@ export default function MyScoresPage() {
                         key={subtest.id}
                         variant="ghost"
                         onClick={() =>
-                          router.push(`/tryout/${result.id}/${subtest.id}`)
+                          router.push(
+                            `/tryout/${result.id}/${subtest.sessionId}`,
+                          )
                         }
                         disabled={!subtest.score}
                         className="m-0 flex w-full rounded-lg border px-3 py-1 text-left text-sm"
