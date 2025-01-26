@@ -601,6 +601,7 @@ export const quizRouter = createTRPCRouter({
             return {
               id: subtest.id,
               name: subtest.type,
+              sessionId: pkg.quizSession[0].id,
               correct: correctCount,
               all: totalQuestions,
               score: totalScore,

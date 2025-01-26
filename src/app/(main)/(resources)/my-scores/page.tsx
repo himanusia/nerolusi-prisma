@@ -79,9 +79,14 @@ export default function MyScoresPage() {
                 <ul className="m-3 h-[153px] w-full overflow-auto rounded-lg border px-2 py-1">
                   <div className="flex size-full flex-col gap-2 overflow-auto p-1 scrollbar scrollbar-thumb-current scrollbar-w-1 hover:scrollbar-thumb-foreground/50">
                     {result.subtest.map((subtest) => (
-                      <li
+                      <Button
                         key={subtest.id}
-                        className="flex w-full rounded-lg border px-3 py-1 text-sm"
+                        variant="ghost"
+                        onClick={() =>
+                          router.push(`/tryout/${result.id}/${subtest.id}`)
+                        }
+                        disabled={!subtest.score}
+                        className="m-0 flex w-full rounded-lg border px-3 py-1 text-left text-sm"
                       >
                         <div className="w-full truncate font-semibold">
                           {(() => {
@@ -123,7 +128,7 @@ export default function MyScoresPage() {
                             {subtest.score}
                           </div>
                         </div>
-                      </li>
+                      </Button>
                     ))}
                   </div>
                 </ul>
