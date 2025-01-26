@@ -98,7 +98,7 @@ export default function PackageTable({
         headerName: "Actions",
         cellRenderer: (params: any) => {
           return (
-            <div className="flex gap-2">
+            <div className="flex size-full items-center justify-center gap-2">
               <Button
                 onClick={() =>
                   router.push(`/packageManagement/${params.data.id}`)

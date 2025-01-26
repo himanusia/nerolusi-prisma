@@ -10,6 +10,13 @@ import { ColDef } from "ag-grid-community";
 import { Button } from "~/app/_components/ui/button";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "~/app/_components/ui/select";
 
 export default function PackageManagementPage() {
   const params = useParams();
@@ -37,27 +44,29 @@ export default function PackageManagementPage() {
           return (
             <div className="flex size-full flex-col items-center justify-center gap-2">
               {quizSessions.length > 0 ? (
-                <select
-                  onChange={(e) => {
-                    const selectedSessionId = e.target.value;
+                <Select
+                  onValueChange={(selectedSessionId) => {
                     if (selectedSessionId) {
                       router.push(
                         `/drill/admin/${packageId}/${selectedSessionId}?userId=${params.data.id}`,
                       );
                     }
                   }}
-                  defaultValue=""
-                  className="rounded border p-1"
                 >
-                  <option value="" disabled>
-                    Select Session
-                  </option>
-                  {quizSessions.map((session) => (
-                    <option key={session.id} value={session.id}>
-                      {session.subtest.type || `Session ${session.id}`}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select Session" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {quizSessions.map((session) => (
+                      <SelectItem
+                        key={session.id}
+                        value={session.id.toString()}
+                      >
+                        {session.subtest.type || `Session ${session.id}`}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : (
                 <span>No sessions</span>
               )}
