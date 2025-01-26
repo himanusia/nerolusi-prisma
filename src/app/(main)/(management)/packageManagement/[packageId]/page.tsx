@@ -62,7 +62,24 @@ export default function PackageManagementPage() {
                         key={session.id}
                         value={session.id.toString()}
                       >
-                        {session.subtest.type || `Session ${session.id}`}
+                        {(() => {
+                          switch (session.subtest.type) {
+                            case "pu":
+                              return "Kemampuan Penalaran Umum";
+                            case "ppu":
+                              return "Pengetahuan dan Pemahaman Umum";
+                            case "pbm":
+                              return "Kemampuan Memahami Bacaan dan Menulis";
+                            case "pk":
+                              return "Pengetahuan Kuantitatif";
+                            case "lb":
+                              return "Literasi Bahasa Indonesia dan Bahasa Inggris";
+                            case "pm":
+                              return "Penalaran Matematika";
+                            default:
+                              return session.subtest.type;
+                          }
+                        })()}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -96,11 +113,52 @@ export default function PackageManagementPage() {
     <div className="ag-theme-alpine size-full h-[80vh]">
       <div className="mb-4 flex w-full items-center justify-between">
         <h1 className="text-xl font-bold">Package ID: {packageId}</h1>
-        <Button
-          onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
-        >
-          Edit
-        </Button>
+        <div className="flex gap-4">
+          <Select
+            onValueChange={(selectedSessionId) => {
+              if (selectedSessionId) {
+                router.push(
+                  `/packageManagement/${packageId}/edit/${selectedSessionId}`,
+                );
+              }
+            }}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select Subtest" />
+            </SelectTrigger>
+            <SelectContent>
+              {data
+                .flatMap((user) => user.quizSession)
+                .map((session) => (
+                  <SelectItem key={session.id} value={session.id.toString()}>
+                    {(() => {
+                      switch (session.subtest.type) {
+                        case "pu":
+                          return "Kemampuan Penalaran Umum";
+                        case "ppu":
+                          return "Pengetahuan dan Pemahaman Umum";
+                        case "pbm":
+                          return "Kemampuan Memahami Bacaan dan Menulis";
+                        case "pk":
+                          return "Pengetahuan Kuantitatif";
+                        case "lb":
+                          return "Literasi Bahasa Indonesia dan Bahasa Inggris";
+                        case "pm":
+                          return "Penalaran Matematika";
+                        default:
+                          return session.subtest.type;
+                      }
+                    })()}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
+          <Button
+            onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
+          >
+            Edit
+          </Button>
+        </div>
       </div>
       <AgGridReact
         rowData={rowData}
