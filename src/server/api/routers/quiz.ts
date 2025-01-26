@@ -90,6 +90,8 @@ export const quizRouter = createTRPCRouter({
           return {
             ...subtest,
             quizSession: null,
+            totalCorrect: null,
+            totalQuestion: null,
             score: null,
           };
         }
@@ -98,6 +100,8 @@ export const quizRouter = createTRPCRouter({
           return {
             ...subtest,
             quizSession: quizSession.endTime,
+            totalCorrect: null,
+            totalQuestion: null,
             score: null,
           };
         }
