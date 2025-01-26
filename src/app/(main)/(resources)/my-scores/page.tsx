@@ -1,6 +1,7 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "~/app/_components/ui/button";
 import { Separator } from "~/app/_components/ui/separator";
 import {
@@ -14,6 +15,7 @@ import LoadingPage from "~/app/loading";
 import { api } from "~/trpc/react";
 
 export default function MyScoresPage() {
+  const router = useRouter();
   const { data: session } = useSession();
   const {
     data: packagesDrill,
@@ -133,15 +135,21 @@ export default function MyScoresPage() {
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="flex flex-col gap-5">
               {packagesDrill.map((pkg) => (
-                <div
+                <Button
                   key={pkg.id}
-                  className={`flex min-h-32 min-w-72 flex-col items-center justify-center rounded-lg border text-2xl font-bold ${pkg.hasQuizSession ? "bg-green-500" : "bg-slate-200"}`}
+                  variant="ghost"
+                  onClick={() =>
+                    router.push(
+                      `/drill/${pkg.type}/${pkg.package.id}/${pkg.sessionId}`,
+                    )
+                  }
+                  className={`flex min-h-32 min-w-72 flex-col items-center justify-center rounded-lg border text-2xl font-bold ${pkg.sessionId ? "bg-green-500 hover:bg-green-600" : "bg-slate-200"}`}
                 >
                   <div>{pkg.package.name}</div>
-                  <div className={`${!pkg.hasQuizSession && "hidden"}`}>
+                  <div className={`${!pkg.sessionId && "hidden"}`}>
                     {pkg._count.correct}/{pkg._count.questions}
                   </div>
-                </div>
+                </Button>
               ))}
             </div>
           </div>

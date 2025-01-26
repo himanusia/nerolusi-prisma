@@ -417,6 +417,7 @@ export const quizRouter = createTRPCRouter({
         select: {
           id: true,
           duration: true,
+          type: true,
           _count: {
             select: {
               questions: true,
@@ -475,14 +476,17 @@ export const quizRouter = createTRPCRouter({
             });
           });
 
-          return {
+          const transformedSubtest = {
             ...subtest,
-            hasQuizSession: subtest.quizSession.length > 0,
+            sessionId: subtest.quizSession[0].id,
             _count: {
               questions: subtest._count.questions,
               correct: correctCount,
             },
           };
+          delete transformedSubtest.questions;
+          delete transformedSubtest.quizSession;
+          return transformedSubtest;
         });
       });
   }),
