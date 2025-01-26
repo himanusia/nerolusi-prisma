@@ -124,7 +124,7 @@ export default function PackageManagementPage() {
             }}
           >
             <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select Subtest" />
+              <SelectValue placeholder="Edit Subtest" />
             </SelectTrigger>
             <SelectContent>
               {data
@@ -154,9 +154,10 @@ export default function PackageManagementPage() {
             </SelectContent>
           </Select>
           <Button
+            variant="outline"
             onClick={() => router.push(`/packageManagement/${packageId}/edit`)}
           >
-            Edit
+            Edit All
           </Button>
         </div>
       </div>
