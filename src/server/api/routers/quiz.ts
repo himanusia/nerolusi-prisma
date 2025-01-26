@@ -626,7 +626,7 @@ export const quizRouter = createTRPCRouter({
             name: pkg.name,
             correct: totalCorrect,
             all: totalAll,
-            score: totalScore,
+            score: subtests.length > 0 ? totalScore / subtests.length : 0,
             subtest: subtests,
           };
         });
