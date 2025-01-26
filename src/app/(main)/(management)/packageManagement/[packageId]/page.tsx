@@ -35,7 +35,7 @@ export default function PackageManagementPage() {
         cellRenderer: (params: any) => {
           const quizSessions = params.data.quizSession || [];
           return (
-            <div className="flex flex-col gap-2">
+            <div className="flex size-full flex-col items-center justify-center gap-2">
               {quizSessions.length > 0 ? (
                 <select
                   onChange={(e) => {
