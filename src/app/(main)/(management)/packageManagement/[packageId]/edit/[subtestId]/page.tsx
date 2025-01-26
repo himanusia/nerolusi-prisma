@@ -187,9 +187,9 @@ const EditSubtestPage: React.FC = () => {
   ) : (
     <form
       onSubmit={handleSubmit}
-      className="flex flex-col items-center gap-3 p-6"
+      className="mx-auto flex flex-col items-center gap-3 p-6 lg:w-3/5"
     >
-      <h1 className="text-2xl font-semibold">Edit Subtest</h1>
+      {/* <h1 className="text-2xl font-semibold">Edit Subtest</h1> */}
       <SubtestForm
         subtestIndex={0}
         subtest={formData}

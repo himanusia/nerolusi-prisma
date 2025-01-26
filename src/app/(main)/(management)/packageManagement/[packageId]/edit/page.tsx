@@ -88,9 +88,9 @@ const EditPackagePage: React.FC = () => {
     <LoadingPage />
   ) : (
     <div>
-      <h1 className="flex justify-center text-2xl font-semibold">
+      {/* <h1 className="flex justify-center text-2xl font-semibold">
         Edit Package
-      </h1>
+      </h1> */}
       <PackageForm initialData={sanitizedData} onSubmit={handleSubmit} />
     </div>
   );
