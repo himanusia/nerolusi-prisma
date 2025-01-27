@@ -79,7 +79,7 @@ export const packageRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const users = await ctx.db.user.findMany({
         where: {
-          userAnswers: {
+          quizSession: {
             some: {
               packageId: input.packageId,
             },
