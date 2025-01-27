@@ -52,7 +52,7 @@ const EditSubtestPage: React.FC = () => {
           score: q.score ?? 0,
           imageUrl: q.imageUrl ?? null,
           explanation: q.explanation ?? null,
-          correctAnswerChoice: q.correctAnswerChoice ?? null,
+          correctAnswerChoice: q.correctAnswerChoice ?? 0,
           answers: q.answers.map((answer, aIndex) => ({
             ...answer,
             index: answer.index ?? aIndex + 1,
