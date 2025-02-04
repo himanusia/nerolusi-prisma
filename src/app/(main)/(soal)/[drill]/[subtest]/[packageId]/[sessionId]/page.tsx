@@ -115,7 +115,12 @@ export default function QuizPage() {
         quizSessionId: parseInt(sessionIdString),
         questionId,
         packageId: sessionDetails?.packageId ?? 0,
-        userId: sessionDetails?.userId ?? "",
+        userId:
+          userId &&
+          (session.data.user.role === "teacher" ||
+            session.data.user.role === "admin")
+            ? sessionDetails?.userId
+            : "",
         answerChoice: typeof answerValue === "number" ? answerValue : null,
         essayAnswer: typeof answerValue === "string" ? answerValue : null,
       });
