@@ -195,7 +195,7 @@ export const packageRouter = createTRPCRouter({
           id: user.id,
           name: user.name,
           email: user.email,
-          score: totalScore / totalSubtests, // Normalize by subtest count
+          score: Math.round((totalScore / totalSubtests) * 100) / 100,
           quizSession: user.quizSession,
         };
       });

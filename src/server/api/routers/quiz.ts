@@ -630,7 +630,10 @@ export const quizRouter = createTRPCRouter({
             name: pkg.name,
             correct: totalCorrect,
             all: totalAll,
-            score: subtests.length > 0 ? totalScore / subtests.length : 0,
+            score:
+              subtests.length > 0
+                ? Math.round((totalScore / subtests.length) * 100) / 100
+                : 0,
             subtest: subtests,
           };
         });

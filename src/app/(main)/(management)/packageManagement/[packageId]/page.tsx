@@ -48,7 +48,7 @@ export default function PackageManagementPage() {
                   onValueChange={(selectedSessionId) => {
                     if (selectedSessionId) {
                       router.push(
-                        `/drill/admin/${packageId}/${selectedSessionId}?userId=${params.data.id}`,
+                        `/soal/admin/${packageId}/${selectedSessionId}?userId=${params.data.id}`,
                       );
                     }
                   }}

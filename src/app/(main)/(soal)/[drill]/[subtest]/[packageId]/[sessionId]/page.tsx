@@ -14,7 +14,7 @@ import Editor from "~/app/_components/editor";
 import { Separator } from "~/app/_components/ui/separator";
 
 export default function QuizPage() {
-  const { packageId, sessionId } = useParams();
+  const { drill, packageId, sessionId } = useParams();
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const router = useRouter();
@@ -199,23 +199,26 @@ export default function QuizPage() {
         {/* Main Content */}
         <div className="flex w-full flex-col gap-5 overflow-hidden rounded-md border p-3">
           {/* Display the current question */}
-          {/* {new Date(sessionDetails?.endTime) < new Date() && (
-            <p className="font-bold">
-              Score:{" "}
-              {questions[currentQuestionIndex].type === "essay"
-                ? selectedAnswers
-                    .get(questions[currentQuestionIndex].id)
-                    ?.toString()
-                    .trim() ===
-                  questions[currentQuestionIndex].answers[0].content.trim()
-                  ? questions[currentQuestionIndex].score
-                  : 0
-                : selectedAnswers.get(questions[currentQuestionIndex].id) ===
-                    questions[currentQuestionIndex].correctAnswerChoice
-                  ? questions[currentQuestionIndex].score
-                  : 0}
-            </p>
-          )} */}
+          {(session.data.user.role === "teacher" ||
+            session.data.user.role === "admin") &&
+            drill === "soal" &&
+            new Date(sessionDetails?.endTime) < new Date() && (
+              <p className="font-bold">
+                Score:{" "}
+                {questions[currentQuestionIndex].type === "essay"
+                  ? selectedAnswers
+                      .get(questions[currentQuestionIndex].id)
+                      ?.toString()
+                      .trim() ===
+                    questions[currentQuestionIndex].answers[0].content.trim()
+                    ? questions[currentQuestionIndex].score
+                    : 0
+                  : selectedAnswers.get(questions[currentQuestionIndex].id) ===
+                      questions[currentQuestionIndex].correctAnswerChoice
+                    ? questions[currentQuestionIndex].score
+                    : 0}
+              </p>
+            )}
 
           {questions && questions[currentQuestionIndex] && (
             <div key={questions[currentQuestionIndex].id} className="gap-3">
