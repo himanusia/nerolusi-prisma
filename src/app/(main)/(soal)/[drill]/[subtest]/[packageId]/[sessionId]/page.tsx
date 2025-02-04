@@ -116,11 +116,11 @@ export default function QuizPage() {
         questionId,
         packageId: sessionDetails?.packageId ?? 0,
         userId:
-          userId &&
-          (session.data.user.role === "teacher" ||
-            session.data.user.role === "admin")
-            ? sessionDetails?.userId
-            : "",
+          drill === "soal" &&
+          (session.data.user.role === "admin" ||
+            session.data.user.role === "teacher")
+            ? userId
+            : (sessionDetails?.userId ?? ""),
         answerChoice: typeof answerValue === "number" ? answerValue : null,
         essayAnswer: typeof answerValue === "string" ? answerValue : null,
       });
@@ -154,7 +154,8 @@ export default function QuizPage() {
         sessionId: parseInt(sessionIdString),
       });
       toast.success("Quiz submitted successfully!");
-      router.push(`/drill/${sessionDetails?.subtest.type}`);
+      if (drill === "soal")
+        router.push(`/drill/${sessionDetails?.subtest.type}`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
