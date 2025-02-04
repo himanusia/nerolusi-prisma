@@ -43,8 +43,7 @@ export default function QuizPage() {
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails?.endTime) < new Date() &&
-      new Date(sessionDetails.package.TOend) >= new Date()
+      new Date(sessionDetails?.endTime) === new Date()
     ) {
       router.push(`/drill/${sessionDetails.subtest.type}`);
     }

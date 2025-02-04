@@ -41,7 +41,8 @@ export default function QuizPage() {
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails?.endTime) === new Date()
+      new Date(sessionDetails?.endTime) < new Date() &&
+      new Date(sessionDetails.package.TOend) >= new Date()
     ) {
       router.push(`/tryout/${packageId}`);
     }
