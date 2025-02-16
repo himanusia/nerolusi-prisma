@@ -253,8 +253,9 @@ export default function QuizPage() {
                   <label
                     key={answer.index}
                     className={`mt-3 flex flex-row items-center rounded-lg ${
-                      questions[currentQuestionIndex].correctAnswerChoice ===
-                        answer.index ||
+                      (new Date(sessionDetails.endTime) < new Date() &&
+                        questions[currentQuestionIndex].correctAnswerChoice ===
+                          answer.index) ||
                       (new Date(sessionDetails.endTime) > new Date() &&
                         selectedAnswers.get(
                           questions[currentQuestionIndex].id,

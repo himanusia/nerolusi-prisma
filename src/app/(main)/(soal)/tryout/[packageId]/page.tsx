@@ -47,12 +47,13 @@ export default function QuizPage() {
             variant="ghost"
             className={`w-full justify-start border px-7 font-bold ${subtest.quizSession && "bg-green-600 hover:bg-green-700"}`}
             disabled={
-              (subtest.quizSession &&
-                new Date(subtest?.quizSession) < new Date() &&
-                new Date(packageData.TOend) >= new Date()) ||
-              (new Date(packageData.TOend) < new Date() &&
-                !subtest.quizSession) ||
-              new Date(packageData.TOstart) > new Date()
+              subtest.quizSession &&
+              new Date(subtest?.quizSession) < new Date() &&
+              new Date(packageData.TOend) >= new Date()
+              //   ||
+              // (new Date(packageData.TOend) < new Date() &&
+              //   !subtest.quizSession) ||
+              // new Date(packageData.TOstart) > new Date()
             }
           >
             <div className="w-full truncate text-left">
