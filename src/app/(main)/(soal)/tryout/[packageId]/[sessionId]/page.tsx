@@ -57,12 +57,14 @@ export default function QuizPage() {
     { enabled: !!sessionDetails },
   );
 
-  // Set timer based on session duration
   useEffect(() => {
     if (sessionDetails?.duration && sessionDetails?.startTime) {
       const startTimestamp = new Date(sessionDetails.startTime).getTime();
       const durationInMs = sessionDetails.duration * 60 * 1000;
-      const calculatedEndTime = startTimestamp + durationInMs;
+      const calculatedEndTime = Math.min(
+        startTimestamp + durationInMs,
+        new Date(sessionDetails.endTime).getTime(),
+      );
 
       setEndTime(calculatedEndTime);
       setTimeLeft(Math.max(calculatedEndTime - Date.now(), 0));
