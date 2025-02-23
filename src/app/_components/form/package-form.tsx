@@ -217,19 +217,45 @@ const PackageForm: React.FC<PackageFormProps> = ({ initialData, onSubmit }) => {
       answerIndex,
       1,
     );
+
+    updatedSubtests[subtestIndex].questions[questionIndex].answers =
+      updatedSubtests[subtestIndex].questions[questionIndex].answers.map(
+        (answer, aIndex) => ({
+          ...answer,
+          index: aIndex + 1,
+        }),
+      );
+
     setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
   };
 
   const removeQuestion = (subtestIndex: number, questionIndex: number) => {
     const updatedSubtests = [...formData.subtests];
     updatedSubtests[subtestIndex].questions.splice(questionIndex, 1);
+
+    updatedSubtests[subtestIndex].questions = updatedSubtests[
+      subtestIndex
+    ].questions.map((question, qIndex) => ({
+      ...question,
+      index: qIndex + 1,
+    }));
+
     setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
   };
 
   const removeSubtest = (subtestIndex: number) => {
     const updatedSubtests = [...formData.subtests];
     updatedSubtests.splice(subtestIndex, 1);
-    setFormData((prev) => ({ ...prev, subtests: updatedSubtests }));
+
+    const reindexedSubtests = updatedSubtests.map((subtest, sIndex) => ({
+      ...subtest,
+      questions: subtest.questions.map((question, qIndex) => ({
+        ...question,
+        index: qIndex + 1,
+      })),
+    }));
+
+    setFormData((prev) => ({ ...prev, subtests: reindexedSubtests }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

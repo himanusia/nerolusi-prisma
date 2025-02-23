@@ -158,6 +158,14 @@ const EditSubtestPage: React.FC = () => {
 
     const updatedQuestions = [...formData.questions];
     updatedQuestions[questionIndex].answers.splice(answerIndex, 1);
+
+    updatedQuestions[questionIndex].answers = updatedQuestions[
+      questionIndex
+    ].answers.map((answer, aIndex) => ({
+      ...answer,
+      index: aIndex + 1,
+    }));
+
     setFormData({ ...formData, questions: updatedQuestions });
   };
 
@@ -166,7 +174,17 @@ const EditSubtestPage: React.FC = () => {
 
     const updatedQuestions = [...formData.questions];
     updatedQuestions.splice(questionIndex, 1);
-    setFormData({ ...formData, questions: updatedQuestions });
+
+    const reindexedQuestions = updatedQuestions.map((q, index) => ({
+      ...q,
+      index: index + 1,
+      answers: q.answers.map((a, aIndex) => ({
+        ...a,
+        index: aIndex + 1,
+      })),
+    }));
+
+    setFormData({ ...formData, questions: reindexedQuestions });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
