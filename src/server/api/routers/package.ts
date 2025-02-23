@@ -705,6 +705,16 @@ export const packageRouter = createTRPCRouter({
           });
 
           if (questions) {
+            const existingQuestionIds = questions
+              .filter((q) => q.id)
+              .map((q) => q.id);
+            await tx.question.deleteMany({
+              where: {
+                subtestId: id,
+                id: { notIn: existingQuestionIds },
+              },
+            });
+
             // Handle question updates in separate transactions
             for (const question of questions) {
               await ctx.db.$transaction(async (txQuestion) => {
@@ -719,6 +729,17 @@ export const packageRouter = createTRPCRouter({
                       score: question.score,
                       explanation: question.explanation,
                       correctAnswerChoice: question.correctAnswerChoice,
+                    },
+                  });
+
+                  const existingAnswerIds = question.answers
+                    .filter((a) => a.id)
+                    .map((a) => a.id);
+
+                  await txQuestion.answer.deleteMany({
+                    where: {
+                      questionId: updatedQuestion.id,
+                      id: { notIn: existingAnswerIds },
                     },
                   });
 
