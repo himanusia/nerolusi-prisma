@@ -250,8 +250,8 @@ ListItem.displayName = "ListItem";
 function getNavLink(isActive: boolean) {
   return cn(
     "relative px-4 py-2 text-sm font-medium transition-colors duration-200 h-16 flex items-center",
-    "after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:origin-left after:scale-x-0 after:bg-green-600 after:transition-transform after:duration-200",
-    "hover:after:scale-x-100",
-    isActive ? "after:scale-x-100" : "text-black"
+    "after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:origin-left after:bg-green-600 after:transition-transform after:duration-200",
+    isActive ? "after:scale-x-100" : "after:scale-x-0",
+    "hover:after:scale-x-100 text-black"
   );
 }
