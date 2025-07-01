@@ -9,6 +9,7 @@ import JadwalKegiatan from "./jadwal-kegiatan";
 import TryOutTerbaru from "./try-out-terbaru";
 import DaftarPilihan from "./daftar-pilihan";
 import ProgressChart from "./progress-chart";
+import { Separator } from "../_components/ui/separator";
 
 export default function MainPage() {
   const [content, setContent] = useState<string>("");
@@ -46,7 +47,7 @@ export default function MainPage() {
   ) : (
     <div className="flex size-full flex-col gap-4">
       {/* token info */}
-      <div className="flex w-full items-center justify-between py-4">
+      <div className="flex w-full items-center justify-between pt-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <img
@@ -83,12 +84,16 @@ export default function MainPage() {
           </div>
         </div>
       </div>
+      <Separator className="bg-gray-200 h-1" />
       <div className="flex flex-wrap items-center justify-center gap-12">
         <ProgressChart />
         <DaftarPilihan />
       </div>
+      <Separator className="bg-gray-200 h-1" />
       <JadwalKegiatan />
+      <Separator className="bg-gray-200 h-1" />
       <TryOutTerbaru />
+      <Separator className="bg-gray-200 h-1" />
       <RekamanTerbaru />
     </div>
   );

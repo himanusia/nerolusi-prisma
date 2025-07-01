@@ -106,9 +106,9 @@ export default function JadwalKegiatan() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-xl font-bold">Rekaman Kelas Terbaru</h3>
+          <h3 className="text-xl font-bold">Jadwal Kegiatan</h3>
           <p className="text-gray-600">
-            Kerjakan Try Out ini untuk melihat hasil belajarmu
+            Jangan lupa, berikut adalah kegiatan kamu!
           </p>
         </div>
         <Button variant="outline" size="sm">
