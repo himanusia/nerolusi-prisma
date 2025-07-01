@@ -77,31 +77,31 @@ const navigationItems = [
   {
     title: "Home",
     href: "/",
-    icon: <HiHome className="h-5 w-5"/>,
+    icon: <HiHome className="h-5 w-5" />,
     isActive: (pathname: string) => pathname === "/",
   },
   {
     title: "Tryout",
     href: "/tryout",
-    icon: <RiPencilFill className="h-5 w-5"/>,
+    icon: <RiPencilFill className="h-5 w-5" />,
     isActive: (pathname: string) => pathname === "/tryout",
   },
   {
     title: "Drill",
     href: "/drill",
-    icon: <RiToolsFill className="h-5 w-5"/>,
+    icon: <RiToolsFill className="h-5 w-5" />,
     isActive: (pathname: string) => pathname.startsWith("/drill"),
   },
   {
     title: "Rekaman",
     href: "/rekaman",
-    icon: <HiMiniVideoCamera className="h-5 w-5"/>,
+    icon: <HiMiniVideoCamera className="h-5 w-5" />,
     isActive: (pathname: string) => pathname.startsWith("/rekaman"),
   },
   {
     title: "Modul",
     href: "/modul",
-    icon: <RiBook2Fill className="h-5 w-5"/>,
+    icon: <RiBook2Fill className="h-5 w-5" />,
     isActive: (pathname: string) => pathname.startsWith("/modul"),
   },
 ];
@@ -112,7 +112,7 @@ export default function Navbar() {
   const pathname = usePathname();
 
   return (
-    <div className="sticky left-0 top-3 z-50 flex h-16 w-full items-center justify-between px-16 bg-white border-b">
+    <div className="sticky left-0 top-3 z-50 flex h-16 w-full items-center justify-between border-b bg-white px-16">
       {/* logo & menu*/}
       <div className="flex items-center gap-5">
         <Link href={"/"}>
@@ -128,17 +128,18 @@ export default function Navbar() {
           <NavigationMenuList className="flex gap-1">
             {navigationItems.map((item) => (
               <NavigationMenuItem key={item.href}>
-                <Link href={item.href} legacyBehavior passHref>
-                  <NavigationMenuLink className={getNavLink(item.isActive(pathname))}>
-                    <div className="flex flex-col items-center gap-1 font-bold">
-                      {item.icon}
-                      <span className="text-xs">{item.title}</span>
-                    </div>
-                  </NavigationMenuLink>
-                </Link>
+                <NavigationMenuLink
+                  className={getNavLink(item.isActive(pathname))}
+                  href={item.href}
+                >
+                  <div className="flex flex-col items-center gap-1 font-bold">
+                    {item.icon}
+                    <span className="text-xs">{item.title}</span>
+                  </div>
+                </NavigationMenuLink>
               </NavigationMenuItem>
             ))}
-          {/* {user?.classid && (
+            {/* {user?.classid && (
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Drill</NavigationMenuTrigger>
                 <NavigationMenuContent>
@@ -194,7 +195,7 @@ export default function Navbar() {
           </NavigationMenuList>
         </NavigationMenu>
       </div>
-      
+
       <div className="flex items-center gap-4">
         {user ? (
           <div className="flex items-center gap-3">
@@ -252,6 +253,6 @@ function getNavLink(isActive: boolean) {
     "relative px-4 py-2 text-sm font-medium transition-colors duration-200 h-16 flex items-center",
     "after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:origin-left after:bg-green-600 after:transition-transform after:duration-200",
     isActive ? "after:scale-x-100" : "after:scale-x-0",
-    "hover:after:scale-x-100 text-black"
+    "hover:after:scale-x-100 text-black",
   );
 }
