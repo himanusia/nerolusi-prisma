@@ -10,6 +10,7 @@ import TryOutTerbaru from "./try-out-terbaru";
 import DaftarPilihan from "./daftar-pilihan";
 import ProgressChart from "./progress-chart";
 import { Separator } from "../_components/ui/separator";
+import { Avatar, AvatarImage, AvatarFallback } from "../_components/ui/avatar";
 
 export default function MainPage() {
   const [content, setContent] = useState<string>("");
@@ -50,11 +51,10 @@ export default function MainPage() {
       <div className="flex w-full items-center justify-between pt-4">
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
-            <img
-              src={user.image}
-              alt="User Avatar"
-              className="size-12 rounded-full"
-            />
+            <Avatar className="size-12 flex items-center justify-center">
+              <AvatarImage src={user.image} />
+              <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+            </Avatar>
             <h2 className="text-xl">{user.name}</h2>
           </div>
           <div className="flex rounded-lg border border-gray-500 bg-gray-300">
@@ -80,20 +80,23 @@ export default function MainPage() {
             300
           </div>
           <div className="ml-3 flex flex-wrap items-center justify-start">
-            <span className="text-xl"><span className="font-bold">Hari</span> hingga <span className="font-bold">UTBK</span></span>
+            <span className="text-xl">
+              <span className="font-bold">Hari</span> hingga{" "}
+              <span className="font-bold">UTBK</span>
+            </span>
           </div>
         </div>
       </div>
-      <Separator className="bg-gray-200 h-1" />
+      <Separator className="h-1 bg-gray-200" />
       <div className="flex flex-wrap items-center justify-center gap-12">
         <ProgressChart />
         <DaftarPilihan />
       </div>
-      <Separator className="bg-gray-200 h-1" />
+      <Separator className="h-1 bg-gray-200" />
       <JadwalKegiatan />
-      <Separator className="bg-gray-200 h-1" />
+      <Separator className="h-1 bg-gray-200" />
       <TryOutTerbaru />
-      <Separator className="bg-gray-200 h-1" />
+      <Separator className="h-1 bg-gray-200" />
       <RekamanTerbaru />
     </div>
   );
