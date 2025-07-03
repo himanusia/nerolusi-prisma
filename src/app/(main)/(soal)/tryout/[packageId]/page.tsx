@@ -1,6 +1,6 @@
 "use client";
 
-import { Separator } from "@radix-ui/react-separator";
+import React from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -29,6 +29,19 @@ export default function QuizPage() {
     const indexB = subtestOrder.indexOf(b.type);
     return indexA - indexB;
   });
+
+  // Check if all subtests are completed
+  const completedCount = sortedSubtests?.filter(s => s.quizSession && new Date(s.quizSession) <= new Date()).length || 0;
+  const allSubtestsCompleted = completedCount === sortedSubtests?.length;
+  const isPackageEndDatePassed = new Date(packageData?.TOend || new Date()) < new Date();
+
+  // If all subtests are completed but end date hasn't passed, redirect to scores page
+  React.useEffect(() => {
+    if (packageData && allSubtestsCompleted && sortedSubtests?.length > 0 && !isPackageEndDatePassed) {
+      toast.info("Semua subtest telah diselesaikan. Pembahasan akan tersedia setelah tryout berakhir.");
+      router.push(`/tryout/${packageId}/scores`);
+    }
+  }, [packageData, allSubtestsCompleted, sortedSubtests, isPackageEndDatePassed, router, packageId]);
 
   return isError ? (
     <ErrorPage />
@@ -105,12 +118,11 @@ export default function QuizPage() {
         {/* Subtest List */}
         <div className="space-y-2">
           {sortedSubtests?.map((subtest, index) => {
-            // quizSession is the endTime (Date) if submitted, null if not submitted or no session
-            // If quizSession exists (is a date) and it's in the past, then it's submitted
             const isSubmitted = subtest.quizSession && new Date(subtest.quizSession) <= new Date();
             const completedCount = sortedSubtests?.filter(s => s.quizSession && new Date(s.quizSession) <= new Date()).length || 0;
             const isCurrentSubtest = index === completedCount && !isSubmitted; // Next in sequence
-            const isDisabled = index > completedCount; // Future subtests
+            const isPackageEndDatePassed = new Date(packageData.TOend) < new Date();
+            const allSubtestsCompleted = completedCount === sortedSubtests?.length;
             
             return (
               <Button
@@ -122,7 +134,18 @@ export default function QuizPage() {
                       ? "outline"
                       : "disable"
                 }
-                className="w-full h-12 justify-center items-center rounded-lg transition-all pointer-events-none"
+                className={`w-full h-12 justify-center items-center rounded-lg transition-all ${
+                  isSubmitted || isCurrentSubtest ? "cursor-pointer" : "pointer-events-none"
+                }`}
+                onClick={() => {
+                  if (isSubmitted) {
+                    // Navigate to view results
+                    handleViewResults(subtest.id);
+                  } else if (isCurrentSubtest) {
+                    // Start new session
+                    handleSubtestClick(subtest.id, subtest.duration);
+                  }
+                }}
               >
                 <div className="w-full text-center">
                   <div className="font-bold text-md">
@@ -152,6 +175,13 @@ export default function QuizPage() {
                       Score: {subtest.score} | {subtest.totalCorrect}/{subtest.totalQuestion}
                     </div>
                   )}
+                  {/* {isSubmitted && (
+                    <div className="text-xs text-blue-600 mt-1">
+                      {isPackageEndDatePassed 
+                        ? "Klik untuk melihat pembahasan" 
+                        : "Sudah selesai - Pembahasan tersedia setelah tryout berakhir"}
+                    </div> */}
+                  {/* )} */}
                 </div>
               </Button>
             );
@@ -219,6 +249,9 @@ export default function QuizPage() {
                 </>
               );
             } else {
+              // All subtests completed
+              const isPackageEndDatePassed = new Date(packageData.TOend) < new Date();
+              
               return (
                 <>
                   <h3 className="text-xl font-bold text-green-700 mb-2">
@@ -227,13 +260,37 @@ export default function QuizPage() {
                   <p className="text-gray-600 mb-6">
                     Semua subtest telah diselesaikan
                   </p>
-                  <div className="text-2xl mb-4">
-                    {new Date(packageData.TOend) < new Date() && (
-                      <div className="text-lg font-semibold text-green-600">
-                        Score: {(packageData.totalScore / sortedSubtests?.length).toFixed(2)}
-                      </div>
-                    )}
-                  </div>
+                  
+                  {isPackageEndDatePassed ? (
+                    <Button 
+                      variant="default"
+                      className="text-md font-normal bg-[#2b8057] hover:bg-[#2b8057]/80 mb-4"
+                      onClick={() => router.push(`/tryout/${packageId}/scores`)}
+                    >
+                      Lihat Hasil
+                    </Button>
+                  ) : (
+                    <Button 
+                      variant="default"
+                      className="text-md font-normal bg-[#2b8057] hover:bg-[#2b8057]/80 mb-4"
+                      onClick={() => router.push(`/tryout/${packageId}/scores`)}
+                    >
+                      Lihat Status
+                    </Button>
+                  )}
+                  
+                  {!isPackageEndDatePassed && (
+                    <div className="text-sm text-gray-500 mt-2">
+                      <p>Skor detail akan tersedia setelah:</p>
+                      <p className="font-semibold">
+                        {new Date(packageData.TOend).toLocaleDateString('id-ID', { 
+                          day: 'numeric', 
+                          month: 'long', 
+                          year: 'numeric' 
+                        })}
+                      </p>
+                    </div>
+                  )}
                 </>
               );
             }
@@ -275,6 +332,39 @@ export default function QuizPage() {
       toast.error("Error creating session", {
         description: error.message,
       });
+    }
+  }
+
+  async function handleViewResults(subtestId: number) {
+    if (!session.data || !session.data.user) {
+      toast.error("Anda harus login terlebih dahulu");
+      return;
+    }
+
+    const userId = session.data.user.id;
+    const isPackageEndDatePassed = new Date(packageData.TOend) < new Date();
+
+    if (isPackageEndDatePassed) {
+      try {
+        const quizSession = await getSessionMutation.mutateAsync({
+          userId,
+          subtestId,
+        });
+
+        if (quizSession) {
+          // Navigate to the session page to view results
+          router.push(`/tryout/${packageId}/${quizSession.id}`);
+        } else {
+          toast.error("No completed session found for this subtest");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Error retrieving session", {
+          description: error.message,
+        });
+      }
+    } else {
+      toast.info("Pembahasan akan tersedia setelah tryout berakhir");
     }
   }
 }
