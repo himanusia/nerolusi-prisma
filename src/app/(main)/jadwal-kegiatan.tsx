@@ -167,7 +167,6 @@ export default function JadwalKegiatan() {
                         <Button
                           size="sm"
                           disabled={actionButton.disabled}
-                          className="bg-green-600 hover:bg-green-700"
                         >
                           {actionButton.label}{" "}
                           <ChevronRight className="ml-1 h-4 w-4" />

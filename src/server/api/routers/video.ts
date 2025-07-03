@@ -11,6 +11,22 @@ export const videoRouter = createTRPCRouter({
     return videos ?? null;
   }),
 
+  getVideoById: userProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+
+      const video = await ctx.db.video.findUnique({
+        where: { id },
+      });
+
+      if (!video) {
+        throw new Error("Video not found");
+      }
+
+      return video;
+    }),
+
   addVideo: teacherProcedure
     .input(
       z.object({

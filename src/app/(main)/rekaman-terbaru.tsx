@@ -3,6 +3,7 @@ import RekamanKelasCard from "../_components/rekaman-kelas-card";
 import { Skeleton } from "../_components/ui/skeleton";
 import { Button } from "../_components/ui/button";
 import { ChevronRight } from "lucide-react";
+import Link from "next/link";
 
 export default function RekamanTerbaru() {
   const {
@@ -30,15 +31,18 @@ export default function RekamanTerbaru() {
             Kerjakan Try Out ini untuk melihat hasil belajarmu
           </p>
         </div>
-        <Button variant="outline" size="sm">
-          Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
-        </Button>
+        <Link href={"/rekaman"}>
+          <Button variant="outline" size="sm">
+            Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </Link>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {videos.slice(0, 4).map((item) => (
           <div key={item.id} className="flex-shrink-0">
             <RekamanKelasCard
+              id={item.id}
               title={item.title}
               description={item.description}
               url={item.url}
