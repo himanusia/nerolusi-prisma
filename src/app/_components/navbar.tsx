@@ -23,7 +23,7 @@ const navigationItems: NavigationItem[] = [
     title: "Tryout",
     href: "/tryout",
     icon: <RiPencilFill className="h-5 w-5" />,
-    isActive: (pathname: string) => pathname === "/tryout",
+    isActive: (pathname: string) => pathname.startsWith("/tryout"),
   },
   {
     title: "Drill",
