@@ -199,7 +199,22 @@ export const quizRouter = createTRPCRouter({
 
       if (!session) {
         return null;
-      } else if (new Date(session.package.TOend) > new Date()) {
+      } 
+      
+      // Check if this specific session has ended
+      const sessionEnded = new Date(session.endTime) < new Date();
+      
+      if (sessionEnded) {
+        // Session completed - show answers and explanations for review
+        return await ctx.db.question.findMany({
+          where: { subtestId: input.subtestId },
+          orderBy: { index: "asc" },
+          include: {
+            answers: true,
+          },
+        });
+      } else {
+        // Session still active - hide answers and explanations
         return await ctx.db.question
           .findMany({
             where: { subtestId: input.subtestId },
@@ -216,14 +231,6 @@ export const quizRouter = createTRPCRouter({
               score: null,
             })),
           );
-      } else if (new Date(session.package.TOend) < new Date()) {
-        return await ctx.db.question.findMany({
-          where: { subtestId: input.subtestId },
-          orderBy: { index: "asc" },
-          include: {
-            answers: true,
-          },
-        });
       }
     }),
 
