@@ -210,9 +210,93 @@ export default function QuizPage() {
   ) : isLoading || isQuestionsLoading || isPackageLoading ? (
     <LoadingPage />
   ) : (
-    <div className="flex min-h-screen bg-[#2b8057]">
+    <div className="flex flex-col lg:flex-row min-h-screen bg-[#2b8057]">
+      {/* mobile version */}
+      <div className="lg:hidden bg-white p-4 flex items-center justify-between">
+        {/* <Button 
+          variant="outline" 
+          onClick={() => router.push(`/tryout/${packageId}`)}
+          className="text-sm"
+        >
+          ← Kembali
+        </Button> */}
+        <p className="font-bold text-lg text-center">
+          {(() => {
+            switch (sessionDetails?.subtest.type) {
+              case "pu":
+                return "Kemampuan Penalaran Umum";
+              case "ppu":
+                return "Pengetahuan dan Pemahaman Umum";
+              case "pbm":
+                return "Kemampuan Memahami Bacaan dan Menulis";
+              case "pk":
+                return "Pengetahuan Kuantitatif";
+              case "pm":
+                return "Penalaran Matematika";
+              case "lbe":
+                return "Literasi Bahasa Inggris";
+              case "lbi":
+                return "Literasi Bahasa Indonesia";
+              default:
+                return sessionDetails?.subtest.type;
+            }
+          })()}
+        </p>
+        <div className="text-left">
+          <p className="text-md font-bold">Waktu:</p>
+          <p className="text-xl font-bold rounded-md border border-[#acaeba] p-2">
+            {timeLeft <= 0 ? "--:--" : formatTime(timeLeft)}
+          </p>
+        </div>
+      </div>
+
+      <div className="lg:hidden bg-white p-2 -mt-2">
+        <div className="overflow-x-auto scrollbar-hide mb-2">
+          <div className="flex gap-2 pb-2" style={{ minWidth: 'max-content' }}>
+            {questions?.map((_, index) => (
+              <Button
+                key={index}
+                className={`flex-shrink-0 w-10 h-10 text-sm ${getQuestionButtonStyle(index)}`}
+                style={{ border: "1px solid" }}
+                onClick={() => setCurrentQuestionIndex(index)}
+              >
+                {index + 1}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 border-t border-b border-[#acaeba] py-2">
+          <span className="font-bold text-sm">Ukuran:</span>
+          <Button
+            variant={fontSize === "text-lg" ? "default" : "outline"}
+            size="sm"
+            className="text-lg font-bold text-black"
+            onClick={() => setFontSize("text-lg")}
+          >
+            Aa
+          </Button>
+          <Button
+            variant={fontSize === "text-base" ? "default" : "outline"}
+            size="sm"
+            className="text-base font-bold text-black"
+            onClick={() => setFontSize("text-base")}
+          >
+            Aa
+          </Button>
+          <Button
+            variant={fontSize === "text-sm" ? "default" : "outline"}
+            size="sm"
+            className="text-sm font-bold text-black"
+            onClick={() => setFontSize("text-sm")}
+          >
+            Aa
+          </Button>
+        </div>
+      </div>
+
       {/* Left Panel */}
-      <div className="w-1/3 px-10 py-5 bg-white border-[1px] border-[#acaeba]">
+      <div className="hidden lg:block w-1/3 px-10 py-5 bg-white border-[1px] border-[#acaeba]">
         <Button 
           variant="outline" 
           onClick={() => router.push(`/tryout/${packageId}`)}
@@ -272,12 +356,12 @@ export default function QuizPage() {
       </div>
 
       {/* Right Panel */}
-      <div className="flex-1 px-10 py-5 flex flex-col">
-        <div className="flex-1 bg-white rounded-lg border border-[#acaeba] shadow-sm overflow-hidden flex flex-col">
+      <div className="flex-1 lg:px-10 lg:py-5 px-0 py-0 flex flex-col">
+        <div className="flex-1 bg-white lg:rounded-lg border-0 lg:border border-[#acaeba] overflow-hidden flex flex-col">
           {questions && questions[currentQuestionIndex] && (
             <div key={questions[currentQuestionIndex].id} className="flex-1 flex flex-col">
               {/* Font Size Controls*/}
-              <div className="bg-white p-4">
+              <div className="hidden lg:block bg-white p-4">
                 <div className="flex items-center gap-2">
                   <span className="font-bold">Ukuran:</span>
                   <Button 
@@ -308,8 +392,8 @@ export default function QuizPage() {
               </div>
 
               {/* Question Content */}
-              <div className="flex-1 overflow-y-auto px-6">
-                <div className="border border-[#acaeba] rounded-lg p-2 mb-2">
+              <div className="flex-1 overflow-y-auto px-4 lg:px-6">
+                <div className="border-0 lg:border border-[#acaeba] rounded-lg p-2 mb-2">
                   <div className="mb-2">
                     <Editor
                       content={questions[currentQuestionIndex].content}
@@ -372,7 +456,7 @@ export default function QuizPage() {
                         return (
                           <label
                             key={answer.index}
-                            className={`flex items-center p-2 rounded-lg border cursor-pointer transition-all ${answerStyle} ${
+                            className={`flex items-center p-1 lg:p-2 rounded-lg border cursor-pointer transition-all ${answerStyle} ${
                               isSessionCompleted && "cursor-default"
                             }`}
                           >
@@ -427,7 +511,7 @@ export default function QuizPage() {
                           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                         </svg>
                         <p className="text-blue-800 font-medium">
-                          Quiz telah selesai! Pembahasan dan jawaban yang benar akan tersedia setelah tanggal berakhir tryout.
+                          Quiz telah selesai! Pembahasan akan tersedia setelah tanggal berakhir tryout.
                         </p>
                       </div>
                       <p className="text-blue-600 text-sm mt-2">
@@ -443,7 +527,7 @@ export default function QuizPage() {
               </div>
 
               {!isSessionCompleted && (
-                <div className="bg-white p-4">
+                <div className="bg-white p-4 border-t border-b lg:border-b-0 lg:border-t-0 border-[#acaeba]">
                   <div className="flex justify-between">
                     <Button
                       variant="default"
