@@ -13,123 +13,95 @@ import {
 import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
-import { GoFile, GoVideo } from "react-icons/go";
-import { GrScorecard } from "react-icons/gr";
+// import { GoFile, GoVideo } from "react-icons/go";
+// import { GrScorecard } from "react-icons/gr";
 import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { signIn } from "next-auth/react";
 import { FaGoogle } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import { HiMenu, HiX } from "react-icons/hi";
+import { HiHome, HiMiniVideoCamera } from "react-icons/hi2";
+import { RiPencilFill, RiToolsFill, RiBook2Fill } from "react-icons/ri";
 
-const soal: { title: string; href: string }[] = [
-  {
-    title: "Kemampuan Penalaran Umum",
-    href: "/drill/pu",
-  },
-  {
-    title: "Pengetahuan dan Pemahaman Umum",
-    href: "/drill/ppu",
-  },
-  {
-    title: "Kemampuan Memahami Bacaan dan Menulis",
-    href: "/drill/pbm",
-  },
-  {
-    title: "Pengetahuan Kuantitatif",
-    href: "/drill/pk",
-  },
-  {
-    title: "Penalaran Matematika",
-    href: "/drill/pm",
-  },
-  {
-    title: "Literasi Bahasa Inggris",
-    href: "/drill/lbe",
-  },
-  {
-    title: "Literasi Bahasa Indonesia",
-    href: "/drill/lbi",
-  },
-];
+// const soal: { title: string; href: string }[] = [
+//   {
+//     title: "Kemampuan Penalaran Umum",
+//     href: "/drill/pu",
+//   },
+//   {
+//     title: "Pengetahuan dan Pemahaman Umum",
+//     href: "/drill/ppu",
+//   },
+//   {
+//     title: "Kemampuan Memahami Bacaan dan Menulis",
+//     href: "/drill/pbm",
+//   },
+//   {
+//     title: "Pengetahuan Kuantitatif",
+//     href: "/drill/pk",
+//   },
+//   {
+//     title: "Penalaran Matematika",
+//     href: "/drill/pm",
+//   },
+//   {
+//     title: "Literasi Bahasa Inggris",
+//     href: "/drill/lbe",
+//   },
+//   {
+//     title: "Literasi Bahasa Indonesia",
+//     href: "/drill/lbi",
+//   },
+// ];
 
-const menu: { title: string; href: string; logo: JSX.Element }[] = [
-  {
-    title: "File",
-    href: "/file",
-    logo: <GoFile />,
-  },
-  {
-    title: "Video",
-    href: "/video",
-    logo: <GoVideo />,
-  },
-  {
-    title: "My Scores",
-    href: "/my-scores",
-    logo: <GrScorecard />,
-  },
-];
+// const menu: { title: string; href: string; logo: JSX.Element }[] = [
+//   {
+//     title: "File",
+//     href: "/file",
+//     logo: <GoFile />,
+//   },
+//   {
+//     title: "Video",
+//     href: "/video",
+//     logo: <GoVideo />,
+//   },
+//   {
+//     title: "My Scores",
+//     href: "/my-scores",
+//     logo: <GrScorecard />,
+//   },
+// ];
 
 const navigationItems = [
   {
     title: "Home",
     href: "/",
-    icon: <Image
-            src="/icons/home.svg"
-            alt="Home Icon"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />,
+    icon: <HiHome className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname === "/",
   },
   {
     title: "Tryout",
     href: "/tryout",
-    icon: <Image
-            src="/icons/pencil.svg"
-            alt="Tryout Icon"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />,
+    icon: <RiPencilFill className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/tryout"),
   },
   {
     title: "Drill",
     href: "/drill",
-    icon: <Image
-            src="/icons/tools.svg"
-            alt="Drill Icon"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />,
+    icon: <RiToolsFill className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/drill"),
   },
   {
     title: "Rekaman",
     href: "/rekaman",
-    icon: <Image
-            src="/icons/video-camera.svg"
-            alt="Rekaman Icon"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />,
+    icon: <HiMiniVideoCamera className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/rekaman"),
   },
   {
     title: "Modul",
     href: "/modul",
-    icon: <Image
-            src="/icons/book.svg"
-            alt="Modul Icon"
-            width={20}
-            height={20}
-            className="w-5 h-5"
-          />,
+    icon: <RiBook2Fill className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/modul"),
   },
 ];
@@ -351,7 +323,7 @@ ListItem.displayName = "ListItem";
 function getNavLink(isActive: boolean) {
   return cn(
     "relative px-4 py-2 text-sm font-medium transition-colors duration-200 h-16 flex items-center",
-    "after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:origin-left after:bg-green-600 after:transition-transform after:duration-200",
+    "after:absolute after:bottom-0 after:left-0 after:h-1 after:w-full after:origin-left after:bg-[#2b8057] after:transition-transform after:duration-200",
     isActive ? "after:scale-x-100" : "after:scale-x-0",
     "hover:after:scale-x-100 text-black",
   );

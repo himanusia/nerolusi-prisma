@@ -65,63 +65,60 @@ export default function ScoresPage() {
   ) : isLoading ? (
     <LoadingPage />
   ) : (
-    <div className="min-h-screen">
-      {/* Header - Green Card */}
-      <div className="bg-gradient-to-t from-[#32b274] to-[#2b8057] text-white p-6 rounded-lg mx-6 mt-6 border-[#acaeba] border">
-        <div className="flex items-center">
-          {/* Left Side - Score Info (1/3) */}
-          <div className="w-1/3 flex flex-col items-center ml-20 mt-5">
-            <h1 className="text-3xl font-bold text-white mb-1 text-center">
+    <div className="min-h-screen bg-white">
+      {/* Header*/}
+      <div className="bg-gradient-to-t from-[#32b274] to-[#2b8057] text-white p-4 md:p-6 rounded-lg mx-4 mt-4 md:mx-6 md:mt-6 border-[#acaeba] border">
+        <div className="flex flex-col md:flex-row md:items-center space-y-4 md:spacey-0">
+          {/* Left Side */}
+          <div className="flex-1 md:w-1/3 flex flex-col items-center md:ml-20 md:mt-5">
+            <h1 className="text-4xl md:text-3xl font-bold text-white mb-3 md:mb-1 text-center">
               {packageData?.name || "Try Out UTBK"}
             </h1>
-            {/* <h2 className="text-lg font-bold text-white mb-1">
-              #1 2026
-            </h2> */}
             <div className="text-6xl font-bold text-white mb-1">
               {isPackageEndDatePassed ? Math.round(averageScore) : "-"}
             </div>
-            <p className="text-white text-md font-semibold mb-5">
+            <p className="hidden md:block text-white text-md font-semibold mb-5">
               Nilai Rata-rata mu!
             </p>
           </div>
           
           {/* Vertical Separator */}
-          <div className="w-px h-40 bg-white mx-10"></div>
+          <div className="hidden md:block w-px h-40 bg-white mx-10"></div>
           
           {/* Right Side - User Info and Summary (2/3) */}
-          <div className="flex-1 flex flex-col items-center justify-center">
+          <div className="flex-1 flex flex-col items-center justify-center border-t border-white md:border-t-0 py-4">
             <div className="text-right mb-6 text-center">
-              <h2 className="text-2xl font-bold text-white text-center">
+              <h2 className="text-xl md:text-2xl font-bold text-white text-center">
                 {session?.user?.name}
               </h2>
-              <p className="text-white text-xl font-semibold text-center">
+              <p className="text-white text-md md:text-xl font-semibold text-center">
                 SMA Islam Cikal Harapan I BSD
               </p>
             </div>
             
             {/* Score Summary Cards */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-[#e9fff4] rounded-lg p-3 text-center min-w-[80px]">
-                <div className="text-3xl font-bold text-[#1f773a]">
+            <div className="grid grid-cols-3 gap-2 md:gap-3 w-full max-w-md">
+              <div className="bg-[#e9fff4] rounded-md p-2 md:p-3 text-center min-w-[70px] md:min-w-[80px]">
+                <div className="text-xl md:text-3xl font-bold text-[#1f773a]">
                   {isPackageEndDatePassed ? totalCorrect : "-"}
                 </div>
-                <p className="text-[#1f773a] text-lg font-semibold flex items-center justify-center gap-1">
+                <p className="text-[#1f773a] text-xs md:text-lg font-semibold flex items-center justify-center gap-1">
                   <span className="text-[#1f773a] text-center">✓</span> Benar
                 </p>
               </div>
-              <div className="bg-[#ffebeb] rounded-lg p-3 text-center min-w-[80px]">
-                <div className="text-3xl font-bold text-[#811515]">
+              <div className="bg-[#ffebeb] rounded-md p-2 md:p-3 text-center min-w-[70px] md:min-w-[80px]">
+                <div className="text-xl md:text-3xl font-bold text-[#811515]">
                   {isPackageEndDatePassed ? totalWrong : "-"}
                 </div>
-                <p className="text-[#811515] text-lg font-semibold flex items-center justify-center gap-1">
+                <p className="text-[#811515] text-xs md:text-lg font-semibold flex items-center justify-center gap-1">
                   <span className="text-[#811515] text-center">✗</span> Salah
                 </p>
               </div>
-              <div className="bg-[#f2f2f2] rounded-lg p-3 text-center min-w-[80px]">
-                <div className="text-3xl font-bold text-[#545454]">
+              <div className="bg-[#f2f2f2] rounded-md p-2 md:p-3 text-center min-w-[70px] md:min-w-[80px]">
+                <div className="text-xl md:text-3xl font-bold text-[#545454]">
                   {isPackageEndDatePassed ? (totalQuestions - totalCorrect - totalWrong) : "-"}
                 </div>
-                <p className="text-[#545454] text-lg font-semibold flex items-center justify-center gap-1">
+                <p className="text-[#545454] text-xs md:text-lg font-semibold flex items-center justify-center gap-1">
                   <span className="text-[#545454] text-center">?</span> Kosong
                 </p>
               </div>
@@ -131,15 +128,13 @@ export default function ScoresPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex gap-6 mx-6 mt-6">
+      <div className="flex flex-col md:flex-row gap-6 mx-6 mt-6">
         {/* Left Panel - User Info */}
-        <div className="w-1/3 -mt-10">
-            {/* Nerolusi Logo */}
+        <div className="w-full md:w-1/3 -mt-10">
             <div className="flex items-center justify-center -mt-5">
                 <Image src="/logo2.png" alt="logo nerolusi" width={150} height={100} />
             </div>
           <div className="bg-[#f2f2f2] rounded-lg py-6 px-10 shadow-sm border -mt-10">
-            {/* User Avatar */}
             <div className="text-center mb-4">
                 <Avatar className="h-16 w-16 justify-center mx-auto mb-2">
                     <AvatarImage src={session.user.image || ""} />
@@ -184,7 +179,7 @@ export default function ScoresPage() {
         </div>
 
         {/* Right Panel - Detailed Scores */}
-        <div className="w-2/3">
+        <div className="w-full md:w-2/3">
           {/* Success Message */}
           {isPackageEndDatePassed && (
             <div className="bg-gradient-to-t from-[#2d69db] to-[#223a67] text-white rounded-xl p-6 mb-6 border border-[#acaeba]">
@@ -194,7 +189,7 @@ export default function ScoresPage() {
                 </h3>
                 <div className="text-left space-y-1">
                   <div className="flex">
-                    <span className="font-bold text-white w-32">PTN</span>
+                    <span className="font-bold text-white w-20 md:w-32">PTN</span>
                     <span className="text-white">: Institut Teknologi Bandung</span>
                   </div>
                   <div className="flex">
@@ -208,16 +203,16 @@ export default function ScoresPage() {
 
           {/* Waiting Message */}
           {!isPackageEndDatePassed && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+            <div className="bg-gradient-to-t from-[#2d69db] to-[#223a67] text-white rounded-xl p-6 mb-6 border border-[#acaeba]">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                {/* <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">⏰</span>
-                </div>
+                </div> */}
                 <div>
-                  <h3 className="font-bold text-blue-800">
+                  <h3 className="font-bold text-white">
                     Skor dan pembahasan akan tersedia setelah tryout berakhir
                   </h3>
-                  <p className="text-blue-600 text-sm">
+                  <p className="text-white text-sm">
                     Tanggal berakhir: {packageData?.TOend ? new Date(packageData.TOend).toLocaleDateString('id-ID', { 
                       day: 'numeric', 
                       month: 'long', 
@@ -244,17 +239,17 @@ export default function ScoresPage() {
               const isCompleted = subtest.quizSession && new Date(subtest.quizSession) <= new Date();
               
               return (
-                <div key={subtest.id} className="bg-white p-4 border-b-2 border-black last:border-b-0">
+                <div key={subtest.id} className="bg-white py-4 border-b-2 border-black last:border-b-0">
                   <div className="flex justify-between items-start">
                     {/* Left Side - Content */}
-                    <div className="flex-1 mr-6">
+                    <div className="flex-1 mr-3">
                       {/* Top Row - Subtest name and score cards */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="font-bold text-2xl text-gray-800 mb-1">
+                          <h3 className="font-bold text-xl md:text-2xl text-gray-800 mb-1">
                             {subtestName.short}
                           </h3>
-                          <p className="text-gray-800 text-sm font-bold">
+                          <p className="hidden md:block text-gray-800 text-sm font-bold">
                             {subtestName.full}
                           </p>
                         </div>
