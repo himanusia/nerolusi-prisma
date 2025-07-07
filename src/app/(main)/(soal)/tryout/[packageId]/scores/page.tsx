@@ -67,7 +67,7 @@ export default function ScoresPage() {
   ) : (
     <div className="min-h-screen bg-white">
       {/* Header*/}
-      <div className="bg-gradient-to-t from-[#32b274] to-[#2b8057] text-white p-4 md:p-6 rounded-lg mx-4 mt-4 md:mx-6 md:mt-6 border-[#acaeba] border">
+      <div className="bg-gradient-to-t from-[#32b274] to-[#2b8057] text-white p-4 md:p-6 rounded-lg mt-4 md:mx-6 md:mt-6 border-[#acaeba] border">
         <div className="flex flex-col md:flex-row md:items-center space-y-4 md:spacey-0">
           {/* Left Side */}
           <div className="flex-1 md:w-1/3 flex flex-col items-center md:ml-20 md:mt-5">
@@ -128,7 +128,7 @@ export default function ScoresPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col md:flex-row gap-6 mx-6 mt-6">
+      <div className="flex flex-col md:flex-row gap-6 mt-6">
         {/* Left Panel - User Info */}
         <div className="w-full md:w-1/3 -mt-10">
             <div className="flex items-center justify-center -mt-5">
@@ -184,17 +184,17 @@ export default function ScoresPage() {
           {isPackageEndDatePassed && (
             <div className="bg-gradient-to-t from-[#2d69db] to-[#223a67] text-white rounded-xl p-6 mb-6 border border-[#acaeba]">
               <div className="text-start">
-                <h3 className="text-xl font-bold text-white mb-3">
+                <h3 className="text-xl font-bold text-white mb-3 text-md md:text-xl">
                   Selamat, Anda dinyatakan lolos pilihan pertama anda!
                 </h3>
                 <div className="text-left space-y-1">
                   <div className="flex">
-                    <span className="font-bold text-white w-20 md:w-32">PTN</span>
-                    <span className="text-white">: Institut Teknologi Bandung</span>
+                    <span className="font-bold text-white w-20 md:w-32 text-sm md:text-lg">PTN</span>
+                    <span className="text-white text-sm md:text-lg">: Institut Teknologi Bandung</span>
                   </div>
                   <div className="flex">
-                    <span className="font-bold text-white w-32">Program Studi</span>
-                    <span className="text-white">: Sekolah Teknik Elektro dan Informatika - Komputasi (STEI-K)</span>
+                    <span className="font-bold text-white w-32 text-sm md:text-lg">Program Studi</span>
+                    <span className="text-white text-sm md:text-lg">: Sekolah Teknik Elektro dan Informatika - Komputasi (STEI-K)</span>
                   </div>
                 </div>
               </div>
@@ -241,12 +241,12 @@ export default function ScoresPage() {
               return (
                 <div key={subtest.id} className="bg-white py-4 border-b-2 border-black last:border-b-0">
                   <div className="flex justify-between items-start">
-                    {/* Left Side - Content */}
-                    <div className="flex-1 mr-3">
-                      {/* Top Row - Subtest name and score cards */}
+                    {/* Left Side */}
+                    <div className="flex-1 mr-1 md:mr-3">
+                      {/* Subtest name and score cards */}
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex-1">
-                          <h3 className="font-bold text-xl md:text-2xl text-gray-800 mb-1">
+                          <h3 className={`font-bold text-gray-800 mb-1 ${subtestName.short === "KMBM" ? "text-md md:text-2xl" : "text-xl md:text-2xl"}`}>
                             {subtestName.short}
                           </h3>
                           <p className="hidden md:block text-gray-800 text-sm font-bold">
@@ -254,18 +254,18 @@ export default function ScoresPage() {
                           </p>
                         </div>
                         
-                        {/* Score Cards - Show when completed and end date passed */}
+                        {/* Score Cards */}
                         {isPackageEndDatePassed && isCompleted && (
-                          <div className="flex items-center gap-3 ml-4">
-                            <div className="bg-[#e9fff4] rounded-lg px-4 py-2 text-center min-w-[70px]">
+                          <div className="flex items-center justify-center gap-1 md:gap-3 ml-2">
+                            <div className="bg-[#e9fff4] rounded-lg px-2 md:px-4 py-2 text-center max-w-[70px]">
                               <div className="text-[#1f773a] text-sm font-bold">Benar</div>
                               <div className="text-[#1f773a] text-xl font-bold">{correctAnswers}</div>
                             </div>
-                            <div className="bg-[#ffebeb] rounded-lg px-4 py-2 text-center min-w-[70px]">
+                            <div className="bg-[#ffebeb] rounded-lg px-2 md:px-4 py-2 text-center max-w-[70px]">
                               <div className="text-[#811515] text-sm font-bold">Salah</div>
                               <div className="text-[#811515] text-xl font-bold">{wrongAnswers}</div>
                             </div>
-                            <div className="bg-[#f2f2f2] rounded-lg px-4 py-2 text-center min-w-[70px]">
+                            <div className="bg-[#f2f2f2] rounded-lg px-2 py-2 text-center max-w-[70px]">
                               <div className="text-[#545454] text-sm font-bold">Kosong</div>
                               <div className="text-[#545454] text-xl font-bold">{emptyAnswers}</div>
                             </div>
@@ -298,7 +298,7 @@ export default function ScoresPage() {
                     </div>
                     
                     {/* Right Side - Score Display */}
-                    <div className="text-center bg-[#f2f2f2] rounded-lg px-4 py-2 min-w-[80px] self-start">
+                    <div className="text-center bg-[#f2f2f2] rounded-lg px-3 py-2 self-start max-w-[80px]">
                       <div className="text-[#545454] text-lg font-bold mb-1">Skor</div>
                       <div className="text-4xl font-bold text-[#545454]">
                         {isPackageEndDatePassed && isCompleted ? Math.round(score) : (isCompleted ? "✓" : "--")}
