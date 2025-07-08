@@ -23,7 +23,7 @@ export default function RekamanTerbaru() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-auto">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold">Rekaman Kelas Terbaru</h3>
