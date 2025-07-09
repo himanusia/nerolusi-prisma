@@ -5,35 +5,35 @@ import ModulCard from "./modul-card";
 
 const modules = [
   {
-    title: "Modul Nerolusi",
+    title: "Nerolusi",
     src: "/modul/nerolusi.webp",
   },
   {
-    title: "Modul KPU",
+    title: "KPU",
     src: "/modul/kpu.webp",
   },
   {
-    title: "Modul PBM",
+    title: "PBM",
     src: "/modul/pbm.webp",
   },
   {
-    title: "Modul PPU",
+    title: "PPU",
     src: "/modul/ppu.png",
   },
   {
-    title: "Modul PK",
+    title: "PK",
     src: "/modul/pk.webp",
   },
   {
-    title: "Modul PM",
+    title: "PM",
     src: "/modul/pm.webp",
   },
   {
-    title: "Modul LBING",
+    title: "LBING",
     src: "/modul/lbing.webp",
   },
   {
-    title: "Modul LBIND",
+    title: "LBIND",
     src: "/modul/lbind.webp",
   },
 ];
