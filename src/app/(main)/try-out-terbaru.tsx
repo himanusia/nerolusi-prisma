@@ -109,7 +109,7 @@ export default function TryOutTerbaru() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-auto">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold">Try Out Tersedia</h3>
@@ -160,7 +160,7 @@ export default function TryOutTerbaru() {
                           <span>{tryOut.dateRange}</span>
                         </div>
                         <div className="flex h-full items-end justify-end px-2 text-lg font-bold">
-                          <img src="coin.webp" alt="Coin" className="size-6" />
+                          <img src="/home/coin.webp" alt="Coin" className="size-6" />
                           <span className="ml-2 flex h-6 items-center justify-center">
                             {tryOut.token}
                           </span>

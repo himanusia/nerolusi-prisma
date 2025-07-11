@@ -87,24 +87,20 @@ export default function NontonPage() {
 
           {/* Video Info */}
           <div className="rounded-lg bg-white p-6">
-            <h1 className="mb-4 text-3xl font-bold text-gray-900">
+            <h1 className="mb-4 font-bold text-gray-900 md:text-xl">
               {video.title}
             </h1>
 
             {video.description && (
               <div className="mb-4">
-                <h3 className="mb-2 text-lg font-semibold text-gray-800">
-                  Description
-                </h3>
-                <p className="whitespace-pre-wrap leading-relaxed text-gray-600">
+                <p className="md:text-md whitespace-pre-wrap text-sm leading-relaxed text-gray-600">
                   {video.description}
                 </p>
               </div>
             )}
 
-            <div className="flex items-center justify-between border-t pt-4 text-sm text-gray-500">
+            <div className="flex items-center justify-between border-t pt-4 text-xs text-gray-500 md:text-sm">
               <span>
-                Created:{" "}
                 {new Date(video.createdAt).toLocaleDateString("id-ID", {
                   year: "numeric",
                   month: "long",
@@ -118,19 +114,23 @@ export default function NontonPage() {
         </div>
 
         {/* Tutor Information */}
-        <div className="mt-6 rounded-lg border border-gray-400 bg-white p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <Avatar className="flex h-16 w-16 items-center justify-center">
+        <div className="mt-6 overflow-auto rounded-lg border border-gray-400 bg-white p-6">
+          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+            <div className="flex flex-1 items-center space-x-4">
+              <Avatar className="flex size-12 items-center justify-center md:size-16">
                 <AvatarImage src="" alt="Tutor Avatar" />
                 <AvatarFallback>KA</AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="text-xl font-bold text-gray-900">Ka Ananda</h3>
-                <p className="text-gray-600">Tutor PPU, KPU, dan PBM</p>
+                <h3 className="font-bold text-gray-900 md:text-xl">
+                  Ka Ananda
+                </h3>
+                <p className="md:text-md text-sm text-gray-600">
+                  Tutor PPU, KPU, dan PBM
+                </p>
               </div>
             </div>
-            <Button className="flex items-center space-x-2 rounded-lg bg-green-600 px-6 py-3 text-white transition-colors hover:bg-green-700">
+            <Button className="w-full space-x-2 sm:w-fit sm:shrink-0">
               <FaWhatsapp className="h-5 w-5" />
               <span>Kontak</span>
             </Button>
