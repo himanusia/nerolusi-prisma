@@ -15,7 +15,7 @@ import { cn } from "~/lib/utils";
 import { useSession } from "next-auth/react";
 // import { GoFile, GoVideo } from "react-icons/go";
 // import { GrScorecard } from "react-icons/gr";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { signIn } from "next-auth/react";
 import { FaGoogle } from "react-icons/fa";
@@ -111,13 +111,34 @@ export default function Navbar() {
   const user = session.data?.user;
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  const closeMobileMenu = () => {
+    setIsMobileMenuOpen(false);
+  }
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && isMobileMenuOpen) {
+        closeMobileMenu();
+      }
+  };
+
+  if (isMobileMenuOpen) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [isMobileMenuOpen]);
+
   return (
-    <div className="sticky left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-[1px] border-[#acaeba] bg-white px-16">
+    <div className="sticky left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-[1px] border-[#acaeba] bg-white px-12">
       <div className="flex items-center gap-5">
         <Link href={"/"}>
           <Image
@@ -240,7 +261,9 @@ export default function Navbar() {
       </div>
 
       {isMobileMenuOpen && (
-        <div className="absolute top-16 left-0 right-0 bg-white border-[1px] border-[#acaeba] shadow-lg md:hidden z-50">
+        <>
+        <div onClick={closeMobileMenu} className="fixed inset-0 z-40 md:hidden"/>
+        <div className="absolute top-16 left-0 right-0 bg-white border-[1px] border-[#acaeba] shadow-lg md:hidden z-50" ref={mobileMenuRef}>
           <div className="p-4">
             {user ? (
               <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
@@ -291,6 +314,7 @@ export default function Navbar() {
             </div>
           </div>
         </div>
+        </>
       )}
     </div>
   );
