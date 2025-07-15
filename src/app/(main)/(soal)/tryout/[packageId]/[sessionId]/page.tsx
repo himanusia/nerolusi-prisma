@@ -165,7 +165,7 @@ export default function QuizPage() {
         return "bg-[#ff0000] text-black hover:bg-[#ff0000]/80 hover:text-black !border !border-[#ff0000]";
       } else {
         // Not answered
-        return "bg-white text-black !border !border-[#acaeba] hover:bg-gray-100 hover:text-black";
+        return "bg-[#ff0000] text-black hover:bg-[#ff0000]/80 hover:text-black !border !border-[#ff0000]";
       }
     }
     
