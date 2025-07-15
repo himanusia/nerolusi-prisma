@@ -110,9 +110,9 @@ export default function PageContent({ subtest }: PageContentProps) {
               <span>Kembali</span>
             </Button>
           </Link>
-          <div className="flex min-h-0 flex-1 flex-col rounded-lg border bg-white shadow-sm">
+          <div className="flex min-h-0 flex-1 flex-col rounded-lg border border-[#ACAEBA] bg-white shadow-sm">
             {/* Header */}
-            <div className="flex-shrink-0 border-b p-4">
+            <div className="flex-shrink-0 border-b border-[#ACAEBA] p-4">
               <h2 className="text-lg font-semibold text-gray-800">
                 {subtestData.title}
               </h2>
