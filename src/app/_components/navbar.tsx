@@ -12,17 +12,17 @@ import {
 } from "./ui/navigation-menu";
 import { Button } from "./ui/button";
 import { cn } from "~/lib/utils";
-import { useSession } from "next-auth/react";
+import { useSession, signOut, signIn } from "next-auth/react";
 // import { GoFile, GoVideo } from "react-icons/go";
 // import { GrScorecard } from "react-icons/gr";
 import React, { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { signIn } from "next-auth/react";
 import { FaGoogle } from "react-icons/fa";
 import { usePathname } from "next/navigation";
 import { HiMenu, HiX } from "react-icons/hi";
 import { HiHome, HiMiniVideoCamera } from "react-icons/hi2";
 import { RiPencilFill, RiToolsFill, RiBook2Fill } from "react-icons/ri";
+import { HiUser, HiShoppingCart, HiLogout } from "react-icons/hi";
 
 // const soal: { title: string; href: string }[] = [
 //   {
@@ -78,7 +78,7 @@ const navigationItems = [
     title: "Home",
     href: "/",
     icon: <HiHome className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname === "/",
+    isActive: (pathname: string) => pathname === "/" || pathname.includes("tka") || pathname.includes("utbk"),
   },
   {
     title: "Tryout",
@@ -86,24 +86,24 @@ const navigationItems = [
     icon: <RiPencilFill className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/tryout"),
   },
+  // {
+  //   title: "Drill",
+  //   href: "/drill",
+  //   icon: <RiToolsFill className="h-5 w-5"/>,
+  //   isActive: (pathname: string) => pathname.startsWith("/drill"),
+  // },
   {
-    title: "Drill",
-    href: "/drill",
-    icon: <RiToolsFill className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/drill"),
-  },
-  {
-    title: "Rekaman",
-    href: "/rekaman",
+    title: "Video",
+    href: "/video",
     icon: <HiMiniVideoCamera className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/rekaman"),
+    isActive: (pathname: string) => pathname.startsWith("/video"),
   },
-  {
-    title: "Modul",
-    href: "/modul",
-    icon: <RiBook2Fill className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/modul"),
-  },
+  // {
+  //   title: "Modul",
+  //   href: "/modul",
+  //   icon: <RiBook2Fill className="h-5 w-5"/>,
+  //   isActive: (pathname: string) => pathname.startsWith("/modul"),
+  // },
 ];
 
 export default function Navbar() {
@@ -111,7 +111,9 @@ export default function Navbar() {
   const user = session.data?.user;
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const profileDropdownRef = useRef<HTMLDivElement>(null);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -120,25 +122,43 @@ export default function Navbar() {
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
   }
+  
+  const toggleProfileDropdown = () => {
+    setIsProfileDropdownOpen(!isProfileDropdownOpen);
+  };
+
+  const closeProfileDropdown = () => {
+    setIsProfileDropdownOpen(false);
+  };
+
+  const handleLogout = () => {
+    signOut({
+      callbackUrl: "/",
+    });
+    closeProfileDropdown();
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && isMobileMenuOpen) {
         closeMobileMenu();
       }
+      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node) && isProfileDropdownOpen) {
+        closeProfileDropdown();
+      }
   };
 
-  if (isMobileMenuOpen) {
+  if (isMobileMenuOpen || isProfileDropdownOpen) {
     document.addEventListener("mousedown", handleClickOutside);
   }
 
   return () => {
     document.removeEventListener("mousedown", handleClickOutside);
   };
-}, [isMobileMenuOpen]);
+}, [isMobileMenuOpen, isProfileDropdownOpen]);
 
   return (
-    <div className="sticky left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-[1px] border-[#acaeba] bg-white px-12">
+    <div className="sticky left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[1px] border-[#acaeba] bg-white px-12">
       <div className="flex items-center gap-5">
         <Link href={"/"}>
           <Image
@@ -224,12 +244,55 @@ export default function Navbar() {
       <div className="flex items-center gap-4">
         <div className="hidden md:flex items-center gap-4">
           {user ? (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-black">{user.name}</span>
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user.image || ""} />
-                <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-              </Avatar>
+            <div className="relative" ref={profileDropdownRef}>
+              {/* <span className="text-sm text-black">{user.name}</span> */}
+
+              <button onClick={toggleProfileDropdown} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user.image || ""} />
+                  <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                </Avatar>
+              </button>
+              
+              {isProfileDropdownOpen && (
+                <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
+
+                  <div className="py-2">
+                    <Link
+                      href="/profile"
+                      onClick={closeProfileDropdown}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <HiUser className="h-4 w-4" />
+                      Profil
+                    </Link>
+                    <Link
+                      href="/pilihan-ptn"
+                      onClick={closeProfileDropdown}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <RiPencilFill className="h-4 w-4" />
+                      Pilihan PTN
+                    </Link>
+                    <Link
+                      href="/beli-paket"
+                      onClick={closeProfileDropdown}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <HiShoppingCart className="h-4 w-4" />
+                      Beli Paket
+                    </Link>
+                    <div className="border-t border-gray-100 my-2"></div>
+                    <button
+                      onClick={handleLogout}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                    >
+                      <HiLogout className="h-4 w-4" />
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           ) : (
             <Button
@@ -312,6 +375,50 @@ export default function Navbar() {
                 </Link>
               ))}
             </div>
+
+            {user && (
+                <>
+                  <div className="border-t border-gray-200 pt-4 mb-4">
+                    <div className="space-y-2">
+                      <Link
+                        href="/profile"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <HiUser className="h-5 w-5" />
+                        <span className="font-medium">Profil</span>
+                      </Link>
+                      <Link
+                        href="/pilihan-ptn"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <RiPencilFill className="h-5 w-5" />
+                        <span className="font-medium">Pilihan PTN</span>
+                      </Link>
+                      <Link
+                        href="/beli-paket"
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <HiShoppingCart className="h-5 w-5" />
+                        <span className="font-medium">Beli Paket</span>
+                      </Link>
+                    </div>
+                  </div>
+                  
+                  <button
+                    onClick={() => {
+                      handleLogout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                  >
+                    <HiLogout className="h-5 w-5" />
+                    <span className="font-medium">Logout</span>
+                  </button>
+                </>
+              )}
           </div>
         </div>
         </>

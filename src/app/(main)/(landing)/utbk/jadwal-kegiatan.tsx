@@ -1,8 +1,8 @@
 "use client";
 
-import { Button } from "../_components/ui/button";
-import { Card, CardContent } from "../_components/ui/card";
-import { Badge } from "../_components/ui/badge";
+import { Button } from "~/app/_components/ui/button";
+import { Card, CardContent } from "~/app/_components/ui/card";
+import { Badge } from "~/app/_components/ui/badge";
 import { CalendarIcon, ChevronRight } from "lucide-react";
 
 // Dummy data for schedule activities

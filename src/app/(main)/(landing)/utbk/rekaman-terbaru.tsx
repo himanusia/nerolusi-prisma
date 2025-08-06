@@ -1,7 +1,7 @@
 import { api } from "~/trpc/react";
-import RekamanKelasCard from "../_components/rekaman-kelas-card";
-import { Skeleton } from "../_components/ui/skeleton";
-import { Button } from "../_components/ui/button";
+import RekamanKelasCard from "~/app/_components/rekaman-kelas-card";
+import { Skeleton } from "~/app/_components/ui/skeleton";
+import { Button } from "~/app/_components/ui/button";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 

@@ -4,7 +4,7 @@ import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "../_components/ui/chart";
+} from "~/app/_components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 
 // Dummy data for the progress chart

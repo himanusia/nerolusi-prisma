@@ -1,4 +1,4 @@
-import { Button } from "../_components/ui/button";
+import { Button } from "~/app/_components/ui/button";
 
 // Dummy data for school choices
 const dummyChoices = [
