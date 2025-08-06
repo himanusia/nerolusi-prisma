@@ -178,14 +178,14 @@ const TryoutList = ({ classId }: TryoutListProps) => {
               <h3 className="text-lg font-bold">Pembelian TO</h3>
               <button 
                 onClick={() => setShowPurchaseDialog(false)}
-                className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600"
+                className="w-8 h-8 bg-[#ff3d00] text-white font-bold rounded-[10px] flex items-center justify-center hover:bg-red-600"
               >
                 ✕
               </button>
             </div>
             
             <div className="mb-6">
-              <h4 className="text-green-600 text-xl font-bold mb-2">
+              <h4 className="text-[#2b8057] text-xl font-bold mb-2">
                 Apakah anda yakin untuk membeli TO ini?
               </h4>
               <p className="text-gray-600">
@@ -195,13 +195,13 @@ const TryoutList = ({ classId }: TryoutListProps) => {
 
             <div className="flex gap-3">
               <Button
-                variant="default"
+                variant="outline"
                 onClick={() => {
                   // Handle purchase logic here
                   console.log('Purchase confirmed for:', selectedPackage);
                   setShowPurchaseDialog(false);
                 }}
-                className="flex-1"
+                className="flex-1 text-[#2b8057] font-bold"
               >
                 <Image src="/coin.webp" alt="Coin" className="w-5 h-5 mr-2" width={20} height={20} />
                 Ya 1
