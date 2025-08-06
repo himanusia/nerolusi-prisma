@@ -64,7 +64,7 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
               <h3 className="text-xl font-bold text-gray-900">Beli Token</h3>
               <button 
                 onClick={() => setShowTokenDialog(false)}
-                className="w-8 h-8 bg-red-500 text-white rounded-full flex items-center justify-center hover:bg-red-600 transition-colors"
+                className="w-8 h-8 bg-red-500 text-white font-bold rounded-[10px] flex items-center justify-center hover:bg-red-600 transition-colors"
               >
                 ✕
               </button>
