@@ -117,7 +117,7 @@ export default function TryOutCard({ tryOut, onTryOutClick }: TryOutCardProps) {
               <div className="text-xs font-bold">Try Out</div>
               <div className="mt-1 text-xs font-bold">SNBT</div>
             </div>
-            <div className={`flex flex-1/2 w-full items-center justify-center bg-tranparent text-center text-3xl font-bold text-black py-2 border-r border-[#acaeba]`}>
+            <div className={`flex flex-1/2 w-full items-center justify-center bg-transparent text-center text-3xl font-bold text-black py-2 border-r border-[#acaeba]`}>
               {tryOut.number}
             </div>
           </div>
