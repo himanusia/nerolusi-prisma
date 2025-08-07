@@ -14,21 +14,72 @@ import { getYouTubeVideoId } from "~/utils/get-youtube-id";
 
 export default function NontonPage() {
   const params = useParams();
-  const { id } = params;
+  const { id, subject } = params;
+  
+  // Dummy videos for testing
+  const dummyVideos = {
+    1: {
+      id: 1,
+      title: "Teori Bilangan",
+      url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", // Rick Roll for testing
+      description: "Video pembelajaran tentang teori bilangan dasar. Materi ini mencakup konsep bilangan bulat, bilangan prima, dan operasi dasar bilangan.",
+      createdAt: new Date().toISOString(),
+    },
+    2: {
+      id: 2,
+      title: "Operasi Bilangan",
+      url: "https://www.youtube.com/watch?v=9bZkp7q19f0", // Gangnam Style for testing
+      description: "Pembelajaran operasi bilangan meliputi penjumlahan, pengurangan, perkalian, dan pembagian bilangan bulat.",
+      createdAt: new Date().toISOString(),
+    },
+    3: {
+      id: 3,
+      title: "Aritmatika Sosial",
+      url: "https://www.youtube.com/watch?v=kJQP7kiw5Fk", // Despacito for testing
+      description: "Materi aritmatika sosial yang mencakup untung rugi, bunga, diskon, dan pajak dalam kehidupan sehari-hari.",
+      createdAt: new Date().toISOString(),
+    },
+    4: {
+      id: 4,
+      title: "Konsep Aljabar",
+      url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ", // Bohemian Rhapsody for testing
+      description: "Pengenalan konsep aljabar dasar, variabel, konstanta, dan operasi aljabar sederhana.",
+      createdAt: new Date().toISOString(),
+    },
+  };
+
   const {
-    data: video,
+    data: apiVideo,
     isLoading,
     isError,
   } = api.video.getVideoById.useQuery({
     id: Number(id),
   });
 
+  // Use dummy video if API fails or for testing
+  const video = apiVideo || dummyVideos[Number(id) as keyof typeof dummyVideos];
+
   if (isLoading) {
     return <LoadingPage />;
   }
 
-  if (isError || !video) {
-    return <ErrorPage />;
+  if (!video) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 text-6xl">📹</div>
+          <h2 className="mb-2 text-2xl font-bold text-gray-800">
+            Video Not Found
+          </h2>
+          <p className="text-gray-600">
+            The requested video could not be found.
+          </p>
+          <Button onClick={() => window.history.back()} className="mt-4">
+            Go Back
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   const youtubeId = getYouTubeVideoId(video.url);
@@ -44,6 +95,9 @@ export default function NontonPage() {
           <p className="text-gray-600">
             This doesn't appear to be a valid YouTube video.
           </p>
+          <Button onClick={() => window.history.back()} className="mt-4">
+            Go Back
+          </Button>
         </div>
       </div>
     );

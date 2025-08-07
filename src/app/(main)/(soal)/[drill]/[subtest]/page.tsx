@@ -12,16 +12,79 @@ import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
 import { Clock, Users, FileText } from "lucide-react";
 
-export default function DrillPage() {
-  const { subtest } = useParams();
+export default function DrillVideoPage() {
+  const { drill, subtest } = useParams(); // drill = subject, subtest = videoId
   const router = useRouter();
   const session = useSession();
+
+  // Map subject titles to SubtestType enum values for database query
+  const getSubtestTypeFromTitle = (title: string): SubtestType | null => {
+    const decodedTitle = decodeURIComponent(title);
+    switch (decodedTitle) {
+      case "Matematika Wajib":
+      case "Matematika Lanjut":
+        return "pk";
+      case "Bahasa Indonesia":
+        return "lbi";
+      case "Bahasa Inggris":
+        return "lbe";
+      case "Fisika":
+      case "Kimia":
+      case "Biologi":
+        return "pm";
+      case "Ekonomi":
+      case "Sosiologi":
+      case "Geografi":
+      case "Sejarah":
+      case "PPKN":
+      case "Projek Kreatif & Kewirausahaan":
+        return "ppu";
+      default:
+        return null;
+    }
+  };
+
+  // Get dummy video info based on videoId 
+  const getVideoInfo = (videoId: string) => {
+    const id = parseInt(videoId);
+    // This would ideally come from database, but using dummy data for now
+    const videoTitles: { [key: number]: string } = {
+      1: "Teori Bilangan",
+      2: "Operasi Bilangan", 
+      3: "Aritmatika Sosial",
+      4: "Konsep Aljabar",
+      5: "Sistem Persamaan Linear",
+      6: "Program Linear",
+      7: "Konsep Himpunan",
+      8: "Operasi Himpunan",
+      9: "Fungsi Linear",
+      10: "Fungsi Kuadrat",
+      11: "Pengertian Persamaan Kuadrat",
+      12: "Menyelesaikan Persamaan Kuadrat",
+      13: "Diskriminan",
+      14: "Fungsi Kuadrat",
+      15: "Grafik Fungsi Kuadrat", 
+      16: "Aplikasi Fungsi Kuadrat",
+    };
+    
+    return {
+      id,
+      title: videoTitles[id] || `Video ${id}`,
+      subject: decodeURIComponent(drill as string)
+    };
+  };
+
+  const videoInfo = getVideoInfo(subtest as string);
+  const subtestType = getSubtestTypeFromTitle(drill as string);
 
   const {
     data: packages,
     isLoading,
     isError,
-  } = api.quiz.getDrillSubtest.useQuery({ subtest: subtest as SubtestType });
+  } = api.quiz.getDrillSubtest.useQuery(
+    { subtest: subtestType! },
+    { enabled: !!subtestType }
+  );
 
   const startSessionMutation = api.quiz.createSession.useMutation();
   const getSessionMutation = api.quiz.getSession.useMutation();
@@ -55,7 +118,7 @@ export default function DrillPage() {
         });
       }
 
-      router.push(`/drill/${subtest}/${packageId}/${quizSession.id}`);
+      router.push(`/drill/${drill}/${subtest}/${packageId}/${quizSession.id}`);
     } catch (error) {
       console.error(error);
       toast.error("Error creating session", {
@@ -64,8 +127,20 @@ export default function DrillPage() {
     }
   }
 
-  return isError ? (
-    <ErrorPage />
+  return isError || !subtestType ? (
+    <div className="max-w-6xl mx-auto space-y-6">
+      <div className="text-center py-12">
+        <p className="text-gray-500 text-lg">
+          {!subtestType ? "Subject tidak ditemukan untuk drill" : "Error memuat data drill"}
+        </p>
+        <Button 
+          onClick={() => router.back()} 
+          className="mt-4 bg-[#2b8057] hover:bg-[#1f5a40]"
+        >
+          Kembali
+        </Button>
+      </div>
+    </div>
   ) : isLoading ? (
     <LoadingPage />
   ) : (
@@ -73,29 +148,9 @@ export default function DrillPage() {
       {/* Header */}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-[#2b8057] mb-2">
-          Drill {""}
-          {(() => {
-            switch (subtest) {
-              case "pu":
-                return "Kemampuan Penalaran Umum";
-              case "ppu":
-                return "Pengetahuan dan Pemahaman Umum";
-              case "pbm":
-                return "Kemampuan Memahami Bacaan dan Menulis";
-              case "pk":
-                return "Pengetahuan Kuantitatif";
-              case "pm":
-                return "Penalaran Matematika";
-              case "lbe":
-                return "Literasi Bahasa Inggris";
-              case "lbi":
-                return "Literasi Bahasa Indonesia";
-              default:
-                return subtest;
-            }
-          })()}
+          Drill {videoInfo.subject} - {videoInfo.title}
         </h1>
-        <p className="text-gray-600">Pilih paket drill untuk mulai berlatih</p>
+        <p className="text-gray-600">Pilih paket drill untuk video ini</p>
       </div>
 
       {/* Drill Packages Grid */}

@@ -17,7 +17,7 @@ import { Separator } from "~/app/_components/ui/separator";
 import { Clock, CheckCircle, ChevronLeft, ChevronRight, Flag } from "lucide-react";
 
 export default function QuizPage() {
-  const { drill, packageId, sessionId } = useParams();
+  const { drill, subtest, packageId, sessionId } = useParams(); // drill = subject, subtest = videoId
   const searchParams = useSearchParams();
   const userId = searchParams.get("userId");
   const router = useRouter();
@@ -48,7 +48,7 @@ export default function QuizPage() {
       sessionDetails?.endTime &&
       new Date(sessionDetails?.endTime) === new Date()
     ) {
-      router.push(`/drill/${sessionDetails.subtest.type}`);
+      router.push(`/drill/${drill}/${subtest}/score`);
     }
   }, [sessionDetails, router, packageId]);
 
@@ -156,8 +156,8 @@ export default function QuizPage() {
         sessionId: parseInt(sessionIdString),
       });
       toast.success("Quiz submitted successfully!");
-      if (drill === "soal")
-        router.push(`/drill/${sessionDetails?.subtest.type}`);
+      // Redirect to drill score page after completion
+      router.push(`/drill/${drill}/${subtest}/score`);
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
