@@ -1,6 +1,6 @@
 import { auth } from "~/server/auth";
-import Navbar from "~/app/_components/navbar";
 import { redirect } from "next/navigation";
+import ProfileDetail from "./profile-detail";
 
 export default async function layout({
   children,
@@ -12,11 +12,11 @@ export default async function layout({
   if (!session) {
     redirect("/signin");
   }
-
+  
   return (
     <div className="size-full">
-      <Navbar />
-      <div className="container mx-auto p-4 max-w-7xl">{children}</div>
+      <ProfileDetail />
+      <div className="container mx-auto max-w-7xl ">{children}</div>
     </div>
   );
 }

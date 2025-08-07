@@ -1,6 +1,6 @@
 import { auth } from "~/server/auth";
-import Navbar from "~/app/_components/navbar";
 import { redirect } from "next/navigation";
+import VideoHeader from "./video-header";
 
 export default async function layout({
   children,
@@ -15,8 +15,8 @@ export default async function layout({
 
   return (
     <div className="size-full">
-      <Navbar />
-      <div className="container mx-auto p-4 max-w-7xl">{children}</div>
+      <VideoHeader/>
+      <div className="py-6">{children}</div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ export default function HeadJenisSubtest({
   type,
 }: HeadJenisSubtestProps) {
   return (
-    <div className="mt-4 flex items-center rounded-lg bg-gray-200 p-6">
+    <div className="flex items-center rounded-lg ">
       <div className="hidden w-full items-center sm:flex">
         <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[#2B8057]">
           {type === "rekaman" ? (

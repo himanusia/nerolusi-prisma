@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage, AvatarFallback } from "../_components/ui/avatar";
+import { Avatar, AvatarImage, AvatarFallback } from "~/app/_components/ui/avatar";
 interface ProfilCardProps {
   user: {
     image: string;
