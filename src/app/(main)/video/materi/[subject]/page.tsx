@@ -467,18 +467,20 @@ export default function SubjectMateriPage() {
                               </Button>
                               
                               {/* Test completion button - remove in production */}
-                              <Button 
-                                size="sm" 
-                                variant="outline"
-                                className="text-xs px-3 py-1 border-green-500 text-green-600 hover:bg-green-50 rounded-md"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  simulateDrillCompletion(video.id);
-                                }}
-                                disabled={!video.isCompleted || video.isLocked}
-                              >
-                                ✓ Test
-                              </Button>
+                              {process.env.NODE_ENV !== "production" && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  className="text-xs px-3 py-1 border-green-500 text-green-600 hover:bg-green-50 rounded-md"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    simulateDrillCompletion(video.id);
+                                  }}
+                                  disabled={!video.isCompleted || video.isLocked}
+                                >
+                                  ✓ Test
+                                </Button>
+                              )}
                             </div>
                           ) : (
                             <Button 
