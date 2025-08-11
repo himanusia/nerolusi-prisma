@@ -31,8 +31,10 @@ export default function SubjectMateriPage() {
 
   const updateUserProgressMutation =
     api.materi.updateUserMaterialProgress.useMutation({
-      onSuccess: (topicId) => {
-        toggleVideoCompleted(topicId);
+      onSuccess: (data, variables) => {
+        if (variables && variables.topicId) {
+          toggleVideoCompleted(variables.topicId);
+        }
       },
     });
 
@@ -45,10 +47,7 @@ export default function SubjectMateriPage() {
   const startSessionMutation = api.quiz.createSession.useMutation();
   const getSessionMutation = api.quiz.getSession.useMutation();
 
-  async function goToQuizSession(
-    subtestId: string,
-    duration: number,
-  ) {
+  async function goToQuizSession(subtestId: string, duration: number) {
     if (!session.data || !session.data.user) {
       toast.error("Anda harus login terlebih dahulu");
       return;
@@ -147,12 +146,20 @@ export default function SubjectMateriPage() {
     }
   };
 
-  const handleViewScoreClick = (video: Video) => {
+  const handleViewScoreClick = async (video: Video) => {
     if (!video.isDrillCompleted) return;
 
     // Navigate to drill score page
     if (subject?.title) {
-      toast.success("Hasil belum tersedia untuk materi ini");
+      const userId = session.data?.user.id;
+      const quizSession = await getSessionMutation.mutateAsync({
+        userId,
+        subtestId: video.drillId,
+      });
+
+      if (quizSession) {
+        router.push(`/quiz/${quizSession.id}`);
+      }
     } else {
       toast.error("Subject tidak valid untuk melihat score");
     }

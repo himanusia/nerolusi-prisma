@@ -103,36 +103,45 @@ async function main() {
       // Generate Answers for Question
       // Generate Answers for Question based on type
       if (question.type === "essay") {
-        // No answers needed for essay questions
+        await db.answer.create({
+          data: {
+            index: 0,
+            content: faker.word.words({ count: { min: 5, max: 20 } }),
+            questionId: question.id,
+            isCorrect: true,
+          },
+        });
       } else if (question.type === "mulChoice") {
         // Multiple choice: exactly one correct answer
         const answers = await Promise.all(
           Array.from({ length: 5 }).map((_, index) =>
-        db.answer.create({
-          data: {
-            index: index,
-            content: faker.word.words({ count: { min: 1, max: 20 } }),
-            questionId: question.id,
-            isCorrect: index === 0, // Only first answer is correct
-          },
-        }),
+            db.answer.create({
+              data: {
+                index: index,
+                content: faker.word.words({ count: { min: 1, max: 20 } }),
+                questionId: question.id,
+                isCorrect: index === 0, // Only first answer is correct
+              },
+            }),
           ),
         );
       } else if (question.type === "mulAnswer") {
         // Multiple answer: 1 to 5 answers can be correct
         const numCorrect = faker.number.int({ min: 1, max: 5 });
-        const correctIndices = faker.helpers.shuffle([0, 1, 2, 3, 4]).slice(0, numCorrect) as (0 | 1 | 2 | 3 | 4)[];
-        
+        const correctIndices = faker.helpers
+          .shuffle([0, 1, 2, 3, 4])
+          .slice(0, numCorrect) as (0 | 1 | 2 | 3 | 4)[];
+
         const answers = await Promise.all(
           Array.from({ length: 5 }).map((_, index) =>
-        db.answer.create({
-          data: {
-            index: index,
-            content: faker.word.words({ count: { min: 1, max: 20 } }),
-            questionId: question.id,
-            isCorrect: correctIndices.includes(index as 0 | 1 | 2 | 3 | 4),
-          },
-        }),
+            db.answer.create({
+              data: {
+                index: index,
+                content: faker.word.words({ count: { min: 1, max: 20 } }),
+                questionId: question.id,
+                isCorrect: correctIndices.includes(index as 0 | 1 | 2 | 3 | 4),
+              },
+            }),
           ),
         );
       }

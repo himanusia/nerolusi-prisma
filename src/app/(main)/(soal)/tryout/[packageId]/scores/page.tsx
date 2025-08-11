@@ -7,10 +7,17 @@ import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
 import { api } from "~/trpc/react";
 import Image from "next/image";
-import { Avatar, AvatarFallback, AvatarImage } from "~/app/_components/ui/avatar";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "~/app/_components/ui/avatar";
 
 export default function ScoresPage() {
   const { packageId } = useParams();
+  const packageIdString = Array.isArray(packageId)
+    ? (packageId[0] ?? "")
+    : packageId;
   const router = useRouter();
   const { data: session } = useSession();
 
@@ -18,10 +25,10 @@ export default function ScoresPage() {
     data: packageData,
     isLoading,
     isError,
-  } = api.quiz.getPackageWithSubtest.useQuery({ id: Number(packageId) });
+  } = api.quiz.getPackageWithSubtest.useQuery({ id: packageIdString });
 
   const subtestOrder = ["pu", "ppu", "pbm", "pk", "lbi", "lbe", "pm"];
-  
+
   const sortedSubtests = packageData?.subtests?.sort((a, b) => {
     const indexA = subtestOrder.indexOf(a.type);
     const indexB = subtestOrder.indexOf(b.type);
@@ -29,31 +36,73 @@ export default function ScoresPage() {
   });
 
   // Calculate totals
-  const totalQuestions = sortedSubtests?.reduce((sum, subtest) => sum + (subtest.totalQuestion || 0), 0) || 0;
-  const totalCorrect = sortedSubtests?.reduce((sum, subtest) => sum + (subtest.totalCorrect || 0), 0) || 0;
-  const totalWrong = sortedSubtests?.reduce((sum, subtest) => sum + ((subtest.totalQuestion || 0) - (subtest.totalCorrect || 0)), 0) || 0;
-  const averageScore = sortedSubtests?.reduce((sum, subtest) => sum + (subtest.score || 0), 0) / (sortedSubtests?.length || 1) || 0;
+  const totalQuestions =
+    sortedSubtests?.reduce(
+      (sum, subtest) => sum + (subtest.quizSession?.[0]?.numQuestion ?? 0),
+      0,
+    ) || 0;
+  const totalCorrect =
+    sortedSubtests?.reduce(
+      (sum, subtest) => sum + (subtest.quizSession?.[0]?.numCorrect ?? 0),
+      0,
+    ) || 0;
+  const totalWrong =
+    sortedSubtests?.reduce(
+      (sum, subtest) =>
+        sum +
+        ((subtest.quizSession?.[0]?.numQuestion ?? 0) -
+          (subtest.quizSession?.[0]?.numCorrect ?? 0) -
+          (subtest.quizSession?.[0]?.numAnswered ?? 0)),
+      0,
+    ) || 0;
+  const averageScore =
+    sortedSubtests?.reduce(
+      (sum, subtest) => sum + (subtest.quizSession?.[0]?.score ?? 0),
+      0,
+    ) / (sortedSubtests?.length || 1) || 0;
+
+  const totalKosong =
+    totalQuestions -
+    sortedSubtests?.reduce(
+      (sum, subtest) => sum + (subtest.quizSession?.[0]?.numAnswered ?? 0),
+      0,
+    );
 
   // Check if package end date has passed to show scores
-  const isPackageEndDatePassed = packageData?.TOend && new Date(packageData.TOend) < new Date();
-  const completedCount = sortedSubtests?.filter(s => s.quizSession && new Date(s.quizSession) <= new Date()).length || 0;
+  const isPackageEndDatePassed =
+    packageData?.TOend && new Date(packageData.TOend) < new Date();
+  const completedCount =
+    sortedSubtests?.filter(
+      (s) =>
+        s.quizSession?.[0] &&
+        new Date(s.quizSession[0].endTime ?? "") <= new Date(),
+    ).length || 0;
   const allSubtestsCompleted = completedCount === sortedSubtests?.length;
 
   const getSubtestName = (type: string) => {
     switch (type) {
-      case "pu": return { short: "KPU", full: "Kemampuan Penalaran Umum" };
-      case "ppu": return { short: "PPU", full: "Pengetahuan dan Pemahaman Umum" };
-      case "pbm": return { short: "KMBM", full: "Kemampuan Memahami Bacaan dan Menulis" };
-      case "pk": return { short: "PK", full: "Pengetahuan Kuantitatif" };
-      case "lbi": return { short: "LBI", full: "Literasi dalam Bahasa Indonesia" };
-      case "lbe": return { short: "LBE", full: "Literasi dalam Bahasa Inggris" };
-      case "pm": return { short: "PM", full: "Penalaran Matematika" };
-      default: return { short: String(type).toUpperCase(), full: String(type) };
+      case "pu":
+        return { short: "KPU", full: "Kemampuan Penalaran Umum" };
+      case "ppu":
+        return { short: "PPU", full: "Pengetahuan dan Pemahaman Umum" };
+      case "pbm":
+        return { short: "KMBM", full: "Kemampuan Memahami Bacaan dan Menulis" };
+      case "pk":
+        return { short: "PK", full: "Pengetahuan Kuantitatif" };
+      case "lbi":
+        return { short: "LBI", full: "Literasi dalam Bahasa Indonesia" };
+      case "lbe":
+        return { short: "LBE", full: "Literasi dalam Bahasa Inggris" };
+      case "pm":
+        return { short: "PM", full: "Penalaran Matematika" };
+      default:
+        return { short: String(type).toUpperCase(), full: String(type) };
     }
   };
 
   const getProgressColor = (correctAnswers: number, totalQuestions: number) => {
-    const percentage = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+    const percentage =
+      totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
     if (percentage >= 70) return { fill: "bg-[#278d46]", bg: "bg-[#82d6b9]" };
     if (percentage >= 60) return { fill: "bg-[#84b338]", bg: "bg-[#d8ff9a]" };
     if (percentage >= 50) return { fill: "bg-[#ceb13c]", bg: "bg-[#ffde59]" };
@@ -67,59 +116,61 @@ export default function ScoresPage() {
   ) : (
     <div className="min-h-screen bg-white">
       {/* Header*/}
-      <div className="bg-gradient-to-t from-[#32b274] to-[#2b8057] text-white p-4 md:p-6 rounded-lg mt-4 md:mt-6 border-[#acaeba] border">
-        <div className="flex flex-col md:flex-row md:items-center space-y-4 md:spacey-0">
+      <div className="mt-4 rounded-lg border border-[#acaeba] bg-gradient-to-t from-[#32b274] to-[#2b8057] p-4 text-white md:mt-6 md:p-6">
+        <div className="md:spacey-0 flex flex-col space-y-4 md:flex-row md:items-center">
           {/* Left Side */}
-          <div className="flex-1 md:w-1/3 flex flex-col items-center md:ml-20 md:mt-5">
-            <h1 className={`font-bold text-white mb-3 md:mb-1 text-center md:text-3xl ${packageData?.name && packageData.name.length > 20 ? "text-2xl" : packageData?.name && packageData.name.length > 15 ? "text-3xl" : "text-4xl"}`}>
+          <div className="flex flex-1 flex-col items-center md:ml-20 md:mt-5 md:w-1/3">
+            <h1
+              className={`mb-3 text-center font-bold text-white md:mb-1 md:text-3xl ${packageData?.name && packageData.name.length > 20 ? "text-2xl" : packageData?.name && packageData.name.length > 15 ? "text-3xl" : "text-4xl"}`}
+            >
               {packageData?.name}
             </h1>
-            <div className="text-6xl font-bold text-white mb-1">
+            <div className="mb-1 text-6xl font-bold text-white">
               {isPackageEndDatePassed ? Math.round(averageScore) : "-"}
             </div>
-            <p className="hidden md:block text-white text-md font-semibold mb-5">
+            <p className="text-md mb-5 hidden font-semibold text-white md:block">
               Nilai Rata-rata mu!
             </p>
           </div>
-          
+
           {/* Vertical Separator */}
-          <div className="hidden md:block w-px h-40 bg-white mx-10"></div>
-          
+          <div className="mx-10 hidden h-40 w-px bg-white md:block"></div>
+
           {/* Right Side - User Info and Summary (2/3) */}
-          <div className="flex-1 flex flex-col items-center justify-center border-t border-white md:border-t-0 py-4">
-            <div className="text-right mb-6 text-center">
-              <h2 className="text-xl md:text-2xl font-bold text-white text-center">
+          <div className="flex flex-1 flex-col items-center justify-center border-t border-white py-4 md:border-t-0">
+            <div className="mb-6 text-center">
+              <h2 className="text-center text-xl font-bold text-white md:text-2xl">
                 {session?.user?.name}
               </h2>
-              <p className="text-white text-md md:text-xl font-semibold text-center">
+              <p className="text-md text-center font-semibold text-white md:text-xl">
                 SMA Islam Cikal Harapan I BSD
               </p>
             </div>
-            
+
             {/* Score Summary Cards */}
-            <div className="grid grid-cols-3 gap-2 md:gap-3 w-full max-w-md">
-              <div className="bg-[#e9fff4] rounded-md p-2 md:p-3 text-center min-w-[70px] md:min-w-[80px]">
-                <div className="text-xl md:text-3xl font-bold text-[#1f773a]">
+            <div className="grid w-full max-w-md grid-cols-3 gap-2 md:gap-3">
+              <div className="min-w-[70px] rounded-md bg-[#e9fff4] p-2 text-center md:min-w-[80px] md:p-3">
+                <div className="text-xl font-bold text-[#1f773a] md:text-3xl">
                   {isPackageEndDatePassed ? totalCorrect : "-"}
                 </div>
-                <p className="text-[#1f773a] text-xs md:text-lg font-semibold flex items-center justify-center gap-1">
-                  <span className="text-[#1f773a] text-center">✓</span> Benar
+                <p className="flex items-center justify-center gap-1 text-xs font-semibold text-[#1f773a] md:text-lg">
+                  <span className="text-center text-[#1f773a]">✓</span> Benar
                 </p>
               </div>
-              <div className="bg-[#ffebeb] rounded-md p-2 md:p-3 text-center min-w-[70px] md:min-w-[80px]">
-                <div className="text-xl md:text-3xl font-bold text-[#811515]">
+              <div className="min-w-[70px] rounded-md bg-[#ffebeb] p-2 text-center md:min-w-[80px] md:p-3">
+                <div className="text-xl font-bold text-[#811515] md:text-3xl">
                   {isPackageEndDatePassed ? totalWrong : "-"}
                 </div>
-                <p className="text-[#811515] text-xs md:text-lg font-semibold flex items-center justify-center gap-1">
-                  <span className="text-[#811515] text-center">✗</span> Salah
+                <p className="flex items-center justify-center gap-1 text-xs font-semibold text-[#811515] md:text-lg">
+                  <span className="text-center text-[#811515]">✗</span> Salah
                 </p>
               </div>
-              <div className="bg-[#f2f2f2] rounded-md p-2 md:p-3 text-center min-w-[70px] md:min-w-[80px]">
-                <div className="text-xl md:text-3xl font-bold text-[#545454]">
-                  {isPackageEndDatePassed ? (totalQuestions - totalCorrect - totalWrong) : "-"}
+              <div className="min-w-[70px] rounded-md bg-[#f2f2f2] p-2 text-center md:min-w-[80px] md:p-3">
+                <div className="text-xl font-bold text-[#545454] md:text-3xl">
+                  {isPackageEndDatePassed ? totalKosong : "-"}
                 </div>
-                <p className="text-[#545454] text-xs md:text-lg font-semibold flex items-center justify-center gap-1">
-                  <span className="text-[#545454] text-center">?</span> Kosong
+                <p className="flex items-center justify-center gap-1 text-xs font-semibold text-[#545454] md:text-lg">
+                  <span className="text-center text-[#545454]">?</span> Kosong
                 </p>
               </div>
             </div>
@@ -128,34 +179,39 @@ export default function ScoresPage() {
       </div>
 
       {/* Main Content */}
-      <div className="flex flex-col md:flex-row gap-6 mt-6">
+      <div className="mt-6 flex flex-col gap-6 md:flex-row">
         {/* Left Panel - User Info */}
-        <div className="w-full md:w-1/3 -mt-10">
-            <div className="flex items-center justify-center -mt-5">
-                <Image src="/logo2.png" alt="logo nerolusi" width={150} height={100} />
-            </div>
-          <div className="bg-[#f2f2f2] rounded-lg py-6 px-10 shadow-sm border -mt-10">
-            <div className="text-center mb-4">
-                <Avatar className="h-16 w-16 justify-center mx-auto mb-2">
-                    <AvatarImage src={session.user.image || ""} />
-                    <AvatarFallback>{session.user.name.charAt(0)}</AvatarFallback>
-                </Avatar>
+        <div className="-mt-10 w-full md:w-1/3">
+          <div className="-mt-5 flex items-center justify-center">
+            <Image
+              src="/logo2.png"
+              alt="logo nerolusi"
+              width={150}
+              height={100}
+            />
+          </div>
+          <div className="-mt-10 rounded-lg border bg-[#f2f2f2] px-10 py-6 shadow-sm">
+            <div className="mb-4 text-center">
+              <Avatar className="mx-auto mb-2 h-16 w-16 justify-center">
+                <AvatarImage src={session.user.image || ""} />
+                <AvatarFallback>{session.user.name.charAt(0)}</AvatarFallback>
+              </Avatar>
               <h3 className="text-2xl font-bold text-gray-800">
                 {session?.user?.name}
               </h3>
-              <p className="text-black font-bold text-md">
+              <p className="text-md font-bold text-black">
                 SMA Islam Cikal Harapan I BSD
               </p>
             </div>
-            
+
             {/* Score Display */}
-            <div className="text-center mb-6">
-              <div className="text-5xl font-bold text-[#2b8057] mb-1">
+            <div className="mb-6 text-center">
+              <div className="mb-1 text-5xl font-bold text-[#2b8057]">
                 {isPackageEndDatePassed ? Math.round(averageScore) : "-"}
               </div>
-              <p className="text-[#2b8057] text-lg font-bold">Skor rata-rata</p>
+              <p className="text-lg font-bold text-[#2b8057]">Skor rata-rata</p>
             </div>
-            
+
             {/* Buttons */}
             <div className="space-y-3">
               <Button
@@ -165,8 +221,8 @@ export default function ScoresPage() {
               >
                 Pembahasan
               </Button>
-              <Button 
-                variant="default" 
+              <Button
+                variant="default"
                 className="w-full rounded-lg"
                 onClick={() => {
                   alert("Fitur unduh sertifikat akan segera tersedia!");
@@ -182,21 +238,34 @@ export default function ScoresPage() {
         <div className="w-full md:w-2/3">
           {/* Success Message */}
           {isPackageEndDatePassed && (
-            <div className="bg-gradient-to-t from-[#2d69db] to-[#223a67] text-white rounded-xl p-6 mb-6 border border-[#acaeba]">
+            <div className="mb-6 rounded-xl border border-[#acaeba] bg-gradient-to-t from-[#2d69db] to-[#223a67] p-6 text-white">
               <div className="text-start">
-                <h3 className="text-xl font-bold text-white mb-3 text-md md:text-xl">
+                <h3 className="text-md mb-3 text-xl font-bold text-white md:text-xl">
                   Selamat, Anda dinyatakan lolos pilihan pertama anda!
                 </h3>
-                <div className="text-left space-y-1">
+                <div className="space-y-1 text-left">
                   <div className="flex items-start">
-                    <span className="font-bold text-white text-sm md:text-lg w-28 md:w-32 flex-shrink-0">PTN</span>
-                    <span className="text-white text-sm md:text-lg mr-2 flex-shrink-0">:</span>
-                    <span className="text-white text-sm md:text-lg">Institut Teknologi Bandung</span>
+                    <span className="w-28 flex-shrink-0 text-sm font-bold text-white md:w-32 md:text-lg">
+                      PTN
+                    </span>
+                    <span className="mr-2 flex-shrink-0 text-sm text-white md:text-lg">
+                      :
+                    </span>
+                    <span className="text-sm text-white md:text-lg">
+                      Institut Teknologi Bandung
+                    </span>
                   </div>
                   <div className="flex items-start">
-                    <span className="font-bold text-white text-sm md:text-lg w-28 md:w-32 flex-shrink-0">Program Studi</span>
-                    <span className="text-white text-sm md:text-lg mr-2 flex-shrink-0">:</span>
-                    <span className="text-white text-sm md:text-lg">Sekolah Teknik Elektro dan Informatika - Komputasi (STEI-K)</span>
+                    <span className="w-28 flex-shrink-0 text-sm font-bold text-white md:w-32 md:text-lg">
+                      Program Studi
+                    </span>
+                    <span className="mr-2 flex-shrink-0 text-sm text-white md:text-lg">
+                      :
+                    </span>
+                    <span className="text-sm text-white md:text-lg">
+                      Sekolah Teknik Elektro dan Informatika - Komputasi
+                      (STEI-K)
+                    </span>
                   </div>
                 </div>
               </div>
@@ -205,7 +274,7 @@ export default function ScoresPage() {
 
           {/* Waiting Message */}
           {!isPackageEndDatePassed && (
-            <div className="bg-gradient-to-t from-[#2d69db] to-[#223a67] text-white rounded-xl p-6 mb-6 border border-[#acaeba]">
+            <div className="mb-6 rounded-xl border border-[#acaeba] bg-gradient-to-t from-[#2d69db] to-[#223a67] p-6 text-white">
               <div className="flex items-center gap-2">
                 {/* <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
                   <span className="text-white font-bold text-sm">⏰</span>
@@ -214,96 +283,133 @@ export default function ScoresPage() {
                   <h3 className="font-bold text-white">
                     Skor dan pembahasan akan tersedia setelah tryout berakhir
                   </h3>
-                  <p className="text-white text-sm">
-                    Tanggal berakhir: {packageData?.TOend ? new Date(packageData.TOend).toLocaleDateString('id-ID', { 
-                      day: 'numeric', 
-                      month: 'long', 
-                      year: 'numeric' 
-                    }) : 'Belum ditentukan'}
+                  <p className="text-sm text-white">
+                    Tanggal berakhir:{" "}
+                    {packageData?.TOend
+                      ? new Date(packageData.TOend).toLocaleDateString(
+                          "id-ID",
+                          {
+                            day: "numeric",
+                            month: "long",
+                            year: "numeric",
+                          },
+                        )
+                      : "Belum ditentukan"}
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          <h2 className="text-2xl md:text-3xl font-bold text-black text-center">
+          <h2 className="text-center text-2xl font-bold text-black md:text-3xl">
             Bobot Penilaian
           </h2>
-          
+
           <div className="space-y-2">
             {sortedSubtests?.map((subtest) => {
               const subtestName = getSubtestName(subtest.type);
-              const score = subtest.score || 0;
-              const totalQuestions = subtest.totalQuestion || 0;
-              const correctAnswers = subtest.totalCorrect || 0;
-              const wrongAnswers = totalQuestions - correctAnswers;
-              const emptyAnswers = 0;
-              const isCompleted = subtest.quizSession && new Date(subtest.quizSession) <= new Date();
-              
+              const score = subtest.quizSession?.[0]?.score || 0;
+              const totalQuestions = subtest.quizSession?.[0]?.numQuestion || 0;
+              const correctAnswers = subtest.quizSession?.[0]?.numCorrect || 0;
+              const emptyAnswers =
+                totalQuestions - (subtest.quizSession?.[0]?.numAnswered ?? 0);
+              const wrongAnswers =
+                totalQuestions - correctAnswers - emptyAnswers;
+              const isCompleted =
+                subtest.quizSession?.[0] &&
+                new Date(subtest.quizSession[0].endTime ?? "") <= new Date();
+
               return (
-                <div key={subtest.id} className="bg-white py-4 border-b-2 border-black last:border-b-0">
-                  <div className="flex justify-between items-start">
+                <div
+                  key={subtest.id}
+                  className="border-b-2 border-black bg-white py-4 last:border-b-0"
+                >
+                  <div className="flex items-start justify-between">
                     {/* Left Side */}
-                    <div className="flex-1 mr-1 md:mr-3">
+                    <div className="mr-1 flex-1 md:mr-3">
                       {/* Subtest name and score cards */}
-                      <div className="flex items-center justify-between mb-4">
+                      <div className="mb-4 flex items-center justify-between">
                         <div className="flex-1">
-                          <h3 className={`font-bold text-gray-800 mb-1 text-md md:text-2xl`}>
+                          <h3
+                            className={`text-md mb-1 font-bold text-gray-800 md:text-2xl`}
+                          >
                             {subtestName.short}
                           </h3>
-                          <p className="hidden md:block text-gray-800 text-sm font-bold">
+                          <p className="hidden text-sm font-bold text-gray-800 md:block">
                             {subtestName.full}
                           </p>
                         </div>
-                        
+
                         {/* Score Cards */}
                         {isPackageEndDatePassed && isCompleted && (
-                          <div className="flex items-center justify-center gap-1 md:gap-3 ml-2">
-                            <div className="bg-[#e9fff4] rounded-lg px-2 py-2 text-center min-w-[60px] max-w-[60px] md:min-w-[70px] md:max-w-[70px]">
-                              <div className="text-[#1f773a] text-xs md:text-sm font-bold">Benar</div>
-                              <div className="text-[#1f773a] text-lg md:text-xl font-bold">{correctAnswers}</div>
+                          <div className="ml-2 flex items-center justify-center gap-1 md:gap-3">
+                            <div className="min-w-[60px] max-w-[60px] rounded-lg bg-[#e9fff4] px-2 py-2 text-center md:min-w-[70px] md:max-w-[70px]">
+                              <div className="text-xs font-bold text-[#1f773a] md:text-sm">
+                                Benar
+                              </div>
+                              <div className="text-lg font-bold text-[#1f773a] md:text-xl">
+                                {correctAnswers}
+                              </div>
                             </div>
-                            <div className="bg-[#ffebeb] rounded-lg px-2 py-2 text-center min-w-[60px] max-w-[60px] md:min-w-[70px] md:max-w-[70px]">
-                              <div className="text-[#811515] text-xs md:text-sm font-bold">Salah</div>
-                              <div className="text-[#811515] text-lg md:text-xl font-bold">{wrongAnswers}</div>
+                            <div className="min-w-[60px] max-w-[60px] rounded-lg bg-[#ffebeb] px-2 py-2 text-center md:min-w-[70px] md:max-w-[70px]">
+                              <div className="text-xs font-bold text-[#811515] md:text-sm">
+                                Salah
+                              </div>
+                              <div className="text-lg font-bold text-[#811515] md:text-xl">
+                                {wrongAnswers}
+                              </div>
                             </div>
-                            <div className="bg-[#f2f2f2] rounded-lg px-2 py-2 text-center min-w-[60px] max-w-[65px] md:min-w-[70px] md:max-w-[70px]">
-                              <div className="text-[#545454] text-xs md:text-sm font-bold">Kosong</div>
-                              <div className="text-[#545454] text-lg md:text-xl font-bold">{emptyAnswers}</div>
+                            <div className="min-w-[60px] max-w-[65px] rounded-lg bg-[#f2f2f2] px-2 py-2 text-center md:min-w-[70px] md:max-w-[70px]">
+                              <div className="text-xs font-bold text-[#545454] md:text-sm">
+                                Kosong
+                              </div>
+                              <div className="text-lg font-bold text-[#545454] md:text-xl">
+                                {emptyAnswers}
+                              </div>
                             </div>
                           </div>
                         )}
                       </div>
-                      
+
                       {/* Progress Bar */}
                       {isPackageEndDatePassed && isCompleted && (
-                        <div className={`w-full rounded-full h-3 ${getProgressColor(correctAnswers, totalQuestions).bg}`}>
-                          <div 
+                        <div
+                          className={`h-3 w-full rounded-full ${getProgressColor(correctAnswers, totalQuestions).bg}`}
+                        >
+                          <div
                             className={`h-3 rounded-full ${getProgressColor(correctAnswers, totalQuestions).fill}`}
-                            style={{ width: `${totalQuestions > 0 ? Math.min((correctAnswers / totalQuestions) * 100, 100) : 0}%` }}
+                            style={{
+                              width: `${totalQuestions > 0 ? Math.min((correctAnswers / totalQuestions) * 100, 100) : 0}%`,
+                            }}
                           ></div>
                         </div>
                       )}
-                      
+
                       {/* Status Messages */}
                       {!isPackageEndDatePassed && isCompleted && (
-                        <div className="text-sm text-gray-500 italic mt-4">
+                        <div className="mt-4 text-sm italic text-gray-500">
                           Skor detail akan tersedia setelah tryout berakhir
                         </div>
                       )}
-                      
+
                       {!isCompleted && (
-                        <div className="text-sm text-gray-500 italic mt-4">
+                        <div className="mt-4 text-sm italic text-gray-500">
                           Subtest belum diselesaikan
                         </div>
                       )}
                     </div>
-                    
+
                     {/* Right Side - Score Display */}
-                    <div className="text-center flex flex-col justify-center items-center bg-[#f2f2f2] rounded-lg px-3 py-2 self-start max-w-[80px] min-w-[75px] md:min-w-[80px] md:max-w-[80px] h-[88px] md:h-[92px]">
-                      <div className="text-[#545454] text-lg font-bold">Skor</div>
-                      <div className="text-3xl md:text-4xl font-bold text-[#545454]">
-                        {isPackageEndDatePassed && isCompleted ? Math.round(score) : (isCompleted ? "✓" : "--")}
+                    <div className="flex h-[88px] min-w-[75px] max-w-[80px] flex-col items-center justify-center self-start rounded-lg bg-[#f2f2f2] px-3 py-2 text-center md:h-[92px] md:min-w-[80px] md:max-w-[80px]">
+                      <div className="text-lg font-bold text-[#545454]">
+                        Skor
+                      </div>
+                      <div className="text-3xl font-bold text-[#545454] md:text-4xl">
+                        {isPackageEndDatePassed && isCompleted
+                          ? Math.round(score)
+                          : isCompleted
+                            ? "✓"
+                            : "--"}
                       </div>
                     </div>
                   </div>

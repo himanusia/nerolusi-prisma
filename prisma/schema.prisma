@@ -261,6 +261,7 @@ model QuizSession {
   duration     Int
   score        Int?
   numQuestion  Int?
+  numAnswered  Int?
   numCorrect   Int?
   userId       String   
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)

@@ -47,6 +47,7 @@ export const quizRouter = createTRPCRouter({
                   },
                 },
               },
+              package: true,
             },
           },
         },
@@ -75,6 +76,10 @@ export const quizRouter = createTRPCRouter({
                 },
                 select: {
                   endTime: true,
+                  numAnswered: true,
+                  numCorrect: true,
+                  numQuestion: true,
+                  score: true,
                   package: { select: { TOend: true } },
                   userAnswers: {
                     select: {
@@ -95,6 +100,10 @@ export const quizRouter = createTRPCRouter({
                     },
                   },
                 },
+                orderBy: {
+                  endTime: "desc",
+                },
+                take: 1,
               },
             },
           },
@@ -105,82 +114,7 @@ export const quizRouter = createTRPCRouter({
         throw new Error("Package not found");
       }
 
-      let totalScore = 0;
-
-      const subtestsWithScores = packageData.subtests.map((subtest) => {
-        let totalCorrect = 0;
-
-        const quizSession = subtest.quizSession[0];
-        if (!quizSession) {
-          return {
-            ...subtest,
-            quizSession: null,
-            totalCorrect: null,
-            totalQuestion: null,
-            score: null,
-          };
-        }
-
-        if (new Date(quizSession.package.TOend) > new Date()) {
-          return {
-            ...subtest,
-            quizSession: quizSession.endTime,
-            totalCorrect: null,
-            totalQuestion: null,
-            score: null,
-          };
-        }
-
-        const score = quizSession.userAnswers.reduce((total, answer) => {
-          // For multiple choice questions, check if user's selected answers match correct answers
-          if (answer.answerChoices.length > 0) {
-            const correctAnswerIds = answer.question.answers
-              .filter((ans) => ans.isCorrect)
-              .map((ans) => ans.id);
-
-            const userAnswerIds = answer.answerChoices.map(
-              (choice) => choice.answerId,
-            );
-
-            // Check if arrays are equal (same length and same elements)
-            const isCorrect =
-              correctAnswerIds.length === userAnswerIds.length &&
-              correctAnswerIds.every((id) => userAnswerIds.includes(id));
-
-            totalCorrect += isCorrect ? 1 : 0;
-            return total + (isCorrect ? answer.question.score : 0);
-          } else if (answer.essayAnswer !== null) {
-            const correctEssayAnswer = answer.question.answers.find(
-              (ans) => ans.isCorrect,
-            );
-
-            const isEssayCorrect =
-              correctEssayAnswer &&
-              answer.essayAnswer.trim().toLowerCase() ===
-                correctEssayAnswer.content.trim().toLowerCase();
-
-            totalCorrect += isEssayCorrect ? 1 : 0;
-            return total + (isEssayCorrect ? answer.question.score : 0);
-          }
-          return total;
-        }, 0);
-
-        totalScore += score;
-
-        return {
-          ...subtest,
-          quizSession: quizSession.endTime,
-          totalCorrect,
-          totalQuestion: subtest._count.questions,
-          score,
-        };
-      });
-
-      return {
-        ...packageData,
-        totalScore,
-        subtests: subtestsWithScores,
-      };
+      return packageData;
     }),
 
   getSession: userProcedure
@@ -283,7 +217,11 @@ export const quizRouter = createTRPCRouter({
       const session = await ctx.db.quizSession.findUnique({
         where: { id: input.sessionId },
         include: {
-          subtest: true,
+          subtest: {
+            include: {
+              topics: true,
+            },
+          },
           package: { select: { id: true, type: true, TOend: true } },
           userAnswers: {
             where: { quizSessionId: input.sessionId },
@@ -369,104 +307,106 @@ export const quizRouter = createTRPCRouter({
   submitQuiz: userProcedure
     .input(z.object({ sessionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      await ctx.db.quizSession.update({
-        where: { id: input.sessionId },
-        data: {
-          endTime: new Date().toISOString(),
-        },
-      });
+      return await ctx.db.$transaction(async (tx) => {
+        await tx.quizSession.update({
+          where: { id: input.sessionId },
+          data: {
+            endTime: new Date().toISOString(),
+          },
+        });
 
-      const quizSession = await ctx.db.quizSession.findUnique({
-        where: {
-          id: input.sessionId,
-        },
-        include: {
-          subtest: {
-            include: {
-              questions: {
-                include: {
-                  answers: true,
+        const quizSession = await tx.quizSession.findUnique({
+          where: {
+            id: input.sessionId,
+          },
+          include: {
+            subtest: {
+              include: {
+                questions: {
+                  include: {
+                    answers: true,
+                  },
                 },
               },
             },
-          },
-          userAnswers: {
-            include: {
-              answerChoices: {
-                select: {
-                  answerId: true,
+            userAnswers: {
+              include: {
+                answerChoices: {
+                  select: {
+                    answerId: true,
+                  },
                 },
-              },
-              question: {
-                select: {
-                  score: true,
-                  answers: {
-                    select: {
-                      id: true,
-                      content: true,
-                      isCorrect: true,
+                question: {
+                  select: {
+                    score: true,
+                    answers: {
+                      select: {
+                        id: true,
+                        content: true,
+                        isCorrect: true,
+                      },
                     },
                   },
                 },
               },
             },
           },
-        },
-      });
+        });
 
-      if (!quizSession) {
-        throw new Error("Quiz session not found");
-      }
-
-      let totalCorrect = 0;
-      let totalScore = 0;
-
-      // Calculate total correct answers and total score
-      quizSession.userAnswers.forEach((userAnswer) => {
-        // For multiple choice questions
-        if (userAnswer.answerChoices.length > 0) {
-          const correctAnswerIds = userAnswer.question.answers
-            .filter((ans) => ans.isCorrect)
-            .map((ans) => ans.id);
-
-          const userAnswerIds = userAnswer.answerChoices.map(
-            (choice) => choice.answerId,
-          );
-
-          // Check if arrays are equal (same length and same elements)
-          const isCorrect =
-            correctAnswerIds.length === userAnswerIds.length &&
-            correctAnswerIds.every((id) => userAnswerIds.includes(id));
-
-          if (isCorrect) {
-            totalCorrect++;
-            totalScore += userAnswer.question.score;
-          }
-        } else if (userAnswer.essayAnswer !== null) {
-          // For essay questions
-          const correctEssayAnswer = userAnswer.question.answers.find(
-            (ans) => ans.isCorrect,
-          );
-
-          const isEssayCorrect =
-            correctEssayAnswer &&
-            userAnswer.essayAnswer.trim().toLowerCase() ===
-              correctEssayAnswer.content.trim().toLowerCase();
-
-          if (isEssayCorrect) {
-            totalCorrect++;
-            totalScore += userAnswer.question.score;
-          }
+        if (!quizSession) {
+          throw new Error("Quiz session not found");
         }
-      });
 
-      await ctx.db.quizSession.update({
-        where: { id: input.sessionId },
-        data: {
-          score: totalScore,
-          numQuestion: quizSession.subtest.questions.length,
-          numCorrect: totalCorrect,
-        },
+        let totalCorrect = 0;
+        let totalScore = 0;
+
+        // Calculate total correct answers and total score
+        quizSession.userAnswers.forEach((userAnswer) => {
+          // For multiple choice questions
+          if (userAnswer.answerChoices.length > 0) {
+            const correctAnswerIds = userAnswer.question.answers
+              .filter((ans) => ans.isCorrect)
+              .map((ans) => ans.id);
+
+            const userAnswerIds = userAnswer.answerChoices.map(
+              (choice) => choice.answerId,
+            );
+
+            // Check if arrays are equal (same length and same elements)
+            const isCorrect =
+              correctAnswerIds.length === userAnswerIds.length &&
+              correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+            if (isCorrect) {
+              totalCorrect++;
+              totalScore += userAnswer.question.score;
+            }
+          } else if (userAnswer.essayAnswer !== null) {
+            // For essay questions
+            const correctEssayAnswer = userAnswer.question.answers.find(
+              (ans) => ans.isCorrect,
+            );
+
+            const isEssayCorrect =
+              correctEssayAnswer &&
+              userAnswer.essayAnswer.trim().toLowerCase() ===
+                correctEssayAnswer.content.trim().toLowerCase();
+
+            if (isEssayCorrect) {
+              totalCorrect++;
+              totalScore += userAnswer.question.score;
+            }
+          }
+        });
+
+        await tx.quizSession.update({
+          where: { id: input.sessionId },
+          data: {
+            score: totalScore,
+            numQuestion: quizSession.subtest.questions.length,
+            numCorrect: totalCorrect,
+          },
+        });
       });
     }),
 

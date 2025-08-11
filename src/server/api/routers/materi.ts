@@ -99,6 +99,145 @@ export const materiRouter = createTRPCRouter({
       return materialSections;
     }),
 
+  updateUserMaterialProgressAndSubmit: tkaProcedure
+    .input(
+      z.object({
+        sessionId: z.string(),
+        topicId: z.number(),
+        isDrillCompleted: z.boolean().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        const { sessionId, topicId, isDrillCompleted } = input;
+
+        await tx.quizSession.update({
+          where: { id: input.sessionId },
+          data: {
+            endTime: new Date().toISOString(),
+          },
+        });
+
+        const quizSession = await tx.quizSession.findUnique({
+          where: {
+            id: input.sessionId,
+          },
+          include: {
+            subtest: {
+              include: {
+                questions: {
+                  include: {
+                    answers: true,
+                  },
+                },
+              },
+            },
+            userAnswers: {
+              include: {
+                answerChoices: {
+                  select: {
+                    answerId: true,
+                  },
+                },
+                question: {
+                  select: {
+                    score: true,
+                    answers: {
+                      select: {
+                        id: true,
+                        content: true,
+                        isCorrect: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        });
+
+        if (!quizSession) {
+          throw new Error("Quiz session not found");
+        }
+
+        let totalCorrect = 0;
+        let totalScore = 0;
+
+        // Calculate total correct answers and total score
+        quizSession.userAnswers.forEach((userAnswer) => {
+          // For multiple choice questions
+          if (userAnswer.answerChoices.length > 0) {
+            const correctAnswerIds = userAnswer.question.answers
+              .filter((ans) => ans.isCorrect)
+              .map((ans) => ans.id);
+
+            const userAnswerIds = userAnswer.answerChoices.map(
+              (choice) => choice.answerId,
+            );
+
+            // Check if arrays are equal (same length and same elements)
+            const isCorrect =
+              correctAnswerIds.length === userAnswerIds.length &&
+              correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+            if (isCorrect) {
+              totalCorrect++;
+              totalScore += userAnswer.question.score;
+            }
+          } else if (userAnswer.essayAnswer !== null) {
+            // For essay questions
+            const correctEssayAnswer = userAnswer.question.answers.find(
+              (ans) => ans.isCorrect,
+            );
+
+            const isEssayCorrect =
+              correctEssayAnswer &&
+              userAnswer.essayAnswer.trim().toLowerCase() ===
+                correctEssayAnswer.content.trim().toLowerCase();
+
+            if (isEssayCorrect) {
+              totalCorrect++;
+              totalScore += userAnswer.question.score;
+            }
+          }
+        });
+
+        await tx.quizSession.update({
+          where: { id: input.sessionId },
+          data: {
+            score: totalScore,
+            numQuestion: quizSession.subtest.questions.length,
+            numCorrect: totalCorrect,
+          },
+        });
+
+        // Check if the user has already completed this topic
+        const existingProgress = await tx.userMateriProgress.findFirst({
+          where: {
+            userId: ctx.session.user.id,
+            topicId,
+          },
+        });
+
+        if (existingProgress && isDrillCompleted !== undefined) {
+          // Update existing progress
+          await tx.userMateriProgress.update({
+            where: { id: existingProgress.id },
+            data: { isDrillCompleted },
+          });
+        } else {
+          // Create new progress entry
+          await tx.userMateriProgress.create({
+            data: {
+              userId: ctx.session.user.id,
+              topicId,
+              isDrillCompleted: isDrillCompleted ?? false,
+            },
+          });
+        }
+      });
+    }),
+
   updateUserMaterialProgress: tkaProcedure
     .input(
       z.object({

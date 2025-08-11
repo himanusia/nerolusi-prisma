@@ -3,9 +3,7 @@
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  getSubjectByName,
-} from "~/app/_components/constants";
+import { getSubjectByName } from "~/app/_components/constants";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent } from "~/app/_components/ui/card";
 import ErrorPage from "~/app/error";
@@ -49,7 +47,7 @@ export default function ScorePage() {
         Math.round((quizResult.numCorrect / quizResult.numQuestion) * 100),
       );
       setSubjectSlug(
-        getSubjectByName(quizResult.subtest.topics.material.subject.name)
+        getSubjectByName(quizResult.subtest.topics?.material.subject.name ?? "")
           ?.slug || "",
       );
       setCompletedAt(
@@ -76,10 +74,11 @@ export default function ScorePage() {
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="mb-2 text-3xl font-bold text-[#2b8057]">
-          Hasil Drill: {quizResult.subtest.topics.name}
+          Hasil Drill:{" "}
+          {quizResult.subtest.topics?.name ?? quizResult.subtest.package?.name}
         </h1>
         <h2 className="mb-4 text-xl text-gray-700">
-          {quizResult.subtest.topics.video.title}
+          {quizResult.subtest.topics?.video.title ?? ""}
         </h2>
         <p className="text-gray-600">
           Berikut adalah hasil drill soal yang telah Anda kerjakan
@@ -145,7 +144,10 @@ export default function ScorePage() {
                 <div>
                   <p className="font-medium text-green-800">Excellent!</p>
                   <p className="text-sm text-green-600">
-                    Anda telah menguasai materi {quizResult.subtest.topics.name}{" "}
+                    Anda telah menguasai{" "}
+                    {`${quizResult.subtest.type === "materi" ? "materi" : "tryout"}`}{" "}
+                    {quizResult.subtest.topics?.name ??
+                      quizResult.subtest.package?.name}{" "}
                     dengan sangat baik!
                   </p>
                 </div>
@@ -183,27 +185,29 @@ export default function ScorePage() {
       <div className="flex flex-col justify-center gap-4 sm:flex-row">
         <Link href={`/quiz/${sessionIdString}`}>
           <Button className="bg-[#2b8057] text-white hover:bg-[#1f5a40]">
-            🔄 Review Drill
+            🔄 Review
           </Button>
         </Link>
 
-        <Link href={`/video/materi/${subjectSlug}`}>
+        <Link href={`${quizResult.subtest.type === "materi" ? `/video/materi/${subjectSlug}` : `/tryout/${quizResult.subtest.package?.id}`}`}>
           <Button
             variant="outline"
             className="border-[#2b8057] text-[#2b8057] hover:bg-[#2b8057] hover:text-white"
           >
-            📚 Kembali ke Materi
+            📚 Kembali ke{" "}
+            {`${quizResult.subtest.type === "materi" ? "Materi" : "Tryout"}`}
           </Button>
         </Link>
-
-        <Link href={`/video/${quizResult.subtest.topics.videoId}`}>
-          <Button
-            variant="outline"
-            className="border-gray-300 text-gray-600 hover:bg-gray-50"
-          >
-            📺 Tonton Ulang Video
-          </Button>
-        </Link>
+        {quizResult.subtest.type === "materi" && (
+          <Link href={`/video/${quizResult.subtest.topics?.videoId}`}>
+            <Button
+              variant="outline"
+              className="border-gray-300 text-gray-600 hover:bg-gray-50"
+            >
+              📺 Tonton Ulang Video
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );

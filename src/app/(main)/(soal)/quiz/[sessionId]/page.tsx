@@ -40,6 +40,8 @@ export default function QuizPage() {
 
   const saveAnswerMutation = api.quiz.saveAnswer.useMutation();
   const submitMutation = api.quiz.submitQuiz.useMutation();
+  const updateProgressMutation =
+    api.materi.updateUserMaterialProgressAndSubmit.useMutation();
 
   const {
     data: sessionDetails,
@@ -184,12 +186,26 @@ export default function QuizPage() {
       for (const [questionId, answerChoice] of selectedAnswers.entries()) {
         await saveAnswer(questionId, answerChoice);
       }
-      await submitMutation.mutateAsync({
-        sessionId: sessionIdString,
-      });
+
+      if (sessionDetails?.subtest.type === "materi") {
+        await updateProgressMutation.mutateAsync({
+          sessionId: sessionIdString,
+          topicId: sessionDetails?.subtest?.topics?.id ?? 0,
+          isDrillCompleted: true,
+        });
+      } else {
+        await submitMutation.mutateAsync({
+          sessionId: sessionIdString,
+        });
+      }
+
       toast.success("Quiz submitted successfully!");
-      // Redirect to drill score page after completion
-      router.push(`/quiz/${sessionIdString}/score`);
+
+      if (sessionDetails?.subtest.type === "materi") {
+        router.push(`/quiz/${sessionIdString}/score`);
+      } else {
+        router.push(`/tryout/${sessionDetails?.packageId}`);
+      }
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
@@ -403,9 +419,11 @@ export default function QuizPage() {
                                 new Date(sessionDetails.endTime) < new Date() &&
                                 answer.isCorrect;
                               const isWrong =
-                                new Date(sessionDetails.endTime) < new Date() &&
-                                (isSelected &&
-                                !answer.isCorrect) || (!isSelected && answer.isCorrect);
+                                (new Date(sessionDetails.endTime) <
+                                  new Date() &&
+                                  isSelected &&
+                                  !answer.isCorrect) ||
+                                (!isSelected && answer.isCorrect);
 
                               return (
                                 <label
@@ -600,23 +618,23 @@ export default function QuizPage() {
 
               {/* Submit Button */}
               {new Date(sessionDetails?.endTime) >= new Date() &&
-                session.data?.user.role === "user" ? (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
-                  >
+              session.data?.user.role === "user" ? (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
+                >
+                  <Flag className="h-4 w-4" />
+                  {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
+                </Button>
+              ) : (
+                <Link href={`/quiz/${sessionIdString}/score`}>
+                  <Button className="flex w-full gap-2">
                     <Flag className="h-4 w-4" />
-                    {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
+                    Lihat Hasil
                   </Button>
-                ) : (
-                  <Link href={`/quiz/${sessionIdString}/score`}>
-                    <Button className="flex w-full gap-2">
-                      <Flag className="h-4 w-4" />
-                      Lihat Hasil
-                    </Button>
-                  </Link>
-                )}
+                </Link>
+              )}
             </CardContent>
           </Card>
         </div>
