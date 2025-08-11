@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface RekamanKelasCardProps {
-  id: number;
+  id: string;
   title: string;
   description: string;
   url: string;

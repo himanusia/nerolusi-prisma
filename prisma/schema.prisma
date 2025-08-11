@@ -15,7 +15,7 @@ enum Role {
   admin
 }
 
-enum Type {
+enum PackageType {
   tryout
   drill
 }
@@ -28,11 +28,24 @@ enum SubtestType {
   pm
   lbe
   lbi
+  materi
 }
 
 enum QuestionType {
   essay
   mulChoice
+  mulAnswer
+}
+
+enum VideoType {
+  rekaman
+  materi
+}
+
+enum SubjectType {
+  wajib
+  saintek
+  soshum
 }
 
 // Models
@@ -43,6 +56,9 @@ model User {
   emailVerified DateTime?
   image         String?
   role          Role           @default(user)
+  enrolledUtbk  Boolean        @default(false)
+  enrolledTka   Boolean        @default(false)
+  token         Int            @default(0)
   createdAt     DateTime       @default(now())
   classid       Int?
   class         Class?         @relation(fields: [classid], references: [id])
@@ -50,6 +66,7 @@ model User {
   sessions      Session[]      
   userAnswers   UserAnswer[] 
   quizSession   QuizSession[]
+  UserMateriProgress UserMateriProgress[]
 }
 
 model Account {
@@ -87,27 +104,61 @@ model Class {
   packages  Package[]
 }
 
+model Subject {
+  id        Int      @id @default(autoincrement())
+  name      String
+  type      SubjectType
+  createdAt DateTime @default(now())
+  materials  Material[]
+}
+
+model Material {
+  id        Int      @id @default(autoincrement())
+  index     Int
+  name      String
+  subjectId Int
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  topics    Topic[]
+}
+
+model Topic {
+  id        Int      @id @default(autoincrement())
+  index     Int
+  name      String
+  materialId Int
+  createdAt DateTime @default(now())
+  videoId   String      @unique
+  video     Video    @relation(fields: [videoId], references: [id])
+  subtestId String      @unique
+  subtest   Subtest  @relation(fields: [subtestId], references: [id])
+  material   Material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  userProgress UserMateriProgress[]
+}
+
 model Package {
-  id          Int          @id @default(autoincrement())
+  id          String       @id @default(cuid())
   name        String
-  type        Type
+  type        PackageType
   classId     Int
   TOstart     DateTime?
   TOend       DateTime?
+  tokenPrice  Int?
+  createdAt   DateTime     @default(now())
   subtests    Subtest[]
-  userAnswers UserAnswer[]
   class       Class?       @relation(fields: [classId], references: [id], onDelete: Cascade)
   quizSession QuizSession[]
 }
 
 model Subtest {
-  id          Int         @id @default(autoincrement())
+  id          String     @id @default(cuid())
   type        SubtestType
-  packageId   Int
+  packageId   String?
   duration    Int?
-  package     Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  package     Package?     @relation(fields: [packageId], references: [id], onDelete: Cascade)
   questions   Question[]
   quizSession QuizSession[]
+  topics    Topic?
 }
 
 model Question {
@@ -119,9 +170,7 @@ model Question {
   score               Int
   explanation         String?
   answers             Answer[]    
-  correctAnswerChoice Int?
-  packageId           Int
-  subtestId           Int         
+  subtestId           String         
   subtest             Subtest      @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   userAnswers         UserAnswer[] 
 }
@@ -129,33 +178,56 @@ model Question {
 model Answer {
   id         Int      @id @default(autoincrement())
   content    String   
-  index      Int       
+  index      Int
+  isCorrect  Boolean  @default(false)       
   questionId Int
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswerChoice[]
 }
 
 model UserAnswer {
   id            Int         @id @default(autoincrement())
   essayAnswer   String?
-  answerChoice  Int?      
   questionId    Int
   question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
   userId        String 
   user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId     Int
-  package       Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  quizSessionId Int
+  quizSessionId String
   quizSession   QuizSession @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
+  answerChoices UserAnswerChoice[]
 
   @@unique([userId, quizSessionId, questionId], name: "userId_quizSessionId_questionId")
 }
 
+model UserAnswerChoice {
+  id            Int      @id @default(autoincrement())
+  userAnswerId  Int
+  userAnswer    UserAnswer @relation(fields: [userAnswerId], references: [id], onDelete: Cascade)
+  answerId Int
+  answer  Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
+
+  @@unique([userAnswerId, answerId], name: "userAnswerId_answerId")
+}
+
+model UserMateriProgress {
+  id      String     @id @default(cuid())
+  userId    String
+  topicId  Int      
+  isDrillCompleted Boolean @default(false)
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
 model Video {
-  id          Int      @id @default(autoincrement())
+  id          String   @id @default(cuid())
   title       String
   description String?
   url         String
+  duration    Int
   createdAt   DateTime @default(now())
+  type        VideoType @default(rekaman)
+  topic       Topic?
 }
 
 model Folder {
@@ -183,15 +255,18 @@ model VerificationToken {
 }
 
 model QuizSession {
-  id           Int         @id @default(autoincrement())
+  id           String         @id @default(cuid())
   startTime    DateTime    @default(now())
   endTime      DateTime?
   duration     Int
+  score        Int?
+  numQuestion  Int?
+  numCorrect   Int?
   userId       String   
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId    Int
-  package      Package     @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  subtestId    Int
+  packageId    String?
+  package      Package?     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  subtestId    String
   subtest      Subtest     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   userAnswers  UserAnswer[]
   

@@ -108,21 +108,29 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
 
 // Helper functions to get specific categories
 export const getWajibSubjects = (): Subject[] => {
-  return SUBJECT_CATEGORIES.find(cat => cat.type === "wajib")?.subjects || [];
+  return SUBJECT_CATEGORIES.find((cat) => cat.type === "wajib")?.subjects || [];
 };
 
 export const getSaintekSubjects = (): Subject[] => {
-  return SUBJECT_CATEGORIES.find(cat => cat.type === "saintek")?.subjects || [];
+  return (
+    SUBJECT_CATEGORIES.find((cat) => cat.type === "saintek")?.subjects || []
+  );
 };
 
 export const getSoshumSubjects = (): Subject[] => {
-  return SUBJECT_CATEGORIES.find(cat => cat.type === "soshum")?.subjects || [];
+  return (
+    SUBJECT_CATEGORIES.find((cat) => cat.type === "soshum")?.subjects || []
+  );
 };
 
 export const getAllSubjects = (): Subject[] => {
-  return SUBJECT_CATEGORIES.flatMap(category => category.subjects);
+  return SUBJECT_CATEGORIES.flatMap((category) => category.subjects);
 };
 
 export const getSubjectBySlug = (slug: string): Subject | undefined => {
-  return getAllSubjects().find(subject => subject.slug === slug);
+  return getAllSubjects().find((subject) => subject.slug === slug);
+};
+
+export const getSubjectByName = (name: string): Subject | undefined => {
+  return getAllSubjects().find((subject) => subject.title === name);
 };

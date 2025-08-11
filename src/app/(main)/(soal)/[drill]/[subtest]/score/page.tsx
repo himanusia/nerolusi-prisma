@@ -157,7 +157,7 @@ export default function DrillVideoScorePage() {
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-4 justify-center">
         <Button
-          onClick={() => router.push(`/drill/${drill}/${subtest}`)}
+          onClick={() => router.push(`/${drill}/${subtest}`)}
           className="bg-[#2b8057] hover:bg-[#1f5a40] text-white"
         >
           🔄 Ulangi Drill

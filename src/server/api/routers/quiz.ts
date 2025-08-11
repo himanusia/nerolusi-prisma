@@ -27,8 +27,35 @@ export const quizRouter = createTRPCRouter({
       });
     }),
 
+  getQuizSessionResult: userProcedure
+    .input(z.object({ sessionId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const session = ctx.db.quizSession.findUnique({
+        where: {
+          id: input.sessionId,
+        },
+        include: {
+          subtest: {
+            include: {
+              topics: {
+                include: {
+                  video: true,
+                  material: {
+                    include: {
+                      subject: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+      return session;
+    }),
+
   getPackageWithSubtest: userProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
       const packageData = await ctx.db.package.findUnique({
         where: {
@@ -50,22 +77,20 @@ export const quizRouter = createTRPCRouter({
                   endTime: true,
                   package: { select: { TOend: true } },
                   userAnswers: {
-                    where: {
-                      packageId: input.id,
-                    },
                     select: {
                       question: {
                         select: {
-                          correctAnswerChoice: true,
                           score: true,
                           answers: {
                             select: {
+                              id: true,
                               content: true,
+                              isCorrect: true,
                             },
                           },
                         },
                       },
-                      answerChoice: true,
+                      answerChoices: true,
                       essayAnswer: true,
                     },
                   },
@@ -107,21 +132,33 @@ export const quizRouter = createTRPCRouter({
         }
 
         const score = quizSession.userAnswers.reduce((total, answer) => {
-          if (answer.question.correctAnswerChoice !== null) {
-            totalCorrect +=
-              answer.question.correctAnswerChoice === answer.answerChoice
-                ? 1
-                : 0;
-            return (
-              total +
-              (answer.answerChoice === answer.question.correctAnswerChoice
-                ? answer.question.score
-                : 0)
+          // For multiple choice questions, check if user's selected answers match correct answers
+          if (answer.answerChoices.length > 0) {
+            const correctAnswerIds = answer.question.answers
+              .filter((ans) => ans.isCorrect)
+              .map((ans) => ans.id);
+
+            const userAnswerIds = answer.answerChoices.map(
+              (choice) => choice.answerId,
             );
+
+            // Check if arrays are equal (same length and same elements)
+            const isCorrect =
+              correctAnswerIds.length === userAnswerIds.length &&
+              correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+            totalCorrect += isCorrect ? 1 : 0;
+            return total + (isCorrect ? answer.question.score : 0);
           } else if (answer.essayAnswer !== null) {
+            const correctEssayAnswer = answer.question.answers.find(
+              (ans) => ans.isCorrect,
+            );
+
             const isEssayCorrect =
+              correctEssayAnswer &&
               answer.essayAnswer.trim().toLowerCase() ===
-              answer.question.answers[0]?.content.trim().toLowerCase();
+                correctEssayAnswer.content.trim().toLowerCase();
+
             totalCorrect += isEssayCorrect ? 1 : 0;
             return total + (isEssayCorrect ? answer.question.score : 0);
           }
@@ -150,7 +187,7 @@ export const quizRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        subtestId: z.number(),
+        subtestId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -166,8 +203,8 @@ export const quizRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
-        packageId: z.number(),
-        subtestId: z.number(),
+        packageId: z.string().optional(),
+        subtestId: z.string(),
         duration: z.number(),
       }),
     )
@@ -175,7 +212,7 @@ export const quizRouter = createTRPCRouter({
       return await ctx.db.quizSession.create({
         data: {
           userId: input.userId,
-          packageId: input.packageId,
+          packageId: input.packageId ?? undefined,
           subtestId: input.subtestId,
           duration: input.duration,
           endTime: new Date(new Date().getTime() + input.duration * 60 * 1000),
@@ -184,7 +221,7 @@ export const quizRouter = createTRPCRouter({
     }),
 
   getQuestionsBySubtest: userProcedure
-    .input(z.object({ subtestId: z.number(), userId: z.string().optional() }))
+    .input(z.object({ subtestId: z.string(), userId: z.string().optional() }))
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findFirst({
         where: {
@@ -199,18 +236,20 @@ export const quizRouter = createTRPCRouter({
 
       if (!session) {
         return null;
-      } 
-      
+      }
+
       // Check if this specific session has ended
       const sessionEnded = new Date(session.endTime) < new Date();
-      
+
       if (sessionEnded) {
         // Session completed - show answers and explanations for review
         return await ctx.db.question.findMany({
           where: { subtestId: input.subtestId },
           orderBy: { index: "asc" },
           include: {
-            answers: true,
+            answers: {
+              orderBy: { index: "asc" },
+            },
           },
         });
       } else {
@@ -220,13 +259,17 @@ export const quizRouter = createTRPCRouter({
             where: { subtestId: input.subtestId },
             orderBy: { index: "asc" },
             include: {
-              answers: true,
+              answers: {
+                orderBy: { index: "asc" },
+                omit: {
+                  isCorrect: true,
+                },
+              },
             },
           })
           .then((questions) =>
             questions.map((question) => ({
               ...question,
-              correctAnswerChoice: null,
               explanation: null,
               score: null,
             })),
@@ -235,15 +278,22 @@ export const quizRouter = createTRPCRouter({
     }),
 
   getSessionDetails: userProcedure
-    .input(z.object({ sessionId: z.number() }))
+    .input(z.object({ sessionId: z.string() }))
     .query(async ({ ctx, input }) => {
       const session = await ctx.db.quizSession.findUnique({
         where: { id: input.sessionId },
         include: {
           subtest: true,
-          package: { select: { TOend: true } },
+          package: { select: { id: true, type: true, TOend: true } },
           userAnswers: {
             where: { quizSessionId: input.sessionId },
+            include: {
+              answerChoices: {
+                select: {
+                  answerId: true,
+                },
+              },
+            },
           },
         },
       });
@@ -262,25 +312,18 @@ export const quizRouter = createTRPCRouter({
   saveAnswer: userProcedure
     .input(
       z.object({
-        answerChoice: z.number().nullable(),
+        answerChoices: z.array(z.number()).nullable(),
         essayAnswer: z.string().nullable(),
         questionId: z.number(),
         userId: z.string(),
-        packageId: z.number(),
-        quizSessionId: z.number(),
+        quizSessionId: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const {
-        answerChoice,
-        essayAnswer,
-        questionId,
-        userId,
-        packageId,
-        quizSessionId,
-      } = input;
+      const { answerChoices, essayAnswer, questionId, userId, quizSessionId } =
+        input;
 
-      if (answerChoice === null && essayAnswer === null) {
+      if (answerChoices === null && essayAnswer === null) {
         throw new Error("Either answerChoice or essayAnswer must be provided.");
       }
 
@@ -293,29 +336,136 @@ export const quizRouter = createTRPCRouter({
           },
         },
         update: {
-          answerChoice,
           essayAnswer,
         },
         create: {
-          answerChoice,
           essayAnswer,
           questionId,
           userId,
-          packageId,
           quizSessionId,
         },
+      });
+
+      await ctx.db.userAnswerChoice.deleteMany({
+        where: {
+          userAnswerId: userAnswer.id,
+        },
+      });
+
+      if (answerChoices == null) return userAnswer;
+      console.log("Saving user answer choices:", answerChoices);
+      const userAnswerChoices = await ctx.db.userAnswerChoice.createMany({
+        data: answerChoices
+          .filter((choice) => choice !== null)
+          .map((choice) => ({
+            userAnswerId: userAnswer.id,
+            answerId: choice,
+          })),
       });
 
       return userAnswer;
     }),
 
   submitQuiz: userProcedure
-    .input(z.object({ sessionId: z.number() }))
+    .input(z.object({ sessionId: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.quizSession.update({
+      await ctx.db.quizSession.update({
         where: { id: input.sessionId },
         data: {
           endTime: new Date().toISOString(),
+        },
+      });
+
+      const quizSession = await ctx.db.quizSession.findUnique({
+        where: {
+          id: input.sessionId,
+        },
+        include: {
+          subtest: {
+            include: {
+              questions: {
+                include: {
+                  answers: true,
+                },
+              },
+            },
+          },
+          userAnswers: {
+            include: {
+              answerChoices: {
+                select: {
+                  answerId: true,
+                },
+              },
+              question: {
+                select: {
+                  score: true,
+                  answers: {
+                    select: {
+                      id: true,
+                      content: true,
+                      isCorrect: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!quizSession) {
+        throw new Error("Quiz session not found");
+      }
+
+      let totalCorrect = 0;
+      let totalScore = 0;
+
+      // Calculate total correct answers and total score
+      quizSession.userAnswers.forEach((userAnswer) => {
+        // For multiple choice questions
+        if (userAnswer.answerChoices.length > 0) {
+          const correctAnswerIds = userAnswer.question.answers
+            .filter((ans) => ans.isCorrect)
+            .map((ans) => ans.id);
+
+          const userAnswerIds = userAnswer.answerChoices.map(
+            (choice) => choice.answerId,
+          );
+
+          // Check if arrays are equal (same length and same elements)
+          const isCorrect =
+            correctAnswerIds.length === userAnswerIds.length &&
+            correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+          if (isCorrect) {
+            totalCorrect++;
+            totalScore += userAnswer.question.score;
+          }
+        } else if (userAnswer.essayAnswer !== null) {
+          // For essay questions
+          const correctEssayAnswer = userAnswer.question.answers.find(
+            (ans) => ans.isCorrect,
+          );
+
+          const isEssayCorrect =
+            correctEssayAnswer &&
+            userAnswer.essayAnswer.trim().toLowerCase() ===
+              correctEssayAnswer.content.trim().toLowerCase();
+
+          if (isEssayCorrect) {
+            totalCorrect++;
+            totalScore += userAnswer.question.score;
+          }
+        }
+      });
+
+      await ctx.db.quizSession.update({
+        where: { id: input.sessionId },
+        data: {
+          score: totalScore,
+          numQuestion: quizSession.subtest.questions.length,
+          numCorrect: totalCorrect,
         },
       });
     }),
@@ -355,11 +505,10 @@ export const quizRouter = createTRPCRouter({
                     userId: userId,
                   },
                   select: {
-                    answerChoice: true,
+                    answerChoices: true,
                     essayAnswer: true,
                   },
                 },
-                correctAnswerChoice: true,
                 answers: true,
               },
             },
@@ -379,17 +528,31 @@ export const quizRouter = createTRPCRouter({
 
             subtest.questions.forEach((question) => {
               question.userAnswers.forEach((userAnswer) => {
-                if (question.correctAnswerChoice !== null) {
-                  if (
-                    userAnswer.answerChoice === question.correctAnswerChoice
-                  ) {
-                    correctCount++;
-                  }
+                // For multiple choice questions
+                if (userAnswer.answerChoices.length > 0) {
+                  const correctAnswerIds = question.answers
+                    .filter((ans) => ans.isCorrect)
+                    .map((ans) => ans.id);
+
+                  const userAnswerIds = userAnswer.answerChoices.map(
+                    (choice) => choice.answerId,
+                  );
+
+                  // Check if arrays are equal (same length and same elements)
+                  const isCorrect =
+                    correctAnswerIds.length === userAnswerIds.length &&
+                    correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+                  if (isCorrect) correctCount++;
                 } else if (userAnswer.essayAnswer !== null) {
-                  const correctEssayAnswer =
+                  const correctEssayAnswer = question.answers.find(
+                    (ans) => ans.isCorrect,
+                  );
+                  if (
+                    correctEssayAnswer &&
                     userAnswer.essayAnswer.trim().toLowerCase() ===
-                    question.answers[0]?.content.trim().toLowerCase();
-                  if (correctEssayAnswer) {
+                      correctEssayAnswer.content.trim().toLowerCase()
+                  ) {
                     correctCount++;
                   }
                 }
@@ -446,12 +609,21 @@ export const quizRouter = createTRPCRouter({
                   userId: userId,
                 },
                 select: {
-                  answerChoice: true,
+                  answerChoices: {
+                    select: {
+                      answerId: true,
+                    },
+                  },
                   essayAnswer: true,
                 },
               },
-              correctAnswerChoice: true,
-              answers: true,
+              answers: {
+                select: {
+                  id: true,
+                  content: true,
+                  isCorrect: true,
+                },
+              },
             },
           },
           quizSession: {
@@ -470,15 +642,31 @@ export const quizRouter = createTRPCRouter({
 
           subtest.questions.forEach((question) => {
             question.userAnswers.forEach((userAnswer) => {
-              if (question.correctAnswerChoice !== null) {
-                if (userAnswer.answerChoice === question.correctAnswerChoice) {
-                  correctCount++;
-                }
+              // For multiple choice questions
+              if (userAnswer.answerChoices.length > 0) {
+                const correctAnswerIds = question.answers
+                  .filter((ans) => ans.isCorrect)
+                  .map((ans) => ans.id);
+
+                const userAnswerIds = userAnswer.answerChoices.map(
+                  (choice) => choice.answerId,
+                );
+
+                // Check if arrays are equal (same length and same elements)
+                const isCorrect =
+                  correctAnswerIds.length === userAnswerIds.length &&
+                  correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+                if (isCorrect) correctCount++;
               } else if (userAnswer.essayAnswer !== null) {
-                const correctEssayAnswer =
+                const correctEssayAnswer = question.answers.find(
+                  (ans) => ans.isCorrect,
+                );
+                if (
+                  correctEssayAnswer &&
                   userAnswer.essayAnswer.trim().toLowerCase() ===
-                  question.answers[0]?.content.trim().toLowerCase();
-                if (correctEssayAnswer) {
+                    correctEssayAnswer.content.trim().toLowerCase()
+                ) {
                   correctCount++;
                 }
               }
@@ -530,16 +718,21 @@ export const quizRouter = createTRPCRouter({
               userAnswers: {
                 select: {
                   questionId: true,
-                  answerChoice: true,
+                  answerChoices: {
+                    select: {
+                      answerId: true,
+                    },
+                  },
                   essayAnswer: true,
                   question: {
                     select: {
                       id: true,
-                      correctAnswerChoice: true,
                       score: true,
                       answers: {
                         select: {
+                          id: true,
                           content: true,
+                          isCorrect: true,
                         },
                       },
                     },
@@ -552,16 +745,16 @@ export const quizRouter = createTRPCRouter({
             select: {
               id: true,
               type: true,
-              packageId: true,
               questions: {
                 select: {
                   id: true,
-                  correctAnswerChoice: true,
                   score: true,
                   type: true,
                   answers: {
                     select: {
+                      id: true,
                       content: true,
+                      isCorrect: true,
                     },
                   },
                 },
@@ -588,17 +781,34 @@ export const quizRouter = createTRPCRouter({
               userAnswersForQuestion.forEach((userAnswer) => {
                 totalQuestions++;
 
-                if (question.correctAnswerChoice !== null) {
-                  if (
-                    userAnswer.answerChoice === question.correctAnswerChoice
-                  ) {
+                // For multiple choice questions
+                if (userAnswer.answerChoices.length > 0) {
+                  const correctAnswerIds = question.answers
+                    .filter((ans) => ans.isCorrect)
+                    .map((ans) => ans.id);
+
+                  const userAnswerIds = userAnswer.answerChoices.map(
+                    (choice) => choice.answerId,
+                  );
+
+                  // Check if arrays are equal (same length and same elements)
+                  const isCorrect =
+                    correctAnswerIds.length === userAnswerIds.length &&
+                    correctAnswerIds.every((id) => userAnswerIds.includes(id));
+
+                  if (isCorrect) {
                     correctCount++;
                     totalScore += question.score;
                   }
                 } else if (userAnswer.essayAnswer !== null) {
+                  const correctEssayAnswer = question.answers.find(
+                    (ans) => ans.isCorrect,
+                  );
                   const isEssayCorrect =
+                    correctEssayAnswer &&
                     userAnswer.essayAnswer.trim().toLowerCase() ===
-                    question.answers[0]?.content.trim().toLowerCase();
+                      correctEssayAnswer.content.trim().toLowerCase();
+
                   if (isEssayCorrect) {
                     correctCount++;
                     totalScore += question.score;

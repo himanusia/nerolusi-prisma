@@ -1,10 +1,29 @@
 import { faker } from "@faker-js/faker";
 import { PrismaClient } from "@prisma/client";
 import axios from "axios";
+import { SUBJECT_CATEGORIES } from "../src/app/_components/constants.js";
 
 const db = new PrismaClient();
 
 async function main() {
+  console.log("⚠️  Clearing existing data and seeding database...");
+  // Clear existing data
+  await db.userAnswerChoice.deleteMany();
+  await db.userAnswer.deleteMany();
+  await db.quizSession.deleteMany();
+  await db.answer.deleteMany();
+  await db.question.deleteMany();
+  await db.topic.deleteMany();
+  await db.material.deleteMany();
+  await db.subject.deleteMany();
+  await db.file.deleteMany();
+  await db.folder.deleteMany();
+  await db.subtest.deleteMany();
+  await db.package.deleteMany();
+  await db.video.deleteMany();
+  await db.class.deleteMany();
+  await db.user.deleteMany();
+
   console.log("Seeding data...");
 
   // Generate Random Users
@@ -64,6 +83,62 @@ async function main() {
     }
   }
 
+  const generateQuestionAnswer = async (
+    subtestId: string,
+    packageId?: string,
+  ) => {
+    // Generate Random Questions and Answers for Subtest
+    for (let j = 0; j < 5; j++) {
+      const question = await db.question.create({
+        data: {
+          index: j + 1,
+          content: faker.word.words({ count: { min: 5, max: 50 } }),
+          imageUrl: faker.image.url(),
+          type: faker.helpers.arrayElement(["essay", "mulChoice", "mulAnswer"]),
+          score: faker.number.int({ min: 5, max: 50 }),
+          subtestId: subtestId,
+        },
+      });
+
+      // Generate Answers for Question
+      // Generate Answers for Question based on type
+      if (question.type === "essay") {
+        // No answers needed for essay questions
+      } else if (question.type === "mulChoice") {
+        // Multiple choice: exactly one correct answer
+        const answers = await Promise.all(
+          Array.from({ length: 5 }).map((_, index) =>
+        db.answer.create({
+          data: {
+            index: index,
+            content: faker.word.words({ count: { min: 1, max: 20 } }),
+            questionId: question.id,
+            isCorrect: index === 0, // Only first answer is correct
+          },
+        }),
+          ),
+        );
+      } else if (question.type === "mulAnswer") {
+        // Multiple answer: 1 to 5 answers can be correct
+        const numCorrect = faker.number.int({ min: 1, max: 5 });
+        const correctIndices = faker.helpers.shuffle([0, 1, 2, 3, 4]).slice(0, numCorrect) as (0 | 1 | 2 | 3 | 4)[];
+        
+        const answers = await Promise.all(
+          Array.from({ length: 5 }).map((_, index) =>
+        db.answer.create({
+          data: {
+            index: index,
+            content: faker.word.words({ count: { min: 1, max: 20 } }),
+            questionId: question.id,
+            isCorrect: correctIndices.includes(index as 0 | 1 | 2 | 3 | 4),
+          },
+        }),
+          ),
+        );
+      }
+    }
+  };
+
   // Generate Random Subtests for Packages
   for (const packageItem of packages) {
     for (let i = 0; i < 3; i++) {
@@ -82,80 +157,7 @@ async function main() {
           packageId: packageItem.id,
         },
       });
-
-      // Generate Random Questions and Answers for Subtest
-      for (let j = 0; j < 5; j++) {
-        const question = await db.question.create({
-          data: {
-            index: j + 1,
-            content: faker.word.words({ count: { min: 5, max: 50 } }),
-            imageUrl: faker.image.url(),
-            type: faker.helpers.arrayElement(["essay", "mulChoice"]),
-            score: faker.number.int({ min: 5, max: 50 }),
-            packageId: packageItem.id,
-            subtestId: subtest.id,
-          },
-        });
-
-        // Generate Answers for Question
-        const answers = await Promise.all(
-          Array.from({ length: 4 }).map((_, index) =>
-            db.answer.create({
-              data: {
-                index: index + 1,
-                content: faker.word.words({ count: { min: 1, max: 20 } }),
-                questionId: question.id,
-              },
-            }),
-          ),
-        );
-
-        // Assign Correct Answer Randomly
-        const correctAnswer = faker.helpers.arrayElement(answers);
-        await db.question.update({
-          where: { id: question.id },
-          data: { correctAnswerChoice: correctAnswer.index },
-        });
-      }
-    }
-  }
-
-  // Generate Random QuizSessions and UserAnswers
-  for (const user of users) {
-    for (const packageItem of packages) {
-      const subtests = await db.subtest.findMany({
-        where: { packageId: packageItem.id },
-      });
-      for (const subtest of subtests) {
-        const quizSession = await db.quizSession.create({
-          data: {
-            userId: user.id,
-            packageId: packageItem.id,
-            subtestId: subtest.id,
-            duration: faker.number.int({
-              min: 10,
-              max: 60,
-              multipleOf: 10,
-            }),
-          },
-        });
-
-        const questions = await db.question.findMany({
-          where: { subtestId: subtest.id },
-        });
-        for (const question of questions) {
-          const randomAnswer = faker.number.int({ min: 1, max: 4 });
-          await db.userAnswer.create({
-            data: {
-              answerChoice: randomAnswer,
-              questionId: question.id,
-              userId: user.id,
-              packageId: packageItem.id,
-              quizSessionId: quizSession.id,
-            },
-          });
-        }
-      }
+      await generateQuestionAnswer(subtest.id, packageItem.id);
     }
   }
 
@@ -186,27 +188,120 @@ async function main() {
 
   const searchQuery = "belajar utbk";
 
-  const videos = await fetchYouTubeVideos(searchQuery, 15);
+  const videosData = Array.from({ length: 20 }).map(() => ({
+    title: faker.word.words(),
+    description: faker.lorem.sentence(),
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    createdAt: new Date().toISOString(),
+  }));
 
-  if (videos.length === 0) {
+  // Add 20 more videos with type: materi
+  const materiVideosData = Array.from({ length: 20 }).map(() => ({
+    title: faker.word.words(),
+    description: faker.lorem.sentence(),
+    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    type: "materi",
+    createdAt: new Date().toISOString(),
+  }));
+
+  videosData.push(...materiVideosData);
+
+  if (videosData.length === 0) {
     console.log("No videos fetched from YouTube.");
     return;
   }
 
-  try {
-    await db.video.createMany({
-      data: videos.map((video) => ({
-        title: video.title,
-        description: video.description,
-        url: video.url,
-      })),
-      skipDuplicates: true,
-    });
-    console.log(
-      `Successfully created ${videos.length} videos from YouTube API.`,
+  await db.video.createMany({
+    data: videosData.map((video) => ({
+      title: video.title,
+      description: video.description,
+      url: video.url,
+      duration: 600,
+    })),
+    skipDuplicates: true,
+  });
+  console.log(`Successfully created ${videosData.length} videos.`);
+
+  const videos = await db.video.findMany();
+
+  // Generate Random Subjects, materials, and topics
+  const subjects = await Promise.all(
+    SUBJECT_CATEGORIES.flatMap((category) =>
+      category.subjects.map((subject) =>
+        db.subject.create({
+          data: {
+            id: subject.id,
+            name: subject.title,
+            type: category.type as any,
+          },
+        }),
+      ),
+    ),
+  );
+  const materials = await Promise.all(
+    subjects.flatMap((subject) =>
+      Array.from({ length: 3 }).map((_, index) =>
+        db.material.create({
+          data: {
+            index: index + 1,
+            name: faker.word.words(),
+            subjectId: subject.id,
+          },
+        }),
+      ),
+    ),
+  );
+
+  // Create a copy of videos and packages arrays to track usage
+  const availableVideos = [...videos];
+  const availablePackages = [...packages];
+
+  const topics = [];
+
+  // Calculate maximum topics we can create (limited by the smaller of videos or packages)
+  const maxTopics = Math.min(availableVideos.length, availablePackages.length);
+  let topicsCreated = 0;
+
+  for (const material of materials) {
+    if (topicsCreated >= maxTopics) break;
+
+    const topicsForThisChapter = Math.min(
+      2,
+      maxTopics - topicsCreated,
+      availableVideos.length,
     );
-  } catch (error) {
-    console.error("Error creating videos:", error);
+
+    for (let i = 0; i < topicsForThisChapter; i++) {
+      if (availableVideos.length === 0 || availablePackages.length === 0) break;
+
+      // Remove video and package from available lists to ensure uniqueness
+      const videoIndex = faker.number.int({
+        min: 0,
+        max: availableVideos.length - 1,
+      });
+
+      const selectedVideo = availableVideos.splice(videoIndex, 1)[0];
+
+      const subtest = await db.subtest.create({
+        data: {
+          type: "materi",
+          duration: faker.number.int({ min: 10, max: 60, multipleOf: 5 }),
+        },
+      });
+      await generateQuestionAnswer(subtest.id);
+
+      const topic = await db.topic.create({
+        data: {
+          index: i + 1,
+          name: faker.word.words(),
+          materialId: material.id,
+          videoId: selectedVideo.id,
+          subtestId: subtest.id,
+        },
+      });
+      topics.push(topic);
+      topicsCreated++;
+    }
   }
 
   // Generate Random Folders

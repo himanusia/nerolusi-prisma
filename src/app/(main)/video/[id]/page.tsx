@@ -20,7 +20,7 @@ export default function NontonPage() {
     isLoading,
     isError,
   } = api.video.getVideoById.useQuery({
-    id: Number(id),
+    id: id as string,
   });
 
   if (isLoading) {
