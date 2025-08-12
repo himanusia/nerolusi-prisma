@@ -32,9 +32,9 @@ export default function RekamanKelasCard({
   return (
     <Card
       className={`overflow-hidden border-0 transition-all duration-100 hover:scale-105 hover:cursor-pointer ${className}`}
-      onClick={() => router.push(`/rekaman/${id}`)}
+      onClick={() => router.push(`/video/${id}`)}
     >
-      <Link href={`rekaman/${id}`}>
+      <Link href={`video/${id}`}>
         <div className="relative aspect-video">
           {thumbnailUrl ? (
             <img
