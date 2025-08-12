@@ -1,5 +1,5 @@
 import { auth } from "~/server/auth";
-import Navbar from "../_components/navbar";
+import Navbar from "~/app/_components/navbar";
 import { redirect } from "next/navigation";
 
 export default async function layout({
@@ -16,7 +16,7 @@ export default async function layout({
   return (
     <div className="size-full">
       <Navbar />
-      <div className="container mx-auto p-4">{children}</div>
+      <div className="container mx-auto p-4 max-w-7xl">{children}</div>
     </div>
   );
 }

@@ -1,12 +1,16 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import { TbTargetArrow } from "react-icons/tb";
+import TokenCard from "~/app/_components/token-card";
 import TryoutList from "./tryout-list";
 
 export default function TryoutListPage() {
   const { data: session } = useSession();
 
   const classId = session?.user?.classid;
+
+  const userTokens = 9999;
 
   if (!classId) {
     return (
@@ -21,5 +25,17 @@ export default function TryoutListPage() {
     );
   }
 
-  return <TryoutList classId={classId} />;
+  return (
+    <div className="space-y-6 w-full">
+      <div className="bg-[#e9e6ef] rounded-[10px] p-3">
+        <div className="flex items-center gap-4">
+          <TbTargetArrow className="w-20 h-20 text-[#2b8057]" />
+          <h1 className="text-3xl font-bold text-[#2b8057]">Try Out</h1>
+        </div>
+      </div>
+      <TokenCard tokenAmount={userTokens} />
+
+      <TryoutList classId={classId} />
+    </div>
+  );
 }

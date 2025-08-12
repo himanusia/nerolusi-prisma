@@ -140,3 +140,36 @@
     margin-top: 0;
   }
 }
+
+/* Quiz font size classes for Editor component */
+.quiz-font-sm .ProseMirror {
+  font-size: 14px !important;
+}
+
+.quiz-font-base .ProseMirror {
+  font-size: 16px !important;
+}
+
+.quiz-font-lg .ProseMirror {
+  font-size: 18px !important;
+}
+
+.quiz-font-sm .ProseMirror * {
+  font-size: inherit !important;
+}
+
+.quiz-font-base .ProseMirror * {
+  font-size: inherit !important;
+}
+
+.quiz-font-lg .ProseMirror * {
+  font-size: inherit !important;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  scrollbar-width: none;  /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;  /* Safari and Chrome */
+}

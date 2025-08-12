@@ -1,15 +1,39 @@
 import { z } from "zod";
 import {
   createTRPCRouter,
+  subscriberProcedure,
   teacherProcedure,
   userProcedure,
 } from "~/server/api/trpc";
 
 export const videoRouter = createTRPCRouter({
-  getAllVideos: userProcedure.query(async ({ ctx }) => {
-    const videos = await ctx.db.video.findMany();
-    return videos ?? null;
+  getAllRekamanVideos: subscriberProcedure.query(async ({ ctx }) => {
+    const videos = await ctx.db.video.findMany({
+      where: { type: "rekaman" },
+      orderBy: { createdAt: "desc" },
+    });
+    return videos;
   }),
+
+  getVideoById: subscriberProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const { id } = input;
+
+      const video = await ctx.db.video.findUnique({
+        where: { id },
+      });
+
+      if (!video) {
+        throw new Error("Video not found");
+      }
+
+      if (video.type === "materi" && !ctx.session.user.enrolledTka) {
+        throw new Error("You must be enrolled in TKA to access this video.");
+      }
+
+      return video;
+    }),
 
   addVideo: teacherProcedure
     .input(
@@ -17,10 +41,11 @@ export const videoRouter = createTRPCRouter({
         title: z.string().min(1, "Title is required"),
         description: z.string().optional(),
         url: z.string().url("Invalid URL format"),
+        type: z.enum(["materi", "rekaman"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      const { title, description, url } = input;
+      const { title, description, url, type } = input;
 
       const regex = /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/;
       if (!regex.test(url)) {
@@ -31,7 +56,9 @@ export const videoRouter = createTRPCRouter({
         data: {
           title,
           description,
+          type,
           url,
+          duration: 600,
         },
       });
     }),
@@ -39,7 +66,7 @@ export const videoRouter = createTRPCRouter({
   deleteVideo: teacherProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -55,7 +82,7 @@ export const videoRouter = createTRPCRouter({
   editVideo: teacherProcedure
     .input(
       z.object({
-        id: z.number(),
+        id: z.string(),
         title: z.string().min(1, "Title is required"),
         description: z.string().optional(),
         url: z.string().url("Invalid URL format"),

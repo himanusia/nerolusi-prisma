@@ -34,12 +34,14 @@ export default function Editor({
   content,
   onContentChange,
   className,
+  fontSize = "text-base",
   ...props
 }: {
   isEdit?: boolean;
   content: string;
   className?: React.HTMLAttributes<HTMLDivElement>;
   onContentChange?: (content: string) => void;
+  fontSize?: "text-sm" | "text-base" | "text-lg";
 } & React.HTMLAttributes<HTMLDivElement>) {
   const editor = useEditor({
     extensions: [
@@ -67,7 +69,10 @@ export default function Editor({
 
   return (
     <div
-      className={cn("flex h-full w-full flex-col rounded-lg border", className)}
+      className={cn(
+        "flex h-full w-full flex-col rounded-lg", 
+        className
+      )}
       {...props}
     >
       <div
@@ -238,7 +243,15 @@ export default function Editor({
           <LuListOrdered className="size-5 flex-shrink-0" />
         </Button>
       </div>
-      <EditorContent editor={editor} className="p-2"></EditorContent>
+      <EditorContent 
+        editor={editor} 
+        className={cn(
+          "p-2",
+          fontSize === "text-sm" && "quiz-font-sm",
+          fontSize === "text-base" && "quiz-font-base", 
+          fontSize === "text-lg" && "quiz-font-lg"
+        )}
+      />
     </div>
   );
 }

@@ -43,9 +43,10 @@ const EditSubtestPage: React.FC = () => {
     if (data) {
       setFormData({
         ...data,
+        id: Number(data.id),
         type: data.type ?? "pu",
         duration: data.duration ?? 0,
-        questions: data.questions.map((q, index) => ({
+        questions: (data.questions || []).map((q, index) => ({
           ...q,
           index: q.index ?? index + 1,
           type: q.type as QuestionType,
@@ -54,7 +55,7 @@ const EditSubtestPage: React.FC = () => {
           imageUrl: q.imageUrl ?? null,
           explanation: q.explanation ?? null,
           correctAnswerChoice: q.correctAnswerChoice ?? 0,
-          answers: q.answers.map((answer, aIndex) => ({
+          answers: (q.answers || []).map((answer, aIndex) => ({
             ...answer,
             index: answer.index ?? aIndex + 1,
             content: answer.content ?? "",
