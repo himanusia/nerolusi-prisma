@@ -73,7 +73,7 @@ export default function TKADrillsPage() {
     }
   };
 
-  const handleDeleteDrill = async (id: number) => {
+  const handleDeleteDrill = async (id: string) => {
     if (!confirm("Are you sure you want to delete this drill?")) return;
     
     try {
