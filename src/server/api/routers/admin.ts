@@ -1,8 +1,5 @@
 import { z } from "zod";
-import {
-  adminProcedure,
-  createTRPCRouter,
-} from "~/server/api/trpc";
+import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 
 export const adminRouter = createTRPCRouter({
   // Dashboard stats
@@ -10,11 +7,11 @@ export const adminRouter = createTRPCRouter({
     const totalUsers = await ctx.db.user.count();
     const totalPackages = await ctx.db.package.count();
     const activeSessions = await ctx.db.quizSession.count({
-      where: { 
-        endTime: null // Ongoing sessions
-      }
+      where: {
+        endTime: null, // Ongoing sessions
+      },
     });
-    
+
     return {
       totalUsers,
       totalPackages,
@@ -42,10 +39,10 @@ export const adminRouter = createTRPCRouter({
         },
       },
     });
-    
+
     // For now, we'll return users with a coins field set to 0
     // In a real app, you'd have a coins field in the User model or a separate UserCoins table
-    return users.map(user => ({
+    return users.map((user) => ({
       ...user,
       coins: 0, // Placeholder - you'd need to add this field to your User model
     }));
@@ -91,16 +88,19 @@ export const adminRouter = createTRPCRouter({
     });
 
     // Transform to match expected interface
-    return tryouts.map(tryout => ({
+    return tryouts.map((tryout) => ({
       id: tryout.id,
       name: tryout.name,
-      description: `TKA Tryout for ${tryout.class?.name || 'All Classes'}`,
+      description: `TKA Tryout for ${tryout.class?.name || "All Classes"}`,
       startDate: tryout.TOstart || new Date(),
       endDate: tryout.TOend || new Date(),
       duration: 120, // Default 2 hours
       maxParticipants: 100, // Default
       participants: 0, // Would need to count from quiz sessions
-      isActive: tryout.TOstart ? new Date() >= tryout.TOstart && new Date() <= (tryout.TOend || new Date()) : false,
+      isActive: tryout.TOstart
+        ? new Date() >= tryout.TOstart &&
+          new Date() <= (tryout.TOend || new Date())
+        : false,
     }));
   }),
 
@@ -126,12 +126,12 @@ export const adminRouter = createTRPCRouter({
           TOend: new Date(input.endDate),
         },
       });
-      
+
       return tryout;
     }),
 
   deleteTKATryout: adminProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.package.delete({
         where: { id: input.id },
@@ -215,14 +215,17 @@ export const adminRouter = createTRPCRouter({
     });
 
     // Transform to match expected interface
-    return drills.map(drill => ({
+    return drills.map((drill) => ({
       id: drill.id,
       title: drill.name,
-      description: `TKA Drill for ${drill.class?.name || 'All Classes'}`,
+      description: `TKA Drill for ${drill.class?.name || "All Classes"}`,
       subject: "Matematika", // Default - you may want to add subject field
       difficulty: "medium", // Default - you may want to add difficulty field
       timeLimit: 600, // 10 minutes default
-      questionCount: drill.subtests.reduce((sum, subtest) => sum + subtest.questions.length, 0),
+      questionCount: drill.subtests.reduce(
+        (sum, subtest) => sum + subtest.questions.length,
+        0,
+      ),
       isActive: true,
       attempts: 0, // Would need to count from quiz sessions
       averageScore: 0, // Would need to calculate from quiz sessions
@@ -251,12 +254,12 @@ export const adminRouter = createTRPCRouter({
           classId: 1, // Default class - you may want to make this configurable
         },
       });
-      
+
       return drill;
     }),
 
   deleteTKADrill: adminProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.package.delete({
         where: { id: input.id },

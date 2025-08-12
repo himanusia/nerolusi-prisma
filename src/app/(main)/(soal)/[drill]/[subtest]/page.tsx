@@ -90,9 +90,9 @@ export default function DrillVideoPage() {
   const getSessionMutation = api.quiz.getSession.useMutation();
 
   async function handleSubtestClick(
-    subtestId: number,
+    subtestId: string,
     duration: number,
-    packageId: number,
+    packageId: string,
   ) {
     if (!session.data || !session.data.user) {
       toast.error("Anda harus login terlebih dahulu");
@@ -118,7 +118,7 @@ export default function DrillVideoPage() {
         });
       }
 
-      router.push(`/drill/${drill}/${subtest}/${packageId}/${quizSession.id}`);
+      router.push(`/${drill}/${subtest}/${packageId}/${quizSession.id}`);
     } catch (error) {
       console.error(error);
       toast.error("Error creating session", {

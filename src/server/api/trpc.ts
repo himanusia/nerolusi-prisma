@@ -129,6 +129,64 @@ export const userProcedure = t.procedure
     });
   });
 
+export const tkaProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (
+      !ctx.session ||
+      !ctx.session.user ||
+      (ctx.session.user.role !== "teacher" &&
+        ctx.session.user.role !== "admin" &&
+        !ctx.session.user.enrolledTka)
+    ) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+export const utbkProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (
+      !ctx.session ||
+      !ctx.session.user ||
+      (ctx.session.user.role !== "teacher" &&
+        ctx.session.user.role !== "admin" &&
+        !ctx.session.user.enrolledUtbk)
+    ) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
+export const subscriberProcedure = t.procedure
+  .use(timingMiddleware)
+  .use(({ ctx, next }) => {
+    if (
+      !ctx.session ||
+      !ctx.session.user ||
+      (ctx.session.user.role !== "teacher" &&
+        ctx.session.user.role !== "admin" &&
+        !ctx.session.user.enrolledUtbk &&
+        !ctx.session.user.enrolledTka)
+    ) {
+      throw new TRPCError({ code: "UNAUTHORIZED" });
+    }
+    return next({
+      ctx: {
+        session: { ...ctx.session, user: ctx.session.user },
+      },
+    });
+  });
+
 export const adminProcedure = t.procedure
   .use(timingMiddleware)
   .use(({ ctx, next }) => {

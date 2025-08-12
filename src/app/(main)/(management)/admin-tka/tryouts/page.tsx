@@ -1,12 +1,25 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "~/app/_components/ui/card";
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
 import { Badge } from "~/app/_components/ui/badge";
 import Link from "next/link";
-import { ArrowLeft, Plus, Search, Edit, Trash2, Calendar, Users } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Calendar,
+  Users,
+} from "lucide-react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import {
@@ -29,15 +42,15 @@ export default function TKATryoutPage() {
     startDate: "",
     endDate: "",
     duration: 120,
-    maxParticipants: 100
+    maxParticipants: 100,
   });
 
   const { data: tryouts, refetch } = api.admin.getTKATryouts.useQuery();
   const createTryoutMutation = api.admin.createTKATryout.useMutation();
   const deleteTryoutMutation = api.admin.deleteTKATryout.useMutation();
 
-  const filteredTryouts = tryouts?.filter(tryout =>
-    tryout.name?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredTryouts = tryouts?.filter((tryout) =>
+    tryout.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleCreateTryout = async () => {
@@ -51,7 +64,7 @@ export default function TKATryoutPage() {
         startDate: "",
         endDate: "",
         duration: 120,
-        maxParticipants: 100
+        maxParticipants: 100,
       });
       await refetch();
     } catch (error: any) {
@@ -59,9 +72,9 @@ export default function TKATryoutPage() {
     }
   };
 
-  const handleDeleteTryout = async (id: number) => {
+  const handleDeleteTryout = async (id: string) => {
     if (!confirm("Are you sure you want to delete this tryout?")) return;
-    
+
     try {
       await deleteTryoutMutation.mutateAsync({ id });
       toast.success("Tryout deleted successfully!");
@@ -77,18 +90,20 @@ export default function TKATryoutPage() {
       <div className="flex items-center gap-4">
         <Link href="/admin-tka">
           <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to TKA
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">TKA Tryout Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            TKA Tryout Management
+          </h1>
           <p className="text-gray-600">Create and manage TKA tryout packages</p>
         </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-purple-600 hover:bg-purple-700">
-              <Plus className="h-4 w-4 mr-2" />
+              <Plus className="mr-2 h-4 w-4" />
               Create Tryout
             </Button>
           </DialogTrigger>
@@ -101,7 +116,9 @@ export default function TKATryoutPage() {
                 <Label>Tryout Name</Label>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="Enter tryout name"
                 />
               </div>
@@ -109,7 +126,9 @@ export default function TKATryoutPage() {
                 <Label>Description</Label>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
                   placeholder="Enter description"
                   rows={3}
                 />
@@ -120,7 +139,9 @@ export default function TKATryoutPage() {
                   <Input
                     type="datetime-local"
                     value={formData.startDate}
-                    onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, startDate: e.target.value })
+                    }
                   />
                 </div>
                 <div>
@@ -128,7 +149,9 @@ export default function TKATryoutPage() {
                   <Input
                     type="datetime-local"
                     value={formData.endDate}
-                    onChange={(e) => setFormData({...formData, endDate: e.target.value})}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endDate: e.target.value })
+                    }
                   />
                 </div>
               </div>
@@ -138,7 +161,12 @@ export default function TKATryoutPage() {
                   <Input
                     type="number"
                     value={formData.duration}
-                    onChange={(e) => setFormData({...formData, duration: parseInt(e.target.value)})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
                   />
                 </div>
                 <div>
@@ -146,13 +174,21 @@ export default function TKATryoutPage() {
                   <Input
                     type="number"
                     value={formData.maxParticipants}
-                    onChange={(e) => setFormData({...formData, maxParticipants: parseInt(e.target.value)})}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        maxParticipants: parseInt(e.target.value),
+                      })
+                    }
                   />
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button onClick={handleCreateTryout} disabled={createTryoutMutation.isPending}>
+              <Button
+                onClick={handleCreateTryout}
+                disabled={createTryoutMutation.isPending}
+              >
                 Create Tryout
               </Button>
             </DialogFooter>
@@ -176,14 +212,16 @@ export default function TKATryoutPage() {
       </Card>
 
       {/* Tryouts Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredTryouts?.map((tryout) => (
-          <Card key={tryout.id} className="hover:shadow-lg transition-shadow">
+          <Card key={tryout.id} className="transition-shadow hover:shadow-lg">
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <CardTitle className="text-lg">{tryout.name}</CardTitle>
-                  <p className="text-sm text-gray-600 mt-1">{tryout.description}</p>
+                  <p className="mt-1 text-sm text-gray-600">
+                    {tryout.description}
+                  </p>
                 </div>
                 <Badge variant={tryout.isActive ? "default" : "secondary"}>
                   {tryout.isActive ? "Active" : "Inactive"}
@@ -194,7 +232,8 @@ export default function TKATryoutPage() {
               <div className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Calendar className="h-4 w-4" />
-                  {new Date(tryout.startDate).toLocaleDateString()} - {new Date(tryout.endDate).toLocaleDateString()}
+                  {new Date(tryout.startDate).toLocaleDateString()} -{" "}
+                  {new Date(tryout.endDate).toLocaleDateString()}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-gray-600">
                   <Users className="h-4 w-4" />
@@ -203,17 +242,17 @@ export default function TKATryoutPage() {
                 <div className="text-sm text-gray-600">
                   Duration: {tryout.duration} minutes
                 </div>
-                
+
                 <div className="flex gap-2 pt-3">
                   <Link href={`/admin-tka/tryouts/${tryout.id}/edit`}>
                     <Button size="sm" variant="outline" className="flex-1">
-                      <Edit className="h-4 w-4 mr-1" />
+                      <Edit className="mr-1 h-4 w-4" />
                       Edit
                     </Button>
                   </Link>
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
+                  <Button
+                    size="sm"
+                    variant="outline"
                     onClick={() => handleDeleteTryout(tryout.id)}
                     className="border-red-200 text-red-600 hover:bg-red-50"
                   >
@@ -228,10 +267,10 @@ export default function TKATryoutPage() {
 
       {filteredTryouts?.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
+          <CardContent className="py-12 text-center">
             <div className="text-gray-500">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No TKA tryouts found</h3>
+              <Calendar className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <h3 className="mb-2 text-lg font-medium">No TKA tryouts found</h3>
               <p>Create your first tryout to get started.</p>
             </div>
           </CardContent>

@@ -9,6 +9,9 @@ declare module "next-auth" {
       id: string;
       role: string;
       classid?: number;
+      enrolledUtbk?: boolean;
+      enrolledTka?: boolean;
+      token?: number;
     } & DefaultSession["user"];
   }
 }

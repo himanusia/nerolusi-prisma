@@ -42,12 +42,19 @@ export const packageRouter = createTRPCRouter({
           classId: input.classId,
           type: "tryout",
         },
+        include: {
+          quizSession: {
+            where: {
+              userId: ctx.session.user.id,
+            },
+          },
+        },
       });
     }),
 
   // Get Single Package with Subtests, Questions, and Answers
   getPackage: userProcedure
-    .input(z.object({ id: z.number().min(1, "Package ID is required") }))
+    .input(z.object({ id: z.string() }))
     .query(async ({ input, ctx }) => {
       const packageData = await ctx.db.package.findUnique({
         where: { id: input.id },
@@ -83,7 +90,7 @@ export const packageRouter = createTRPCRouter({
   getUsersByPackage: userProcedure
     .input(
       z.object({
-        packageId: z.number(),
+        packageId: z.string(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -124,7 +131,6 @@ export const packageRouter = createTRPCRouter({
             select: {
               question: {
                 select: {
-                  correctAnswerChoice: true,
                   score: true,
                   answers: {
                     select: {
@@ -133,7 +139,6 @@ export const packageRouter = createTRPCRouter({
                   },
                 },
               },
-              answerChoice: true,
               essayAnswer: true,
             },
           },

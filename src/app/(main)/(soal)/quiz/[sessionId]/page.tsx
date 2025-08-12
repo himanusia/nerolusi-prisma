@@ -21,11 +21,11 @@ import {
   ChevronRight,
   Flag,
 } from "lucide-react";
+import Link from "next/link";
 
 export default function QuizPage() {
-  const { drill, subtest, packageId, sessionId } = useParams(); // drill = subject, subtest = videoId
+  const { sessionId } = useParams(); // drill = subject, subtest = videoId
   const searchParams = useSearchParams();
-  const userId = searchParams.get("userId");
   const router = useRouter();
   const session = useSession();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
@@ -40,6 +40,8 @@ export default function QuizPage() {
 
   const saveAnswerMutation = api.quiz.saveAnswer.useMutation();
   const submitMutation = api.quiz.submitQuiz.useMutation();
+  const updateProgressMutation =
+    api.materi.updateUserMaterialProgressAndSubmit.useMutation();
 
   const {
     data: sessionDetails,
@@ -54,9 +56,9 @@ export default function QuizPage() {
       sessionDetails?.endTime &&
       new Date(sessionDetails?.endTime) === new Date()
     ) {
-      router.push(`/${drill}/${subtest}/score`);
+      router.push(`/quiz/${sessionIdString}/score`);
     }
-  }, [sessionDetails, router, packageId]);
+  }, [sessionDetails, router]);
 
   const {
     data: questions,
@@ -65,7 +67,7 @@ export default function QuizPage() {
   } = api.quiz.getQuestionsBySubtest.useQuery(
     {
       subtestId: sessionDetails?.subtestId ?? "",
-      userId: userId ?? session.data?.user?.id,
+      userId: session.data?.user?.id,
     },
     { enabled: !!sessionDetails },
   );
@@ -125,12 +127,7 @@ export default function QuizPage() {
       await saveAnswerMutation.mutateAsync({
         quizSessionId: sessionIdString,
         questionId,
-        userId:
-          drill === "soal" &&
-          (session.data.user.role === "admin" ||
-            session.data.user.role === "teacher")
-            ? userId
-            : (sessionDetails?.userId ?? ""),
+        userId: sessionDetails?.userId ?? "",
         answerChoices: Array.isArray(answerValue)
           ? answerValue
           : typeof answerValue === "number"
@@ -152,9 +149,9 @@ export default function QuizPage() {
     setSelectedAnswers((prev) => {
       const updatedAnswers = new Map(prev);
       updatedAnswers.set(questionId, answerValue);
-      saveAnswer(questionId, answerValue);
       return updatedAnswers;
     });
+    saveAnswer(questionId, answerValue);
   };
 
   // Handle multiple choice answer toggle
@@ -189,12 +186,26 @@ export default function QuizPage() {
       for (const [questionId, answerChoice] of selectedAnswers.entries()) {
         await saveAnswer(questionId, answerChoice);
       }
-      await submitMutation.mutateAsync({
-        sessionId: sessionIdString,
-      });
+
+      if (sessionDetails?.subtest.type === "materi") {
+        await updateProgressMutation.mutateAsync({
+          sessionId: sessionIdString,
+          topicId: sessionDetails?.subtest?.topics?.id ?? 0,
+          isDrillCompleted: true,
+        });
+      } else {
+        await submitMutation.mutateAsync({
+          sessionId: sessionIdString,
+        });
+      }
+
       toast.success("Quiz submitted successfully!");
-      // Redirect to drill score page after completion
-      router.push(`/${drill}/${subtest}/score`);
+
+      if (sessionDetails?.subtest.type === "materi") {
+        router.push(`/quiz/${sessionIdString}/score`);
+      } else {
+        router.push(`/tryout/${sessionDetails?.packageId}`);
+      }
     } catch (error) {
       console.error("Failed to submit quiz:", error);
       toast.error("Failed to submit quiz. Please try again.");
@@ -289,7 +300,7 @@ export default function QuizPage() {
                     >
                       Soal {currentQuestionIndex + 1}
                     </Badge>
-                    {(session.data?.user.role === "teacher" ||
+                    {/* {(session.data?.user.role === "teacher" ||
                       session.data?.user.role === "admin") &&
                       drill === "soal" &&
                       new Date(sessionDetails?.endTime) < new Date() && (
@@ -335,7 +346,7 @@ export default function QuizPage() {
                                   : 0;
                               })()}
                         </Badge>
-                      )}
+                      )} */}
                   </div>
 
                   {/* Question Content */}
@@ -392,10 +403,8 @@ export default function QuizPage() {
                       <div className="space-y-2">
                         {(() => {
                           // Determine if this question has multiple correct answers
-                          const correctAnswersCount = questions[
-                            currentQuestionIndex
-                          ].answers.filter((answer) => answer.isCorrect).length;
-                          const isMultipleChoice = correctAnswersCount > 1;
+                          const isMultipleChoice =
+                            questions[currentQuestionIndex].type == "mulAnswer";
 
                           const userAnswer = selectedAnswers.get(
                             questions[currentQuestionIndex].id,
@@ -410,21 +419,27 @@ export default function QuizPage() {
                                 new Date(sessionDetails.endTime) < new Date() &&
                                 answer.isCorrect;
                               const isWrong =
-                                new Date(sessionDetails.endTime) < new Date() &&
-                                isSelected &&
-                                !answer.isCorrect;
+                                (new Date(sessionDetails.endTime) <
+                                  new Date() &&
+                                  isSelected &&
+                                  !answer.isCorrect) ||
+                                (!isSelected && answer.isCorrect);
 
                               return (
                                 <label
                                   key={answer.id}
                                   className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${
                                     isCorrect
-                                      ? "border-green-200 bg-green-50"
-                                      : isWrong
-                                        ? "border-red-200 bg-red-50"
-                                        : isSelected
-                                          ? "border-[#2b8057] bg-[#2b8057] text-white"
+                                      ? isSelected
+                                        ? "border-green-200 bg-green-50"
+                                        : isWrong
+                                          ? "border-red-200 bg-red-50"
+                                          : "border-gray-200 bg-gray-50"
+                                      : isSelected
+                                        ? isWrong
+                                          ? "border-red-200 bg-red-50"
                                           : "border-gray-200 hover:bg-gray-50"
+                                        : "border-gray-200 hover:bg-gray-50"
                                   } ${
                                     !(
                                       new Date(sessionDetails.endTime) <
@@ -500,9 +515,7 @@ export default function QuizPage() {
                                   </div>
                                   <div className="flex-1">
                                     <div className="mb-1 flex items-center gap-2">
-                                      <span
-                                        className={`font-medium ${isSelected && !isCorrect && !isWrong ? "text-white" : ""}`}
-                                      >
+                                      <span className={`font-medium`}>
                                         {String.fromCharCode(65 + answer.index)}
                                         .
                                       </span>
@@ -605,16 +618,23 @@ export default function QuizPage() {
 
               {/* Submit Button */}
               {new Date(sessionDetails?.endTime) >= new Date() &&
-                session.data?.user.role === "user" && (
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={isSubmitting}
-                    className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
-                  >
+              session.data?.user.role === "user" ? (
+                <Button
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                  className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
+                >
+                  <Flag className="h-4 w-4" />
+                  {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
+                </Button>
+              ) : (
+                <Link href={`/quiz/${sessionIdString}/score`}>
+                  <Button className="flex w-full gap-2">
                     <Flag className="h-4 w-4" />
-                    {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
+                    Lihat Hasil
                   </Button>
-                )}
+                </Link>
+              )}
             </CardContent>
           </Card>
         </div>

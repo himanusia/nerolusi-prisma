@@ -6,7 +6,7 @@ import { ImArrowRight } from "react-icons/im";
 import Image from "next/image";
 
 export interface TryOutData {
-  id: number;
+  id: string;
   title: string;
   subtitle: string;
   dateRange: string;
@@ -107,17 +107,21 @@ export default function TryOutCard({ tryOut, onTryOutClick }: TryOutCardProps) {
 
   return (
     <Card
-      className={`w-96 overflow-hidden border-[#acaeba] shrink-0 cursor-pointer hover:shadow-lg transition-shadow ${statusInfo.cardClassName}`}
+      className={`w-96 shrink-0 cursor-pointer overflow-hidden border-[#acaeba] transition-shadow hover:shadow-lg ${statusInfo.cardClassName}`}
       onClick={() => onTryOutClick?.(tryOut)}
     >
       <CardContent className="p-0">
-        <div className="flex flex-row max-h-full items-start">
-          <div className={`flex flex-col text-white items-center justify-between`}>
-            <div className="h-1/2 flex flex-col items-center justify-center bg-[#2b8057] p-3 border-r border-[#acaeba]">
+        <div className="flex max-h-full flex-row items-start">
+          <div
+            className={`flex flex-col items-center justify-between text-white`}
+          >
+            <div className="flex h-1/2 flex-col items-center justify-center border-r border-[#acaeba] bg-[#2b8057] p-3">
               <div className="text-xs font-bold">Try Out</div>
               <div className="mt-1 text-xs font-bold">SNBT</div>
             </div>
-            <div className={`flex flex-1/2 w-full items-center justify-center bg-transparent text-center text-3xl font-bold text-black py-2 border-r border-[#acaeba]`}>
+            <div
+              className={`flex-1/2 flex w-full items-center justify-center border-r border-[#acaeba] bg-transparent py-2 text-center text-3xl font-bold text-black`}
+            >
               {tryOut.number}
             </div>
           </div>
@@ -136,41 +140,37 @@ export default function TryOutCard({ tryOut, onTryOutClick }: TryOutCardProps) {
                   </span>
                 )}
               </div> */}
-              
-              <h4 className="text-lg font-bold text-gray-900 mb-1">
+
+              <h4 className="mb-1 text-lg font-bold text-gray-900">
                 {tryOut.title}
               </h4>
-              <p className="text-sm text-gray-600 mb-2">
-                {tryOut.subtitle}
-              </p>
+              <p className="mb-2 text-sm text-gray-600">{tryOut.subtitle}</p>
 
               <div className="flex items-center gap-2 text-sm text-gray-500">
                 <CalendarIcon className="h-4 w-4" />
                 <span>{tryOut.dateRange}</span>
-                <div className="flex items-end gap-3 ">
+                <div className="flex items-end gap-3">
                   {statusInfo.showCoin && tryOut.token && (
-                    <div className="flex items-center gap-1 text-black px-3 py-1 rounded-full">
+                    <div className="flex items-center gap-1 rounded-full px-3 py-1 text-black">
                       <Image
                         src="/coin.webp"
                         alt="Coin"
                         width={16}
                         height={16}
-                        className="inline-block mr-1"
+                        className="mr-1 inline-block"
                       />
-                      <span className="font-bold text-lg">{tryOut.token}</span>
+                      <span className="text-lg font-bold">{tryOut.token}</span>
                     </div>
                   )}
-                  
+
                   {statusInfo.showArrow && (
                     // <div className="flex justify-end">
-                      <ImArrowRight className="w-6 h-6 text-[#2b8057]" />
+                    <ImArrowRight className="h-6 w-6 text-[#2b8057]" />
                     // </div>
                   )}
                 </div>
               </div>
             </div>
-
-            
           </div>
         </div>
       </CardContent>

@@ -149,7 +149,7 @@ export default function MyScoresPage() {
                   variant="ghost"
                   onClick={() =>
                     router.push(
-                      `/drill/${pkg.type}/${pkg.package.id}/${pkg.sessionId}`,
+                      `/${pkg.type}/${pkg.package.id}/${pkg.sessionId}`,
                     )
                   }
                   className={`flex min-h-32 min-w-72 flex-col items-center justify-center rounded-lg border text-2xl font-bold ${pkg.sessionId ? "bg-green-500 hover:bg-green-600" : "bg-slate-200"}`}

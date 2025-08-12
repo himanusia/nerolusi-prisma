@@ -7,7 +7,7 @@ export default function DaftarRekaman() {
     data: videos,
     isLoading: videosLoading,
     isError: videosError,
-  } = api.video.getAllVideos.useQuery();
+  } = api.video.getAllRekamanVideos.useQuery();
 
   if (videosLoading) {
     return (
