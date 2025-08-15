@@ -54,10 +54,11 @@ export default function TKAVideosPage() {
   const createVideoMutation = api.admin.createTKAVideo.useMutation();
   const deleteVideoMutation = api.admin.deleteTKAVideo.useMutation();
 
-  const filteredVideos = videos?.filter(video => {
-    const matchesSearch = video.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = categoryFilter === "all" || video.category === categoryFilter;
-    return matchesSearch && matchesCategory;
+  const filteredVideos = videos?.filter((video) => {
+    const matchesSearch = video.title
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    return matchesSearch;
   });
 
   const handleCreateVideo = async () => {
@@ -77,7 +78,7 @@ export default function TKAVideosPage() {
     }
   };
 
-  const handleDeleteVideo = async (id: number) => {
+  const handleDeleteVideo = async (id: string) => {
     if (!confirm("Are you sure you want to delete this video?")) return;
 
     try {
@@ -212,14 +213,13 @@ export default function TKAVideosPage() {
                     {video.description}
                   </p>
                 </div>
-                <Badge variant="secondary">{video.category}</Badge>
+                {/* <Badge variant="secondary">{video.category}</Badge> */}
               </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-
-                <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                    <Play className="h-12 w-12 text-gray-400" />
+                <div className="flex aspect-video items-center justify-center overflow-hidden rounded-lg bg-gray-100">
+                  <Play className="h-12 w-12 text-gray-400" />
                 </div>
 
                 <div className="flex items-center justify-between text-sm text-gray-600">
@@ -227,10 +227,10 @@ export default function TKAVideosPage() {
                     <Play className="h-4 w-4" />
                     {video.duration}
                   </div>
-                  <div className="flex items-center gap-2">
+                  {/* <div className="flex items-center gap-2">
                     <Eye className="h-4 w-4" />
                     {video.views || 0} views
-                  </div>
+                  </div> */}
                 </div>
 
                 <div className="flex gap-2 pt-3">
@@ -243,7 +243,7 @@ export default function TKAVideosPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => window.open(video.videoUrl, "_blank")}
+                    onClick={() => window.open(video.url, "_blank")}
                     className="border-blue-200 text-blue-600 hover:bg-blue-50"
                   >
                     <Play className="h-4 w-4" />

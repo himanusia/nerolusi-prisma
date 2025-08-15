@@ -101,7 +101,7 @@ export default function PackageTable({
             <div className="flex size-full items-center justify-center gap-2">
               <Button
                 onClick={() =>
-                  router.push(`/packageManagement/${params.data.id}`)
+                  router.push(`/admin/package-management/${params.data.id}`)
                 }
               >
                 Manage

@@ -85,6 +85,9 @@ export const adminRouter = createTRPCRouter({
         class: true,
         subtests: true,
       },
+      orderBy: {
+        createdAt: "desc",
+      }
     });
 
     // Transform to match expected interface
@@ -138,6 +141,94 @@ export const adminRouter = createTRPCRouter({
       });
     }),
 
+  // Package management
+  getPackageById: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const packageData = await ctx.db.package.findUnique({
+        where: { id: input.id },
+        include: {
+          class: true,
+          subtests: {
+            include: {
+              questions: true,
+            },
+            orderBy: { type: "asc" },
+          },
+        },
+      });
+
+      if (!packageData) {
+        throw new Error("Package not found");
+      }
+
+      return packageData;
+    }),
+
+  updatePackage: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        name: z.string(),
+        classId: z.number(),
+        TOstart: z.string(),
+        TOend: z.string(),
+        tokenPrice: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const updatedPackage = await ctx.db.package.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          classId: input.classId,
+          TOstart: new Date(input.TOstart),
+          TOend: new Date(input.TOend),
+          tokenPrice: input.tokenPrice,
+        },
+      });
+
+      return updatedPackage;
+    }),
+
+  // Subtest management
+  createSubtest: adminProcedure
+    .input(
+      z.object({
+        type: z.enum(["pu", "ppu", "pbm", "pk", "pm", "lbe", "lbi", "materi"]),
+        packageId: z.string(),
+        duration: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const subtest = await ctx.db.subtest.create({
+        data: {
+          type: input.type,
+          packageId: input.packageId,
+          duration: input.duration,
+        },
+      });
+
+      return subtest;
+    }),
+
+  deleteSubtest: adminProcedure
+    .input(z.object({ id: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      // This will cascade delete questions as well
+      await ctx.db.subtest.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  // Class management
+  getClasses: adminProcedure.query(async ({ ctx }) => {
+    const classes = await ctx.db.class.findMany({
+      orderBy: { name: "asc" },
+    });
+    return classes;
+  }),
+
   // TKA Videos (placeholder - you'd need a Video model)
   getTKAVideos: adminProcedure.query(async ({ ctx }) => {
     const videos = await ctx.db.video.findMany({
@@ -165,7 +256,7 @@ export const adminRouter = createTRPCRouter({
     }),
 
   deleteTKAVideo: adminProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       // Placeholder - you'd need a Video model
       return { success: true };

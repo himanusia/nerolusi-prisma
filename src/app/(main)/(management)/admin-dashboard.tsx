@@ -18,14 +18,14 @@ const adminMenuItems = [
   {
     title: "User Management",
     description: "Manage users, roles, and permissions",
-    href: "/user",
+    href: "/admin/user",
     icon: <RiUserFill className="h-8 w-8 text-blue-600" />,
     color: "border-blue-200 hover:border-blue-300"
   },
   {
     title: "Koin Management", 
     description: "View and modify user coin balances",
-    href: "/coins",
+    href: "/admin/coins",
     icon: <RiCoinsLine className="h-8 w-8 text-yellow-600" />,
     color: "border-yellow-200 hover:border-yellow-300"
   },
@@ -36,13 +36,13 @@ const adminMenuItems = [
     icon: <RiFileList3Fill className="h-8 w-8 text-green-600" />,
     color: "border-green-200 hover:border-green-300"
   },
-  // {
-  //   title: "Package Management",
-  //   description: "Manage tryout packages and content",
-  //   href: "/packageManagement",
-  //   icon: <RiFileList3Fill className="h-8 w-8 text-green-600" />,
-  //   color: "border-green-200 hover:border-green-300"
-  // },
+  {
+    title: "Try Out Management",
+    description: "Manage tryout packages and content",
+    href: "/admin/tryout",
+    icon: <RiBookmarkFill className="h-8 w-8 text-purple-600" />,
+    color: "border-purple-200 hover:border-purple-300"
+  },
   // {
   //   title: "TKA Tryouts",
   //   description: "Manage TKA tryout packages",

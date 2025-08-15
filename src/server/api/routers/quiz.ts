@@ -1,4 +1,4 @@
-import { SubtestType, QuestionType } from "@prisma/client";
+import { SubtestType, QuestionType, SessionType } from "@prisma/client";
 import { z } from "zod";
 import {
   adminProcedure,
@@ -138,21 +138,45 @@ export const quizRouter = createTRPCRouter({
     .input(
       z.object({
         userId: z.string(),
+        type: z.enum(["package", "subtest"]).default("subtest"),
         packageId: z.string().optional(),
-        subtestId: z.string(),
+        subtestId: z.string().optional(),
         duration: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      return await ctx.db.quizSession.create({
-        data: {
-          userId: input.userId,
-          packageId: input.packageId ?? undefined,
-          subtestId: input.subtestId,
-          duration: input.duration,
-          endTime: new Date(new Date().getTime() + input.duration * 60 * 1000),
-        },
-      });
+      if (input.type === "subtest") {
+        if (!input.subtestId) {
+          throw new Error("Subtest ID is required for subtest sessions");
+        }
+        return await ctx.db.quizSession.create({
+          data: {
+            userId: input.userId,
+            type: input.type,
+            packageId: input.packageId ?? undefined,
+            subtestId: input.subtestId,
+            duration: input.duration,
+            endTime: new Date(
+              new Date().getTime() + input.duration * 60 * 1000,
+            ),
+          },
+        });
+      } else {
+        if (!input.packageId) {
+          throw new Error("Package ID is required for tryout sessions");
+        }
+        return await ctx.db.quizSession.create({
+          data: {
+            userId: input.userId,
+            type: input.type,
+            packageId: input.packageId,
+            duration: input.duration,
+            endTime: new Date(
+              new Date().getTime() + input.duration * 60 * 1000,
+            ),
+          },
+        });
+      }
     }),
 
   getQuestionsBySubtest: userProcedure

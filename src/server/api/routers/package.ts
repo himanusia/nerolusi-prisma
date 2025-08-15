@@ -126,7 +126,9 @@ export const packageRouter = createTRPCRouter({
           },
           userAnswers: {
             where: {
-              packageId: input.packageId,
+              quizSession: {
+                packageId: input.packageId,
+              }
             },
             select: {
               question: {

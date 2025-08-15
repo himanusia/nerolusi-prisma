@@ -48,6 +48,11 @@ enum SubjectType {
   soshum
 }
 
+enum SessionType {
+  package
+  subtest
+}
+
 // Models
 model User {
   id            String         @id @default(cuid())
@@ -263,12 +268,13 @@ model QuizSession {
   numQuestion  Int?
   numAnswered  Int?
   numCorrect   Int?
-  userId       String   
+  type         SessionType
+  userId       String
   user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   packageId    String?
   package      Package?     @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  subtestId    String
-  subtest      Subtest     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
+  subtestId    String?
+  subtest      Subtest?     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   userAnswers  UserAnswer[]
   
   @@unique([userId, subtestId], name: "unique_user_subtest")
