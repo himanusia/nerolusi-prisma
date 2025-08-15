@@ -32,7 +32,7 @@ export default function QuizPage() {
       subtest.quizSession && new Date(subtest.quizSession) <= new Date();
     const completedCount =
       sortedSubtests?.filter(
-        (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+        (s) => s.quizSession[0].endTime && new Date(s.quizSession[0].endTime) <= new Date(),
       ).length || 0;
     const isCurrentSubtest = index === completedCount && !isSubmitted;
 
@@ -80,7 +80,7 @@ export default function QuizPage() {
   // Check if all subtests are completed
   const completedCount =
     sortedSubtests?.filter(
-      (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+      (s) => s.quizSession && new Date(s.quizSession[0].endTime) <= new Date(),
     ).length || 0;
   const allSubtestsCompleted = completedCount === sortedSubtests?.length;
   const isPackageEndDatePassed =
@@ -178,13 +178,13 @@ export default function QuizPage() {
                 strokeWidth="20"
                 fill="none"
                 strokeLinecap="round"
-                strokeDasharray={`${(sortedSubtests?.filter((s) => s.quizSession && new Date(s.quizSession) <= new Date()).length / sortedSubtests?.length) * 251.2} 251.2`}
+                strokeDasharray={`${(sortedSubtests?.filter((s) => s.quizSession[0].endTime && new Date(s.quizSession[0].endTime) <= new Date()).length / sortedSubtests?.length) * 251.2} 251.2`}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-2xl font-bold text-gray-800">
                 {sortedSubtests?.filter(
-                  (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+                  (s) => s.quizSession[0].endTime && new Date(s.quizSession[0].endTime) <= new Date(),
                 ).length || 0}
                 /{sortedSubtests?.length || 0}
               </span>
@@ -197,10 +197,10 @@ export default function QuizPage() {
           {sortedSubtests?.map((subtest, index) => {
             const isSubmitted =
               subtest.quizSession &&
-              new Date(subtest.quizSession) <= new Date();
+              new Date(subtest.quizSession[0].endTime) <= new Date();
             const completedCount =
               sortedSubtests?.filter(
-                (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+                (s) => s.quizSession[0].endTime && new Date(s.quizSession[0].endTime) <= new Date(),
               ).length || 0;
             const isCurrentSubtest = index === completedCount && !isSubmitted; // Next in sequence
             const isPackageEndDatePassed =
@@ -260,10 +260,10 @@ export default function QuizPage() {
                       }
                     })()}
                   </div>
-                  {isSubmitted && subtest.score && (
+                  {isSubmitted && subtest.quizSession[0].score && (
                     <div className="text-sm opacity-90">
-                      Score: {subtest.score} | {subtest.totalCorrect}/
-                      {subtest.totalQuestion}
+                      Score: {subtest.quizSession[0].score} | {subtest.quizSession[0].numCorrect}/
+                      {subtest.quizSession[0].numQuestion}
                     </div>
                   )}
                   {/* {isSubmitted && (
@@ -286,7 +286,7 @@ export default function QuizPage() {
           {(() => {
             const completedCount =
               sortedSubtests?.filter(
-                (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+                (s) => s.quizSession[0].endTime && new Date(s.quizSession[0].endTime) <= new Date(),
               ).length || 0;
             const currentSubtest = sortedSubtests?.[completedCount]; // Next in sequence
 

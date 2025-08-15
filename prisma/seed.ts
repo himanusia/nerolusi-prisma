@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, VideoType } from "@prisma/client";
 import axios from "axios";
 import { SUBJECT_CATEGORIES } from "../src/app/_components/constants.js";
 
@@ -197,10 +197,11 @@ async function main() {
 
   const searchQuery = "belajar utbk";
 
-  const videosData = Array.from({ length: 20 }).map(() => ({
+  const rekamanVideosData = Array.from({ length: 20 }).map(() => ({
     title: faker.word.words(),
     description: faker.lorem.sentence(),
     url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    type: "rekaman",
     createdAt: new Date().toISOString(),
   }));
 
@@ -213,7 +214,7 @@ async function main() {
     createdAt: new Date().toISOString(),
   }));
 
-  videosData.push(...materiVideosData);
+  const videosData = [...rekamanVideosData, ...materiVideosData];
 
   if (videosData.length === 0) {
     console.log("No videos fetched from YouTube.");
@@ -225,6 +226,7 @@ async function main() {
       title: video.title,
       description: video.description,
       url: video.url,
+      type: video.type as VideoType,
       duration: 600,
     })),
     skipDuplicates: true,

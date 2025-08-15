@@ -71,4 +71,42 @@ export const userRouter = createTRPCRouter({
         data: { classid: input.classId },
       });
     }),
+
+  // New mutation to update enrolledUtbk
+  updateEnrolledUtbk: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        enrolledUtbk: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+
+      await ctx.db.user.update({
+        where: { id: input.userId },
+        data: { enrolledUtbk: input.enrolledUtbk },
+      });
+    }),
+
+  // New mutation to update enrolledTka
+  updateEnrolledTka: adminProcedure
+    .input(
+      z.object({
+        userId: z.string(),
+        enrolledTka: z.boolean(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.session.user.role !== "admin") {
+        throw new Error("Unauthorized");
+      }
+
+      await ctx.db.user.update({
+        where: { id: input.userId },
+        data: { enrolledTka: input.enrolledTka },
+      });
+    }),
 });

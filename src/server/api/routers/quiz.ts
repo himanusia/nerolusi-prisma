@@ -1,6 +1,7 @@
-import { SubtestType } from "@prisma/client";
+import { SubtestType, QuestionType } from "@prisma/client";
 import { z } from "zod";
 import {
+  adminProcedure,
   createTRPCRouter,
   teacherProcedure,
   userProcedure,
@@ -796,4 +797,212 @@ export const quizRouter = createTRPCRouter({
 
     return tryouts;
   }),
+
+  getSubtestQuestions: adminProcedure
+    .input(z.object({ subtestId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const questions = await ctx.db.question.findMany({
+        where: { subtestId: input.subtestId },
+        orderBy: { index: "asc" },
+        include: {
+          answers: {
+            orderBy: { index: "asc" },
+          },
+        },
+      });
+
+      return questions;
+    }),
+
+  // Admin procedures for quiz editing
+  getSubtestForEdit: adminProcedure
+    .input(z.object({ subtestId: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const subtest = await ctx.db.subtest.findUnique({
+        where: { id: input.subtestId },
+        include: {
+          questions: {
+            orderBy: { index: "asc" },
+            include: {
+              answers: {
+                orderBy: { index: "asc" },
+              },
+            },
+          },
+          topics: true,
+          package: {
+            select: {
+              id: true,
+              name: true,
+              type: true,
+            },
+          },
+        },
+      });
+
+      if (!subtest) {
+        throw new Error("Subtest not found");
+      }
+
+      return subtest;
+    }),
+
+  createQuestion: adminProcedure
+    .input(
+      z.object({
+        subtestId: z.string(),
+        content: z.string(),
+        type: z.nativeEnum(QuestionType),
+        score: z.number(),
+        imageUrl: z.string().optional(),
+        explanation: z.string().optional(),
+        answers: z.array(
+          z.object({
+            content: z.string(),
+            isCorrect: z.boolean(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Get the next index for the question
+        const lastQuestion = await tx.question.findFirst({
+          where: { subtestId: input.subtestId },
+          orderBy: { index: "desc" },
+          select: { index: true },
+        });
+
+        const nextIndex = (lastQuestion?.index ?? -1) + 1;
+
+        // Create the question
+        const question = await tx.question.create({
+          data: {
+            subtestId: input.subtestId,
+            content: input.content,
+            type: input.type,
+            score: input.score,
+            imageUrl: input.imageUrl,
+            explanation: input.explanation,
+            index: nextIndex,
+          },
+        });
+
+        // Create the answers
+        const answers = await Promise.all(
+          input.answers.map((answer, index) =>
+            tx.answer.create({
+              data: {
+                questionId: question.id,
+                content: answer.content,
+                isCorrect: answer.isCorrect,
+                index: index,
+              },
+            }),
+          ),
+        );
+
+        return { question, answers };
+      });
+    }),
+
+  updateQuestion: adminProcedure
+    .input(
+      z.object({
+        questionId: z.number(),
+        content: z.string(),
+        type: z.nativeEnum(QuestionType),
+        score: z.number(),
+        imageUrl: z.string().optional(),
+        explanation: z.string().optional(),
+        answers: z.array(
+          z.object({
+            id: z.number().optional(),
+            content: z.string(),
+            isCorrect: z.boolean(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Update the question
+        const question = await tx.question.update({
+          where: { id: input.questionId },
+          data: {
+            content: input.content,
+            type: input.type,
+            score: input.score,
+            imageUrl: input.imageUrl,
+            explanation: input.explanation,
+          },
+        });
+
+        // Delete existing answers
+        await tx.answer.deleteMany({
+          where: { questionId: input.questionId },
+        });
+
+        // Create new answers
+        const answers = await Promise.all(
+          input.answers.map((answer, index) =>
+            tx.answer.create({
+              data: {
+                questionId: question.id,
+                content: answer.content,
+                isCorrect: answer.isCorrect,
+                index: index,
+              },
+            }),
+          ),
+        );
+
+        return { question, answers };
+      });
+    }),
+
+  deleteQuestion: adminProcedure
+    .input(z.object({ questionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Delete answers first
+        await tx.answer.deleteMany({
+          where: { questionId: input.questionId },
+        });
+
+        // Delete user answers
+        await tx.userAnswer.deleteMany({
+          where: { questionId: input.questionId },
+        });
+
+        // Delete the question
+        await tx.question.delete({
+          where: { id: input.questionId },
+        });
+
+        return { success: true };
+      });
+    }),
+
+  reorderQuestions: adminProcedure
+    .input(
+      z.object({
+        subtestId: z.string(),
+        questionIds: z.array(z.number()),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        await Promise.all(
+          input.questionIds.map((questionId, index) =>
+            tx.question.update({
+              where: { id: questionId },
+              data: { index },
+            }),
+          ),
+        );
+
+        return { success: true };
+      });
+    }),
 });

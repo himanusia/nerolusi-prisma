@@ -12,7 +12,7 @@ export default async function UserManagementPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/admin">
+        <Link href="/admin-tka">
           <Button variant="outline" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard

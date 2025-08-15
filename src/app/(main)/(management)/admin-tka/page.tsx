@@ -21,9 +21,9 @@ const tkaManagementItems = [
     color: "border-red-200 hover:border-red-300"
   },
   {
-    title: "Activity Schedule",
-    description: "Manage upcoming TKA events and activities",
-    href: "/admin-tka/activities",
+    title: "Materi Management",
+    description: "Manage material and topics",
+    href: "/admin-tka/materi",
     icon: <Calendar className="h-8 w-8 text-indigo-600" />,
     color: "border-indigo-200 hover:border-indigo-300"
   },

@@ -130,8 +130,8 @@ model Topic {
   createdAt DateTime @default(now())
   videoId   String      @unique
   video     Video    @relation(fields: [videoId], references: [id])
-  subtestId String      @unique
-  subtest   Subtest  @relation(fields: [subtestId], references: [id])
+  subtestId String?      @unique
+  subtest   Subtest?  @relation(fields: [subtestId], references: [id])
   material   Material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
   userProgress UserMateriProgress[]
 }
