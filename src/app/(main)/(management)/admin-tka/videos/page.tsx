@@ -19,7 +19,6 @@ import {
 } from "~/app/_components/ui/dialog";
 import { Label } from "~/app/_components/ui/label";
 import { Textarea } from "~/app/_components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select";
 
 export default function TKAVideosPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,16 +28,12 @@ export default function TKAVideosPage() {
     title: "",
     description: "",
     videoUrl: "",
-    category: "",
     duration: "",
-    thumbnailUrl: ""
   });
 
   const { data: videos, refetch } = api.admin.getTKAVideos.useQuery();
   const createVideoMutation = api.admin.createTKAVideo.useMutation();
   const deleteVideoMutation = api.admin.deleteTKAVideo.useMutation();
-
-  const videoCategories = ["Matematika", "Fisika", "Kimia", "Biologi"];
 
   const filteredVideos = videos?.filter(video => {
     const matchesSearch = video.title?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -55,9 +50,7 @@ export default function TKAVideosPage() {
         title: "",
         description: "",
         videoUrl: "",
-        category: "",
         duration: "",
-        thumbnailUrl: ""
       });
       await refetch();
     } catch (error: any) {
@@ -128,24 +121,6 @@ export default function TKAVideosPage() {
                   placeholder="Enter YouTube URL or video ID"
                 />
               </div>
-              <div>
-                <Label>Category</Label>
-                <Select 
-                  value={formData.category} 
-                  onValueChange={(value) => setFormData({...formData, category: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {videoCategories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Duration</Label>
@@ -153,14 +128,6 @@ export default function TKAVideosPage() {
                     value={formData.duration}
                     onChange={(e) => setFormData({...formData, duration: e.target.value})}
                     placeholder="e.g. 15:30"
-                  />
-                </div>
-                <div>
-                  <Label>Thumbnail URL (optional)</Label>
-                  <Input
-                    value={formData.thumbnailUrl}
-                    onChange={(e) => setFormData({...formData, thumbnailUrl: e.target.value})}
-                    placeholder="Thumbnail image URL"
                   />
                 </div>
               </div>
@@ -187,19 +154,6 @@ export default function TKAVideosPage() {
                 className="max-w-md"
               />
             </div>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="Filter by category" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {videoCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
           </div>
         </CardContent>
       </Card>
@@ -219,17 +173,9 @@ export default function TKAVideosPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {/* Video Thumbnail */}
+
                 <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                  {video.thumbnailUrl ? (
-                    <img 
-                      src={video.thumbnailUrl} 
-                      alt={video.title}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
                     <Play className="h-12 w-12 text-gray-400" />
-                  )}
                 </div>
                 
                 <div className="flex items-center justify-between text-sm text-gray-600">
