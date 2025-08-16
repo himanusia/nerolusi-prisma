@@ -10,7 +10,7 @@ export default function TryoutListPage() {
 
   const classId = session?.user?.classid;
 
-  const userTokens = 9999;
+  const userTokens = session?.user?.token ?? 0;
 
   if (!classId) {
     return (

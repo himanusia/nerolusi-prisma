@@ -54,6 +54,24 @@ export default function TKATryoutPage() {
   );
 
   const handleCreateTryout = async () => {
+    // Validate form
+    if (
+      !formData.name.trim() ||
+      !formData.description.trim() ||
+      !formData.startDate ||
+      !formData.endDate ||
+      formData.duration <= 0 ||
+      formData.maxParticipants <= 0
+    ) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    if (new Date(formData.startDate) >= new Date(formData.endDate)) {
+      toast.error("End date must be after start date");
+      return;
+    }
+
     try {
       await createTryoutMutation.mutateAsync(formData);
       toast.success("TKA Tryout created successfully!");
@@ -88,10 +106,10 @@ export default function TKATryoutPage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Link href="/admin-tka">
+        <Link href="/">
           <Button variant="outline" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to TKA
+            Back to Dashboard
           </Button>
         </Link>
         <div className="flex-1">
@@ -113,17 +131,26 @@ export default function TKATryoutPage() {
             </DialogHeader>
             <div className="space-y-4">
               <div>
-                <Label>Tryout Name</Label>
+                <Label>Tryout Name *</Label>
                 <Input
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="Enter tryout name"
+                  required
+                  className={
+                    formData.name.trim() === "" ? "border-red-500" : ""
+                  }
                 />
+                {formData.name.trim() === "" && (
+                  <p className="mt-1 text-sm text-red-500">
+                    Tryout name is required
+                  </p>
+                )}
               </div>
               <div>
-                <Label>Description</Label>
+                <Label>Description *</Label>
                 <Textarea
                   value={formData.description}
                   onChange={(e) =>
@@ -131,65 +158,137 @@ export default function TKATryoutPage() {
                   }
                   placeholder="Enter description"
                   rows={3}
+                  required
+                  className={
+                    formData.description.trim() === "" ? "border-red-500" : ""
+                  }
                 />
+                {formData.description.trim() === "" && (
+                  <p className="mt-1 text-sm text-red-500">
+                    Description is required
+                  </p>
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Start Date</Label>
+                  <Label>Start Date *</Label>
                   <Input
                     type="datetime-local"
                     value={formData.startDate}
                     onChange={(e) =>
                       setFormData({ ...formData, startDate: e.target.value })
                     }
+                    required
+                    className={
+                      formData.startDate === "" ? "border-red-500" : ""
+                    }
                   />
+                  {formData.startDate === "" && (
+                    <p className="mt-1 text-sm text-red-500">
+                      Start date is required
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <Label>End Date</Label>
+                  <Label>End Date *</Label>
                   <Input
                     type="datetime-local"
                     value={formData.endDate}
                     onChange={(e) =>
                       setFormData({ ...formData, endDate: e.target.value })
                     }
+                    required
+                    className={
+                      formData.endDate === "" ||
+                      (formData.startDate &&
+                        formData.endDate &&
+                        new Date(formData.startDate) >=
+                          new Date(formData.endDate))
+                        ? "border-red-500"
+                        : ""
+                    }
                   />
+                  {formData.endDate === "" && (
+                    <p className="mt-1 text-sm text-red-500">
+                      End date is required
+                    </p>
+                  )}
+                  {formData.startDate &&
+                    formData.endDate &&
+                    new Date(formData.startDate) >=
+                      new Date(formData.endDate) && (
+                      <p className="mt-1 text-sm text-red-500">
+                        End date must be after start date
+                      </p>
+                    )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label>Duration (minutes)</Label>
+                  <Label>Duration (minutes) *</Label>
                   <Input
                     type="number"
                     value={formData.duration}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        duration: parseInt(e.target.value),
+                        duration: parseInt(e.target.value) || 0,
                       })
                     }
+                    required
+                    min="1"
+                    className={formData.duration <= 0 ? "border-red-500" : ""}
                   />
+                  {formData.duration <= 0 && (
+                    <p className="mt-1 text-sm text-red-500">
+                      Duration must be greater than 0
+                    </p>
+                  )}
                 </div>
                 <div>
-                  <Label>Max Participants</Label>
+                  <Label>Max Participants *</Label>
                   <Input
                     type="number"
                     value={formData.maxParticipants}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        maxParticipants: parseInt(e.target.value),
+                        maxParticipants: parseInt(e.target.value) || 0,
                       })
                     }
+                    required
+                    min="1"
+                    className={
+                      formData.maxParticipants <= 0 ? "border-red-500" : ""
+                    }
                   />
+                  {formData.maxParticipants <= 0 && (
+                    <p className="mt-1 text-sm text-red-500">
+                      Max participants must be greater than 0
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
             <DialogFooter>
               <Button
                 onClick={handleCreateTryout}
-                disabled={createTryoutMutation.isPending}
+                disabled={
+                  createTryoutMutation.isPending ||
+                  !formData.name.trim() ||
+                  !formData.description.trim() ||
+                  !formData.startDate ||
+                  !formData.endDate ||
+                  formData.duration <= 0 ||
+                  formData.maxParticipants <= 0 ||
+                  (formData.startDate &&
+                    formData.endDate &&
+                    new Date(formData.startDate) >= new Date(formData.endDate))
+                }
               >
-                Create Tryout
+                {createTryoutMutation.isPending
+                  ? "Creating..."
+                  : "Create Tryout"}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -244,7 +343,7 @@ export default function TKATryoutPage() {
                 </div>
 
                 <div className="flex gap-2 pt-3">
-                  <Link href={`/quiz-edit/${tryout.id}`}>
+                  <Link href={`/admin/tryout/${tryout.id}`}>
                     <Button size="sm" variant="outline" className="flex-1">
                       <Edit className="mr-1 h-4 w-4" />
                       Edit

@@ -104,7 +104,7 @@ const TryoutList = ({ classId }: TryoutListProps) => {
         buttonText: 'Beli',
         showArrow: false,
         showCoin: true,
-        cost: 1 
+        cost: pkg.cost ?? 1,
       };
     }
   };

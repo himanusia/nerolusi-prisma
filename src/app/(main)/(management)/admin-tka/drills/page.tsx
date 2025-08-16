@@ -21,6 +21,8 @@ import { Label } from "~/app/_components/ui/label";
 import { Textarea } from "~/app/_components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select";
 import { Switch } from "~/app/_components/ui/switch";
+import LoadingPage from "~/app/loading";
+import ErrorPage from "~/app/error";
 
 export default function TKADrillsPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -36,7 +38,7 @@ export default function TKADrillsPage() {
     isActive: true
   });
 
-  const { data: drills, refetch } = api.admin.getTKADrills.useQuery();
+  const { data: drills, isLoading, isError, refetch } = api.admin.getTKADrills.useQuery();
   const createDrillMutation = api.admin.createTKADrill.useMutation();
   const deleteDrillMutation = api.admin.deleteTKADrill.useMutation();
 
@@ -95,6 +97,14 @@ export default function TKADrillsPage() {
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  if (isError) {
+    return <ErrorPage />;
+  }
 
   return (
     <div className="space-y-6">
@@ -253,7 +263,7 @@ export default function TKADrillsPage() {
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <CardTitle className="text-lg">{drill.title}</CardTitle>
-                    <p className="text-sm text-gray-600 mt-1 line-clamp-2">{drill.description}</p>
+                    {/* <p className="text-sm text-gray-600 mt-1 line-clamp-2">{drill.description}</p> */}
                   </div>
                   <div className="flex flex-col gap-1">
                     <Badge variant="secondary">{drill.subject}</Badge>
@@ -292,7 +302,7 @@ export default function TKADrillsPage() {
                   </div>
                   
                   <div className="flex gap-2 pt-3">
-                    <Link href={`/admin-tka/drills/${drill.id}/edit`}>
+                    <Link href={`/quiz-edit/${drill.id}`}>
                       <Button size="sm" variant="outline" className="flex-1">
                         <Edit className="h-4 w-4 mr-1" />
                         Edit

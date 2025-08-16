@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, VideoType } from "@prisma/client";
 import axios from "axios";
 import { SUBJECT_CATEGORIES } from "../src/app/_components/constants.js";
 
@@ -27,18 +27,18 @@ async function main() {
   console.log("Seeding data...");
 
   // Generate Random Users
-  const users = await Promise.all(
-    Array.from({ length: 10 }).map(() =>
-      db.user.create({
-        data: {
-          name: faker.person.fullName(),
-          email: faker.internet.email(),
-          role: faker.helpers.arrayElement(["user", "teacher", "admin"]),
-          image: faker.image.avatar(),
-        },
-      }),
-    ),
-  );
+  // const users = await Promise.all(
+  //   Array.from({ length: 10 }).map(() =>
+  //     db.user.create({
+  //       data: {
+  //         name: faker.person.fullName(),
+  //         email: faker.internet.email(),
+  //         role: faker.helpers.arrayElement(["user", "teacher", "admin"]),
+  //         image: faker.image.avatar(),
+  //       },
+  //     }),
+  //   ),
+  // );
 
   // Generate Random Classes
   const classes = await Promise.all(
@@ -52,17 +52,17 @@ async function main() {
   );
 
   // Connect Random Users to Random Classes
-  for (const user of users) {
-    const randomClass = faker.helpers.arrayElement(classes);
-    await db.class.update({
-      where: { id: randomClass.id },
-      data: {
-        users: {
-          connect: { id: user.id },
-        },
-      },
-    });
-  }
+  // for (const user of users) {
+  //   const randomClass = faker.helpers.arrayElement(classes);
+  //   await db.class.update({
+  //     where: { id: randomClass.id },
+  //     data: {
+  //       users: {
+  //         connect: { id: user.id },
+  //       },
+  //     },
+  //   });
+  // }
 
   // Generate Random Packages for Classes
   const packages = [];
@@ -171,36 +171,11 @@ async function main() {
   }
 
   // Generate Random Videos
-  const fetchYouTubeVideos = async (query, maxResults = 10) => {
-    const url = "https://www.googleapis.com/youtube/v3/search";
-    try {
-      const response = await axios.get(url, {
-        params: {
-          part: "snippet",
-          q: query,
-          type: "video",
-          maxResults,
-          key: process.env.GOOGLE_API_KEY,
-        },
-      });
-
-      return response.data.items.map((item) => ({
-        title: item.snippet.title,
-        description: item.snippet.description,
-        url: `https://www.youtube.com/watch?v=${item.id.videoId}`,
-      }));
-    } catch (error) {
-      console.error("Error fetching YouTube videos:", error);
-      return [];
-    }
-  };
-
-  const searchQuery = "belajar utbk";
-
-  const videosData = Array.from({ length: 20 }).map(() => ({
+  const rekamanVideosData = Array.from({ length: 20 }).map(() => ({
     title: faker.word.words(),
     description: faker.lorem.sentence(),
     url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+    type: "rekaman",
     createdAt: new Date().toISOString(),
   }));
 
@@ -213,7 +188,7 @@ async function main() {
     createdAt: new Date().toISOString(),
   }));
 
-  videosData.push(...materiVideosData);
+  const videosData = [...rekamanVideosData, ...materiVideosData];
 
   if (videosData.length === 0) {
     console.log("No videos fetched from YouTube.");
@@ -225,6 +200,7 @@ async function main() {
       title: video.title,
       description: video.description,
       url: video.url,
+      type: video.type as VideoType,
       duration: 600,
     })),
     skipDuplicates: true,

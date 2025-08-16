@@ -6,24 +6,24 @@ import Link from "next/link";
 import { ArrowLeft, BookOpen, Video, Calendar, HelpCircle } from "lucide-react";
 
 const tkaManagementItems = [
+  // {
+  //   title: "TKA Tryouts",
+  //   description: "Manage TKA tryout packages and exams",
+  //   href: "/admin-tka/tryouts",
+  //   icon: <BookOpen className="h-8 w-8 text-purple-600" />,
+  //   color: "border-purple-200 hover:border-purple-300"
+  // },
+  // {
+  //   title: "Videos & Quiz Management",
+  //   description: "Manage TKA videos, quizzes and mentors",
+  //   href: "/admin-tka/videos",
+  //   icon: <Video className="h-8 w-8 text-red-600" />,
+  //   color: "border-red-200 hover:border-red-300"
+  // },
   {
-    title: "TKA Tryouts",
-    description: "Manage TKA tryout packages and exams",
-    href: "/admin-tka/tryouts",
-    icon: <BookOpen className="h-8 w-8 text-purple-600" />,
-    color: "border-purple-200 hover:border-purple-300"
-  },
-  {
-    title: "Videos & Quiz Management",
-    description: "Manage TKA videos, quizzes and mentors",
-    href: "/admin-tka/videos",
-    icon: <Video className="h-8 w-8 text-red-600" />,
-    color: "border-red-200 hover:border-red-300"
-  },
-  {
-    title: "Activity Schedule",
-    description: "Manage upcoming TKA events and activities",
-    href: "/admin-tka/activities",
+    title: "Materi Management",
+    description: "Manage material and topics",
+    href: "/admin-tka/materi",
     icon: <Calendar className="h-8 w-8 text-indigo-600" />,
     color: "border-indigo-200 hover:border-indigo-300"
   },
