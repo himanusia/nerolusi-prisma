@@ -61,14 +61,7 @@ export default function MainPage() {
     data: tkaTryOutsRaw,
     isLoading: tryoutLoading,
     isError: tryoutError,
-  } = api.package.getTryoutPackages.useQuery(
-    {
-      classId: session?.user?.classid ?? 0,
-    },
-    {
-      enabled: !!session?.user?.classid,
-    },
-  );
+  } = api.package.getTryoutPackages.useQuery({});
 
   // Transform API data to TryOutData format
   const tkaTryOuts: TryOutData[] =
