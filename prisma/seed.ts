@@ -66,22 +66,22 @@ async function main() {
 
   // Generate Random Packages for Classes
   const packages = [];
-  for (const classItem of classes) {
-    for (let i = 0; i < 5; i++) {
-      const TOstart = faker.date.recent({ days: 7 });
-      const TOend = faker.date.soon({ refDate: TOstart, days: 7 });
-      const newPackage = await db.package.create({
-        data: {
-          name: "Try Out #" + (i + 1),
-          type: "tryout",
-          TOstart,
-          TOend,
-          classId: classItem.id,
-        },
-      });
-      packages.push(newPackage);
-    }
+  // for (const classItem of classes) {
+  for (let i = 0; i < 5; i++) {
+    const TOstart = faker.date.recent({ days: 7 });
+    const TOend = faker.date.soon({ refDate: TOstart, days: 7 });
+    const newPackage = await db.package.create({
+      data: {
+        name: "Try Out #" + (i + 1),
+        type: "tryout",
+        TOstart,
+        TOend,
+        // classId: classItem.id,
+      },
+    });
+    packages.push(newPackage);
   }
+  // }
 
   const generateQuestionAnswer = async (
     subtestId: string,

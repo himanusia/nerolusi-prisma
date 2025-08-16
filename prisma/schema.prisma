@@ -145,7 +145,7 @@ model Package {
   id          String       @id @default(cuid())
   name        String
   type        PackageType
-  classId     Int
+  classId     Int?
   TOstart     DateTime?
   TOend       DateTime?
   tokenPrice  Int?

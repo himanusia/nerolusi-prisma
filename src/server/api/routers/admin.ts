@@ -124,7 +124,6 @@ export const adminRouter = createTRPCRouter({
         data: {
           name: input.name,
           type: "tryout",
-          classId: 1, // Default class - you may want to make this configurable
           TOstart: new Date(input.startDate),
           TOend: new Date(input.endDate),
         },

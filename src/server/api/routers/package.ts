@@ -33,13 +33,13 @@ export const packageRouter = createTRPCRouter({
   getTryoutPackages: userProcedure
     .input(
       z.object({
-        classId: z.number(),
+        classId: z.number().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       return await ctx.db.package.findMany({
         where: {
-          classId: input.classId,
+          ...(input.classId && { classId: input.classId }), // Only add classId filter if it exists
           type: "tryout",
         },
         include: {
@@ -128,7 +128,7 @@ export const packageRouter = createTRPCRouter({
             where: {
               quizSession: {
                 packageId: input.packageId,
-              }
+              },
             },
             select: {
               question: {
