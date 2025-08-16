@@ -300,7 +300,15 @@ export const adminRouter = createTRPCRouter({
       },
       include: {
         questions: true,
-        topics: true,
+        topics: {
+          include: {
+            material: {
+              include: {
+                subject: true,
+              }
+            }
+          }
+        }
       },
     });
 
@@ -308,9 +316,9 @@ export const adminRouter = createTRPCRouter({
     return drills.map((drill) => ({
       id: drill.id,
       title: drill.topics?.name ?? "",
-      subject: "Matematika", // Default - you may want to add subject field
+      subject: drill.topics?.material?.subject.name ?? "",
       difficulty: "medium", // Default - you may want to add difficulty field
-      timeLimit: 600, // 10 minutes default
+      timeLimit: drill.duration, // 10 minutes default
       questionCount: drill.questions.length,
       isActive: true,
       attempts: 0, // Would need to count from quiz sessions
