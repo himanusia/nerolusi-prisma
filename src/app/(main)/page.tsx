@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import AdminDashboard from "./(management)/admin-dashboard";
 import LoadingPage from "../loading";
 import NoPackagePage from "../no-package";
+import MainPage from "./(landing)/tka/page";
 
 export default function RootPage() {
   return (
@@ -29,7 +30,7 @@ function ConditionalPage() {
 
   if (session.user.role === "admin") {
     return <AdminDashboard />;
-  }  else {
-    return <NoPackagePage />;
+  } else {
+    return <MainPage />;
   }
 }

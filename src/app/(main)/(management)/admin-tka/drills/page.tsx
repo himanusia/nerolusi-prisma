@@ -1,12 +1,26 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "~/app/_components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "~/app/_components/ui/card";
 import { Button } from "~/app/_components/ui/button";
 import { Input } from "~/app/_components/ui/input";
 import { Badge } from "~/app/_components/ui/badge";
 import Link from "next/link";
-import { ArrowLeft, Plus, Search, Edit, Trash2, Zap, Timer, Trophy } from "lucide-react";
+import {
+  ArrowLeft,
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  Zap,
+  Timer,
+  Trophy,
+} from "lucide-react";
 import { api } from "~/trpc/react";
 import { toast } from "sonner";
 import {
@@ -19,7 +33,13 @@ import {
 } from "~/app/_components/ui/dialog";
 import { Label } from "~/app/_components/ui/label";
 import { Textarea } from "~/app/_components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/app/_components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/app/_components/ui/select";
 import { Switch } from "~/app/_components/ui/switch";
 import LoadingPage from "~/app/loading";
 import ErrorPage from "~/app/error";
@@ -35,23 +55,40 @@ export default function TKADrillsPage() {
     difficulty: "easy",
     timeLimit: 600, // 10 minutes in seconds
     questionCount: 20,
-    isActive: true
+    isActive: true,
   });
 
-  const { data: drills, isLoading, isError, refetch } = api.admin.getTKADrills.useQuery();
+  const {
+    data: drills,
+    isLoading,
+    isError,
+    refetch,
+  } = api.admin.getTKADrills.useQuery();
   const createDrillMutation = api.admin.createTKADrill.useMutation();
   const deleteDrillMutation = api.admin.deleteTKADrill.useMutation();
 
-  const subjects = ["Matematika", "Fisika", "Kimia", "Biologi"];
+  const {
+    data: subjects,
+    isLoading: subjectsLoading,
+    isError: subjectsError,
+  } = api.admin.getSubjects.useQuery();
+
   const difficultyLevels = [
     { value: "easy", label: "Easy", color: "bg-green-100 text-green-800" },
-    { value: "medium", label: "Medium", color: "bg-yellow-100 text-yellow-800" },
-    { value: "hard", label: "Hard", color: "bg-red-100 text-red-800" }
+    {
+      value: "medium",
+      label: "Medium",
+      color: "bg-yellow-100 text-yellow-800",
+    },
+    { value: "hard", label: "Hard", color: "bg-red-100 text-red-800" },
   ];
 
-  const filteredDrills = drills?.filter(drill => {
-    const matchesSearch = drill.title?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSubject = subjectFilter === "all" || drill.subject === subjectFilter;
+  const filteredDrills = drills?.filter((drill) => {
+    const matchesSearch = drill.title
+      ?.toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesSubject =
+      subjectFilter === "all" || drill.subject === subjectFilter;
     return matchesSearch && matchesSubject;
   });
 
@@ -67,7 +104,7 @@ export default function TKADrillsPage() {
         difficulty: "easy",
         timeLimit: 600,
         questionCount: 20,
-        isActive: true
+        isActive: true,
       });
       await refetch();
     } catch (error: any) {
@@ -77,7 +114,7 @@ export default function TKADrillsPage() {
 
   const handleDeleteDrill = async (id: string) => {
     if (!confirm("Are you sure you want to delete this drill?")) return;
-    
+
     try {
       await deleteDrillMutation.mutateAsync({ id });
       toast.success("Drill deleted successfully!");
@@ -88,21 +125,23 @@ export default function TKADrillsPage() {
   };
 
   const getDifficultyBadge = (difficulty: string) => {
-    const level = difficultyLevels.find(l => l.value === difficulty);
-    return level ? { label: level.label, className: level.color } : { label: difficulty, className: "bg-gray-100 text-gray-800" };
+    const level = difficultyLevels.find((l) => l.value === difficulty);
+    return level
+      ? { label: level.label, className: level.color }
+      : { label: difficulty, className: "bg-gray-100 text-gray-800" };
   };
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  if (isLoading) {
+  if (isLoading || subjectsLoading) {
     return <LoadingPage />;
   }
 
-  if (isError) {
+  if (isError || subjectsError) {
     return <ErrorPage />;
   }
 
@@ -112,15 +151,17 @@ export default function TKADrillsPage() {
       <div className="flex items-center gap-4">
         <Link href="/admin-tka">
           <Button variant="outline" size="sm">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             Back to TKA
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-gray-900">TKA Drills Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            TKA Drills Management
+          </h1>
           <p className="text-gray-600">Create and manage TKA practice drills</p>
         </div>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        {/* <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-600 hover:bg-orange-700">
               <Plus className="h-4 w-4 mr-2" />
@@ -220,14 +261,14 @@ export default function TKADrillsPage() {
               </Button>
             </DialogFooter>
           </DialogContent>
-        </Dialog>
+        </Dialog> */}
       </div>
 
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex items-center gap-2 flex-1">
+          <div className="flex flex-col gap-4 md:flex-row">
+            <div className="flex flex-1 items-center gap-2">
               <Search className="h-5 w-5 text-gray-400" />
               <Input
                 placeholder="Search drills..."
@@ -243,8 +284,8 @@ export default function TKADrillsPage() {
               <SelectContent>
                 <SelectItem value="all">All Subjects</SelectItem>
                 {subjects.map((subject) => (
-                  <SelectItem key={subject} value={subject}>
-                    {subject}
+                  <SelectItem key={subject.id} value={subject.name}>
+                    {subject.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -254,11 +295,11 @@ export default function TKADrillsPage() {
       </Card>
 
       {/* Drills Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {filteredDrills?.map((drill) => {
           const difficultyBadge = getDifficultyBadge(drill.difficulty);
           return (
-            <Card key={drill.id} className="hover:shadow-lg transition-shadow">
+            <Card key={drill.id} className="transition-shadow hover:shadow-lg">
               <CardHeader>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
@@ -276,39 +317,39 @@ export default function TKADrillsPage() {
               <CardContent>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyBadge.className}`}>
+                    {/* <div className={`px-2 py-1 rounded-full text-xs font-medium ${difficultyBadge.className}`}>
                       {difficultyBadge.label}
+                    </div> */}
+                    <div className="flex items-center gap-2">
+                      <Timer className="h-4 w-4" />
+                      {formatTime(drill.timeLimit)}
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Zap className="h-4 w-4" />
                       {drill.questionCount} questions
                     </div>
                   </div>
-                  
-                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <div className="flex items-center gap-2">
-                      <Timer className="h-4 w-4" />
-                      {formatTime(drill.timeLimit)}
-                    </div>
-                    <div className="flex items-center gap-2">
+
+                  {/* <div className="flex items-center gap-4 text-sm text-gray-600"> */}
+                  {/* <div className="flex items-center gap-2">
                       <Trophy className="h-4 w-4" />
                       {drill.attempts || 0} attempts
-                    </div>
-                  </div>
+                    </div> */}
+                  {/* </div> */}
 
-                  <div className="text-sm text-gray-600">
+                  {/* <div className="text-sm text-gray-600">
                     <div>Average Score: {drill.averageScore || 0}%</div>
                     <div>Completion Rate: {drill.completionRate || 0}%</div>
-                  </div>
-                  
+                  </div> */}
+
                   <div className="flex gap-2 pt-3">
                     <Link href={`/admin/quiz-edit/${drill.id}`}>
                       <Button size="sm" variant="outline" className="flex-1">
-                        <Edit className="h-4 w-4 mr-1" />
+                        <Edit className="mr-1 h-4 w-4" />
                         Edit
                       </Button>
                     </Link>
-                    <Link href={`/admin-tka/drills/${drill.id}/questions`}>
+                    {/* <Link href={`/admin-tka/drills/${drill.id}/questions`}>
                       <Button 
                         size="sm" 
                         variant="outline" 
@@ -316,10 +357,10 @@ export default function TKADrillsPage() {
                       >
                         <Zap className="h-4 w-4" />
                       </Button>
-                    </Link>
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
+                    </Link> */}
+                    <Button
+                      size="sm"
+                      variant="outline"
                       onClick={() => handleDeleteDrill(drill.id)}
                       className="border-red-200 text-red-600 hover:bg-red-50"
                     >
@@ -335,10 +376,10 @@ export default function TKADrillsPage() {
 
       {filteredDrills?.length === 0 && (
         <Card>
-          <CardContent className="text-center py-12">
+          <CardContent className="py-12 text-center">
             <div className="text-gray-500">
-              <Zap className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <h3 className="text-lg font-medium mb-2">No TKA drills found</h3>
+              <Zap className="mx-auto mb-4 h-12 w-12 opacity-50" />
+              <h3 className="mb-2 text-lg font-medium">No TKA drills found</h3>
               <p>Create your first drill to get started.</p>
             </div>
           </CardContent>
