@@ -302,7 +302,7 @@ export default function TKADrillsPage() {
                   </div>
                   
                   <div className="flex gap-2 pt-3">
-                    <Link href={`/quiz-edit/${drill.id}`}>
+                    <Link href={`/admin/quiz-edit/${drill.id}`}>
                       <Button size="sm" variant="outline" className="flex-1">
                         <Edit className="h-4 w-4 mr-1" />
                         Edit
