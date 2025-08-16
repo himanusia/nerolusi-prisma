@@ -67,11 +67,11 @@ export const materiRouter = createTRPCRouter({
               id: topic.video.id,
               topicId: topic.id,
               index: topic.index,
-              title: topic.video.title,
+              title: topic.name,
               duration: topic.video.duration,
               isCompleted: !!userProgress,
               isLocked: false,
-              hasQuiz: true,
+              hasQuiz: !!topic.subtestId,
               isDrillCompleted: userProgress?.isDrillCompleted ?? false,
               drillId: topic.subtestId,
             };

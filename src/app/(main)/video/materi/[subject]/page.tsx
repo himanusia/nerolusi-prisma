@@ -314,7 +314,7 @@ export default function SubjectMateriPage() {
                     <div className="flex min-w-[200px] items-center justify-end gap-2">
                       {video.hasQuiz && (
                         <>
-                          {!video.isDrillCompleted ? (
+                          {video.drillId && !video.isDrillCompleted ? (
                             <div className="flex gap-2">
                               <Button
                                 size="sm"
@@ -334,24 +334,6 @@ export default function SubjectMateriPage() {
                                 </p>
                                 <RiPencilFill className="ml-1 h-10 w-10" />
                               </Button>
-
-                              {/* Test completion button - remove in production */}
-                              {process.env.NODE_ENV !== "production" && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  className="rounded-md border-green-500 px-3 py-1 text-xs text-green-600 hover:bg-green-50"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    simulateDrillCompletion(video.id);
-                                  }}
-                                  disabled={
-                                    !video.isCompleted || video.isLocked
-                                  }
-                                >
-                                  ✓ Test
-                                </Button>
-                              )}
                             </div>
                           ) : (
                             <Button

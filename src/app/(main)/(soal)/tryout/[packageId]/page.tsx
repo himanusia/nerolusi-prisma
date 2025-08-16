@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -15,7 +15,7 @@ import {
 } from "~/app/_components/ui/dialog";
 import { DialogTitle } from "@radix-ui/react-dialog";
 
-export default function QuizPage() {
+export default function TryOutPage() {
   const { packageId } = useParams();
   const packageIdString = Array.isArray(packageId)
     ? (packageId[0] ?? "")
@@ -29,10 +29,13 @@ export default function QuizPage() {
 
   const handleSubtestDialogClick = (subtest, index) => {
     const isSubmitted =
-      subtest.quizSession && new Date(subtest.quizSession) <= new Date();
+      subtest.quizSession?.[0]?.endTime &&
+      new Date(subtest.quizSession[0].endTime) <= new Date();
     const completedCount =
       sortedSubtests?.filter(
-        (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+        (s) =>
+          s.quizSession?.[0]?.endTime &&
+          new Date(s.quizSession[0]?.endTime) <= new Date(),
       ).length || 0;
     const isCurrentSubtest = index === completedCount && !isSubmitted;
 
@@ -67,7 +70,16 @@ export default function QuizPage() {
     data: packageData,
     isLoading,
     isError,
-  } = api.quiz.getPackageWithSubtest.useQuery({ id: packageIdString });
+    refetch: refetchPackageData,
+  } = api.quiz.getPackageWithSubtest.useQuery(
+    { id: packageIdString },
+    {
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      staleTime: 0, // Always consider data stale to ensure fresh fetch
+      gcTime: 0, // Don't cache the data
+    },
+  );
 
   const subtestOrder = ["pu", "ppu", "pbm", "pk", "lbi", "lbe", "pm"];
 
@@ -80,7 +92,9 @@ export default function QuizPage() {
   // Check if all subtests are completed
   const completedCount =
     sortedSubtests?.filter(
-      (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+      (s) =>
+        s.quizSession?.[0]?.endTime &&
+        new Date(s.quizSession[0]?.endTime) <= new Date(),
     ).length || 0;
   const allSubtestsCompleted = completedCount === sortedSubtests?.length;
   const isPackageEndDatePassed =
@@ -107,6 +121,19 @@ export default function QuizPage() {
     router,
     packageId,
   ]);
+
+  // Refetch data when page becomes visible again (e.g., when coming back from quiz page)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        refetchPackageData();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () =>
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+  }, [refetchPackageData]);
 
   return isError ? (
     <ErrorPage />
@@ -178,13 +205,15 @@ export default function QuizPage() {
                 strokeWidth="20"
                 fill="none"
                 strokeLinecap="round"
-                strokeDasharray={`${(sortedSubtests?.filter((s) => s.quizSession && new Date(s.quizSession) <= new Date()).length / sortedSubtests?.length) * 251.2} 251.2`}
+                strokeDasharray={`${(sortedSubtests?.filter((s) => s.quizSession?.[0]?.endTime && new Date(s.quizSession[0]?.endTime) <= new Date()).length / sortedSubtests?.length) * 251.2} 251.2`}
               />
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="text-2xl font-bold text-gray-800">
                 {sortedSubtests?.filter(
-                  (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+                  (s) =>
+                    s.quizSession?.[0]?.endTime &&
+                    new Date(s.quizSession[0]?.endTime) <= new Date(),
                 ).length || 0}
                 /{sortedSubtests?.length || 0}
               </span>
@@ -196,15 +225,17 @@ export default function QuizPage() {
         <div className="space-y-2">
           {sortedSubtests?.map((subtest, index) => {
             const isSubmitted =
-              subtest.quizSession &&
-              new Date(subtest.quizSession) <= new Date();
+              subtest.quizSession?.[0]?.endTime &&
+              new Date(subtest.quizSession[0].endTime) <= new Date();
             const completedCount =
               sortedSubtests?.filter(
-                (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+                (s) =>
+                  s.quizSession?.[0]?.endTime &&
+                  new Date(s.quizSession[0]?.endTime) <= new Date(),
               ).length || 0;
             const isCurrentSubtest = index === completedCount && !isSubmitted; // Next in sequence
             const isPackageEndDatePassed =
-              new Date(packageData.TOend) < new Date();
+              new Date(packageData?.TOend || new Date()) < new Date();
             const allSubtestsCompleted =
               completedCount === sortedSubtests?.length;
 
@@ -260,12 +291,16 @@ export default function QuizPage() {
                       }
                     })()}
                   </div>
-                  {isSubmitted && subtest.score && (
-                    <div className="text-sm opacity-90">
-                      Score: {subtest.score} | {subtest.totalCorrect}/
-                      {subtest.totalQuestion}
-                    </div>
-                  )}
+                  {isPackageEndDatePassed &&
+                    isSubmitted &&
+                    (subtest.quizSession?.[0]?.score !== null ||
+                      subtest.quizSession?.[0]?.score !== undefined) && (
+                      <div className="text-sm opacity-90">
+                        Score: {subtest.quizSession[0].score} |{" "}
+                        {subtest.quizSession[0].numCorrect}/
+                        {subtest.quizSession[0].numQuestion}
+                      </div>
+                    )}
                   {/* {isSubmitted && (
                     <div className="text-xs text-blue-600 mt-1">
                       {isPackageEndDatePassed 
@@ -286,7 +321,9 @@ export default function QuizPage() {
           {(() => {
             const completedCount =
               sortedSubtests?.filter(
-                (s) => s.quizSession && new Date(s.quizSession) <= new Date(),
+                (s) =>
+                  s.quizSession?.[0]?.endTime &&
+                  new Date(s.quizSession[0]?.endTime) <= new Date(),
               ).length || 0;
             const currentSubtest = sortedSubtests?.[completedCount]; // Next in sequence
 
@@ -477,8 +514,9 @@ export default function QuizPage() {
             {selectedSubtest &&
               (() => {
                 const isSubmitted =
-                  selectedSubtest.quizSession &&
-                  new Date(selectedSubtest.quizSession) <= new Date();
+                  selectedSubtest.quizSession?.[0] &&
+                  new Date(selectedSubtest.quizSession[0].endTime) <=
+                    new Date();
                 const subtestName = getSubtestDisplayName(selectedSubtest.type);
                 const isPackageEndDatePassed =
                   new Date(packageData.TOend) < new Date();
@@ -491,11 +529,11 @@ export default function QuizPage() {
                           {selectedSubtest.type.toUpperCase()}
                         </h3>
                         <p className="text-gray-600">{subtestName}</p>
-                        {selectedSubtest.score && (
+                        {selectedSubtest.quizSession?.[0]?.score && (
                           <p className="text-lg font-semibold text-green-600">
-                            Score: {selectedSubtest.score} |{" "}
-                            {selectedSubtest.totalCorrect}/
-                            {selectedSubtest.totalQuestion}
+                            Score: {selectedSubtest.quizSession[0].score} |{" "}
+                            {selectedSubtest.quizSession[0].numCorrect}/
+                            {selectedSubtest.quizSession[0].numQuestion}
                           </p>
                         )}
                       </div>
@@ -636,7 +674,8 @@ export default function QuizPage() {
     }
 
     const userId = session.data.user.id;
-    const isPackageEndDatePassed = new Date(packageData.TOend) < new Date();
+    const isPackageEndDatePassed =
+      new Date(packageData?.TOend || new Date()) < new Date();
 
     if (isPackageEndDatePassed) {
       try {

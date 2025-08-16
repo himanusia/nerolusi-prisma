@@ -18,52 +18,59 @@ const adminMenuItems = [
   {
     title: "User Management",
     description: "Manage users, roles, and permissions",
-    href: "/user",
+    href: "/admin/user",
     icon: <RiUserFill className="h-8 w-8 text-blue-600" />,
     color: "border-blue-200 hover:border-blue-300"
   },
   {
     title: "Koin Management", 
     description: "View and modify user coin balances",
-    href: "/coins",
+    href: "/admin/coins",
     icon: <RiCoinsLine className="h-8 w-8 text-yellow-600" />,
     color: "border-yellow-200 hover:border-yellow-300"
   },
   {
-    title: "Package Management",
-    description: "Manage tryout packages and content",
-    href: "/packageManagement",
+    title: "TKA Management",
+    description: "Manage TKA",
+    href: "/admin-tka",
     icon: <RiFileList3Fill className="h-8 w-8 text-green-600" />,
     color: "border-green-200 hover:border-green-300"
   },
   {
-    title: "TKA Tryouts",
-    description: "Manage TKA tryout packages",
-    href: "/admin-tka/tryouts",
+    title: "Try Out Management",
+    description: "Manage tryout packages and content",
+    href: "/admin/tryout",
     icon: <RiBookmarkFill className="h-8 w-8 text-purple-600" />,
     color: "border-purple-200 hover:border-purple-300"
   },
-  {
-    title: "TKA Videos & Quiz",
-    description: "Manage TKA videos and mentors",
-    href: "/admin-tka/videos",
-    icon: <RiVideoFill className="h-8 w-8 text-red-600" />,
-    color: "border-red-200 hover:border-red-300"
-  },
-  {
-    title: "Activity Schedule",
-    description: "Manage upcoming events and activities",
-    href: "/admin-tka/activities",
-    icon: <RiCalendarEventFill className="h-8 w-8 text-indigo-600" />,
-    color: "border-indigo-200 hover:border-indigo-300"
-  },
-  {
-    title: "TKA Drill Questions",
-    description: "Manage TKA practice questions",
-    href: "/admin-tka/drills",
-    icon: <RiQuestionAnswerFill className="h-8 w-8 text-teal-600" />,
-    color: "border-teal-200 hover:border-teal-300"
-  }
+  // {
+  //   title: "TKA Tryouts",
+  //   description: "Manage TKA tryout packages",
+  //   href: "/admin-tka/tryouts",
+  //   icon: <RiBookmarkFill className="h-8 w-8 text-purple-600" />,
+  //   color: "border-purple-200 hover:border-purple-300"
+  // },
+  // {
+  //   title: "TKA Videos & Quiz",
+  //   description: "Manage TKA videos and mentors",
+  //   href: "/admin-tka/videos",
+  //   icon: <RiVideoFill className="h-8 w-8 text-red-600" />,
+  //   color: "border-red-200 hover:border-red-300"
+  // },
+  // {
+  //   title: "Activity Schedule",
+  //   description: "Manage upcoming events and activities",
+  //   href: "/admin-tka/activities",
+  //   icon: <RiCalendarEventFill className="h-8 w-8 text-indigo-600" />,
+  //   color: "border-indigo-200 hover:border-indigo-300"
+  // },
+  // {
+  //   title: "TKA Drill Questions",
+  //   description: "Manage TKA practice questions",
+  //   href: "/admin-tka/drills",
+  //   icon: <RiQuestionAnswerFill className="h-8 w-8 text-teal-600" />,
+  //   color: "border-teal-200 hover:border-teal-300"
+  // }
 ];
 
 export default function AdminDashboard() {

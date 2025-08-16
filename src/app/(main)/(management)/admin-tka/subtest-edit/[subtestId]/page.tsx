@@ -47,40 +47,18 @@ export default function QuizPage() {
     data: sessionDetails,
     isLoading,
     isError,
-    refetch: refetchSessionDetails,
-  } = api.quiz.getSessionDetails.useQuery(
-    {
-      sessionId: sessionIdString,
-    },
-    {
-      refetchOnMount: true,
-      refetchOnWindowFocus: true,
-      staleTime: 0, // Always consider data stale
-      gcTime: 0, // Don't cache the data
-    },
-  );
+  } = api.quiz.getSessionDetails.useQuery({
+    sessionId: sessionIdString,
+  });
 
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails?.endTime) <= new Date()
+      new Date(sessionDetails?.endTime) === new Date()
     ) {
       router.push(`/quiz/${sessionIdString}/score`);
     }
-  }, [sessionDetails, router, sessionIdString]);
-
-  // Refetch data when page becomes visible again (e.g., when coming back from score page)
-  useEffect(() => {
-    const handleVisibilityChange = () => {
-      if (!document.hidden) {
-        refetchSessionDetails();
-      }
-    };
-
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-  }, [refetchSessionDetails]);
+  }, [sessionDetails, router]);
 
   const {
     data: questions,
@@ -392,63 +370,41 @@ export default function QuizPage() {
                   {/* Answer Options */}
                   <div className="space-y-3">
                     {questions[currentQuestionIndex].type === "essay" ? (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Jawaban Anda:
-                          </label>
-                          <textarea
-                            rows={4}
-                            className="w-full rounded-lg border p-3"
-                            placeholder="Tulis jawaban Anda di sini..."
-                            value={
-                              typeof selectedAnswers.get(
-                                questions[currentQuestionIndex].id,
-                              ) === "string"
-                                ? (selectedAnswers.get(
-                                    questions[currentQuestionIndex].id,
-                                  ) as string)
-                                : ""
-                            }
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                questions[currentQuestionIndex].id,
-                                e.target.value,
-                              )
-                            }
-                            disabled={
-                              new Date(sessionDetails.endTime) < new Date() &&
-                              session.data?.user?.role === "user"
-                            }
-                          />
-                        </div>
-
-                        {/* Show correct answer after quiz ends */}
-                        {new Date(sessionDetails?.endTime) < new Date() &&
-                          questions[currentQuestionIndex].answers[0] && (
-                            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                              <label className="mb-2 block text-sm font-medium text-green-800">
-                                Jawaban Benar:
-                              </label>
-                              <div className="rounded-lg bg-white p-3 text-gray-900">
-                                <Editor
-                                  content={
-                                    questions[currentQuestionIndex].answers[0]
-                                      .content
-                                  }
-                                  className="border-none"
-                                />
-                              </div>
-                            </div>
-                          )}
+                      <div>
+                        <label className="mb-2 block text-sm font-medium text-gray-700">
+                          Jawaban Anda:
+                        </label>
+                        <textarea
+                          rows={4}
+                          className="w-full rounded-lg border p-3"
+                          placeholder="Tulis jawaban Anda di sini..."
+                          value={
+                            typeof selectedAnswers.get(
+                              questions[currentQuestionIndex].id,
+                            ) === "string"
+                              ? (selectedAnswers.get(
+                                  questions[currentQuestionIndex].id,
+                                ) as string)
+                              : ""
+                          }
+                          onChange={(e) =>
+                            handleAnswerChange(
+                              questions[currentQuestionIndex].id,
+                              e.target.value,
+                            )
+                          }
+                          disabled={
+                            new Date(sessionDetails.endTime) < new Date() &&
+                            session.data?.user?.role === "user"
+                          }
+                        />
                       </div>
                     ) : (
                       <div className="space-y-2">
                         {(() => {
-                          // Determine if this question allows multiple answers
-                          const isMultipleAnswer =
-                            questions[currentQuestionIndex].type ===
-                            "mulAnswer";
+                          // Determine if this question has multiple correct answers
+                          const isMultipleChoice =
+                            questions[currentQuestionIndex].type == "mulAnswer";
 
                           const userAnswer = selectedAnswers.get(
                             questions[currentQuestionIndex].id,
@@ -496,7 +452,7 @@ export default function QuizPage() {
                                 >
                                   <Input
                                     type={
-                                      isMultipleAnswer ? "checkbox" : "radio"
+                                      isMultipleChoice ? "checkbox" : "radio"
                                     }
                                     disabled={
                                       new Date(sessionDetails.endTime) <
@@ -504,7 +460,7 @@ export default function QuizPage() {
                                       session.data?.user?.role === "user"
                                     }
                                     name={
-                                      isMultipleAnswer
+                                      isMultipleChoice
                                         ? `question-${questions[currentQuestionIndex].id}-answer-${answer.id}`
                                         : `question-${questions[currentQuestionIndex].id}`
                                     }
@@ -512,7 +468,7 @@ export default function QuizPage() {
                                     className="sr-only"
                                     checked={isSelected}
                                     onChange={() =>
-                                      isMultipleAnswer
+                                      isMultipleChoice
                                         ? handleAnswerToggle(
                                             questions[currentQuestionIndex].id,
                                             answer.id,
@@ -525,7 +481,7 @@ export default function QuizPage() {
                                   />
                                   <div
                                     className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center ${
-                                      isMultipleAnswer
+                                      isMultipleChoice
                                         ? "rounded"
                                         : "rounded-full"
                                     } border-2 ${
@@ -539,7 +495,7 @@ export default function QuizPage() {
                                     }`}
                                   >
                                     {isSelected &&
-                                      (isMultipleAnswer ? (
+                                      (isMultipleChoice ? (
                                         <CheckCircle
                                           className={`h-4 w-4 ${
                                             isCorrect || isWrong
