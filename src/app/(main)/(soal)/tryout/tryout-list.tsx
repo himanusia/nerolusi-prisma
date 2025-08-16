@@ -10,7 +10,7 @@ import TryOutCard, { type TryOutData } from "~/app/_components/tryout-card";
 import Image from "next/image";
 
 interface TryoutListProps {
-  classId: number;
+  classId?: number;
 }
 
 const TryoutList = ({ classId }: TryoutListProps) => {

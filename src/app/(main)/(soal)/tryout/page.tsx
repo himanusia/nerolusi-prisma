@@ -8,22 +8,22 @@ import TryoutList from "./tryout-list";
 export default function TryoutListPage() {
   const { data: session } = useSession();
 
-  const classId = session?.user?.classid;
+  // const classId = session?.user?.classid;
 
   const userTokens = session?.user?.token ?? 0;
 
-  if (!classId) {
-    return (
-      <div className="flex h-[70vh] flex-col items-center justify-center">
-        <h1 className="text-2xl font-bold">
-          You are not enrolled in any class
-        </h1>
-        <p className="mt-2">
-          Please contact your administrator to assign you to a class.
-        </p>
-      </div>
-    );
-  }
+  // if (!classId) {
+  //   return (
+  //     <div className="flex h-[70vh] flex-col items-center justify-center">
+  //       <h1 className="text-2xl font-bold">
+  //         You are not enrolled in any class
+  //       </h1>
+  //       <p className="mt-2">
+  //         Please contact your administrator to assign you to a class.
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="space-y-6 w-full">
@@ -35,7 +35,7 @@ export default function TryoutListPage() {
       </div>
       <TokenCard tokenAmount={userTokens} />
 
-      <TryoutList classId={classId} />
+      <TryoutList />
     </div>
   );
 }

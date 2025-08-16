@@ -12,6 +12,9 @@ import { RiPencilFill } from "react-icons/ri";
 import { BiSolidDownArrow, BiSolidUpArrow } from "react-icons/bi";
 import { api } from "~/trpc/react";
 import { MaterialSection, Video } from "~/server/api/routers/materi";
+import LoadingPage from "~/app/loading";
+import ErrorPage from "~/app/error";
+import NoPackagePage from "~/app/no-package";
 
 export default function SubjectMateriPage() {
   const params = useParams();
@@ -181,6 +184,22 @@ export default function SubjectMateriPage() {
         <p className="text-gray-500">Subject not found</p>
       </div>
     );
+  }
+
+  if (session.status === "loading") {
+    return <LoadingPage />;
+  }
+
+  if (!session.data?.user?.enrolledTka) {
+    return <NoPackagePage />;
+  }
+
+  if (isMaterialLoading) {
+    return <LoadingPage />;
+  }
+
+  if (isMaterialError) {
+    return <ErrorPage />;
   }
 
   return (
