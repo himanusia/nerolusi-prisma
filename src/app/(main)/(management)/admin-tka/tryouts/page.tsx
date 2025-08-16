@@ -244,7 +244,7 @@ export default function TKATryoutPage() {
                 </div>
 
                 <div className="flex gap-2 pt-3">
-                  <Link href={`/quiz-edit/${tryout.id}`}>
+                  <Link href={`/admin/quiz-edit/${tryout.id}`}>
                     <Button size="sm" variant="outline" className="flex-1">
                       <Edit className="mr-1 h-4 w-4" />
                       Edit

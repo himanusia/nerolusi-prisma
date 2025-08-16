@@ -72,8 +72,8 @@ async function main() {
       const TOend = faker.date.soon({ refDate: TOstart, days: 7 });
       const newPackage = await db.package.create({
         data: {
-          name: faker.company.catchPhrase(),
-          type: faker.helpers.arrayElement(["tryout", "drill"]),
+          name: "Try Out #" + (i + 1),
+          type: "tryout",
           TOstart,
           TOend,
           classId: classItem.id,
@@ -171,13 +171,22 @@ async function main() {
   }
 
   // Generate Random Videos
-  const rekamanVideosData = Array.from({ length: 20 }).map(() => ({
-    title: faker.word.words(),
-    description: faker.lorem.sentence(),
-    url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-    type: "rekaman",
-    createdAt: new Date().toISOString(),
-  }));
+  const rekamanVideosData = [
+    {
+      title: "Video Materi #1",
+      description: "Ini adalah deskripsi untuk Video Materi #1",
+      url: "https://youtu.be/HofUDfwfUY8",
+      type: "rekaman",
+      createdAt: new Date().toISOString(),
+    },
+    {
+      title: "Video Materi #2",
+      description: "Ini adalah deskripsi untuk Video Materi #2",
+      url: "https://youtu.be/9JbAp__yGhU",
+      type: "rekaman",
+      createdAt: new Date().toISOString(),
+    },
+  ];
 
   // Add 20 more videos with type: materi
   const materiVideosData = Array.from({ length: 20 }).map(() => ({

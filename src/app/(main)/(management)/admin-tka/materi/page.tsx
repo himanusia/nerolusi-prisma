@@ -340,7 +340,7 @@ export default function AdminMateriPage() {
 
     if (hasDrill && topic.subtest?.id) {
       // Navigate to edit existing drill
-      router.push(`/quiz-edit/${topic.subtest.id}`);
+      router.push(`/admin/quiz-edit/${topic.subtest.id}`);
       return;
     }
 
@@ -352,7 +352,7 @@ export default function AdminMateriPage() {
       });
       toast.success("Drill created successfully!");
       // Navigate to the subtest edit page
-      router.push(`/quiz-edit/${drill.id}`);
+      router.push(`/admin/quiz-edit/${drill.id}`);
     } catch (error: any) {
       toast.error(error.message || "Failed to create drill");
     }
