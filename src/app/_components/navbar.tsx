@@ -107,10 +107,10 @@ const navigationItems = [
 ];
 
 interface NavbarProps {
-  packageType?: string;
+  isTka: boolean;
 }
 
-export default function Navbar({ packageType }: NavbarProps) {
+export default function Navbar({ isTka }: NavbarProps) {
   const session = useSession();
   const user = session.data?.user;
   const pathname = usePathname();
@@ -262,7 +262,7 @@ export default function Navbar({ packageType }: NavbarProps) {
                 <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
 
                   <div className="py-2">
-                    {packageType === "utbk" && (
+                    {!isTka && (
                       <>
                       <Link
                         href="/profile"
@@ -389,22 +389,27 @@ export default function Navbar({ packageType }: NavbarProps) {
                 <>
                   <div className="border-t border-gray-200 pt-4 mb-4">
                     <div className="space-y-2">
-                      <Link
-                        href="/profile"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <HiUser className="h-5 w-5" />
-                        <span className="font-medium">Profil</span>
-                      </Link>
-                      <Link
-                        href="/pilihan-ptn"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <RiPencilFill className="h-5 w-5" />
-                        <span className="font-medium">Pilihan PTN</span>
-                      </Link>
+                      {!isTka && (
+                        <>
+                          <Link
+                            href="/profile"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <HiUser className="h-5 w-5" />
+                            <span className="font-medium">Profil</span>
+                          </Link>
+                          <Link
+                            href="/pilihan-ptn"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <RiPencilFill className="h-5 w-5" />
+                            <span className="font-medium">Pilihan PTN</span>
+                          </Link>
+                        </>
+                      )}
+                      
                       <Link
                         href="/beli-paket"
                         onClick={() => setIsMobileMenuOpen(false)}

@@ -18,13 +18,13 @@ export default function VideoMateri() {
                 <div key={category.type} className="w-full">
                     <Separator className="h-1 bg-gray-200 mb-4" />
 
-                    <div className="flex flex-row font-bold text-md md:text-xl gap-2 text-left">
+                    <div className="flex flex-row font-bold text-sm md:text-xl gap-1 md:gap-2 text-left">
                         <p>Video Materi</p>
                         <p className="text-[#d78e0c] italic">
                             from ZERO to Nero {category.type.toUpperCase()}
                         </p>
                     </div>
-                    <p className="text-gray-600 mb-4">Video Pembelajaran Materi dan Quiz</p>
+                    <p className="text-gray-600 mb-4 text-sm md:text-lg">Video Pembelajaran Materi dan Quiz</p>
                     
                     {/* Subject Cards */}
                     <div className="flex flex-wrap gap-4 justify-start">

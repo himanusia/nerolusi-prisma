@@ -135,8 +135,8 @@ const TryoutList = ({ classId }: TryoutListProps) => {
   ) : (
     <>
       {/* Try Out Cards Section */}
-      <div className="space-y-4 flex flex-col items-center w-full md:items-start">
-        <div className="flex items-start justify-between">
+      <div className="space-y-4 flex flex-col items-start w-full">
+        <div className="flex flex-col items-start justify-between">
           <h3 className="text-xl font-bold text-gray-900 text-left">Try Out Tersedia</h3>
           <p className="text-gray-600">
             Kerjakan Try Out mu untuk melihat hasil belajarmu!
@@ -158,7 +158,7 @@ const TryoutList = ({ classId }: TryoutListProps) => {
         </div>
 
         {packages?.length === 0 && (
-          <div className="py-12 text-center text-gray-500">
+          <div className="py-12 text-start text-gray-500">
             <svg className="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
@@ -202,7 +202,8 @@ const TryoutList = ({ classId }: TryoutListProps) => {
                 className="flex-1 text-[#2b8057] font-bold"
               >
                 <Image src="/coin.webp" alt="Coin" className="w-5 h-5 mr-2" width={20} height={20} />
-                Ya 1
+                {/* TODO: change this to real coin amount for package. Bener ga? gw ngikut yg lain :D */}
+                Ya {selectedPackage?.cost}
               </Button>
               <Button
                 onClick={() => setShowPurchaseDialog(false)}

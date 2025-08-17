@@ -14,8 +14,6 @@ import {
 } from "~/app/_components/ui/avatar";
 
 export default function ScoresPage() {
-  const isTka : boolean = true; // TODO: change to actual mode (from the packageId or smth)
-
   const packageIdString = Array.isArray(packageId)
     ? (packageId[0] ?? "")
     : packageId;
@@ -79,6 +77,8 @@ export default function ScoresPage() {
         new Date(s.quizSession[0].endTime ?? "") <= new Date(),
     ).length || 0;
   const allSubtestsCompleted = completedCount === sortedSubtests?.length;
+  
+  const isTka = session?.user?.enrolledTka ?? false;
 
   const getSubtestName = (type: string) => {
     switch (type) {

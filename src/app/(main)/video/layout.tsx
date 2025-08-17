@@ -13,9 +13,11 @@ export default async function layout({
     redirect("/signin");
   }
 
+  const isTka = session.user.enrolledTka;
+
   return (
     <div className="size-full">
-      <VideoHeader/>
+      <VideoHeader isTka={isTka} />
       <div className="py-6">{children}</div>
     </div>
   );
