@@ -93,7 +93,7 @@ async function main() {
         data: {
           index: j + 1,
           content: faker.word.words({ count: { min: 5, max: 50 } }),
-          imageUrl: faker.image.url(),
+          // imageUrl: faker.image.url(),
           type: faker.helpers.arrayElement(["essay", "mulChoice", "mulAnswer"]),
           score: faker.number.int({ min: 5, max: 50 }),
           subtestId: subtestId,
