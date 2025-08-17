@@ -15,7 +15,7 @@ export default async function layout({
 
   return (
     <div className="size-full">
-      <Navbar />
+      <Navbar packageType="tka"/>
       <div className="container mx-auto p-4 max-w-7xl">{children}</div>
     </div>
   );

@@ -136,16 +136,14 @@ const TryoutList = ({ classId }: TryoutListProps) => {
     <>
       {/* Try Out Cards Section */}
       <div className="space-y-4 flex flex-col items-center w-full md:items-start">
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 text-center md:text-left">Try Out Tersedia</h3>
-            <p className="text-gray-600">
-              Kerjakan Try Out mu untuk melihat hasil belajarmu!
-            </p>
-          </div>
+        <div className="flex items-start justify-between">
+          <h3 className="text-xl font-bold text-gray-900 text-left">Try Out Tersedia</h3>
+          <p className="text-gray-600">
+            Kerjakan Try Out mu untuk melihat hasil belajarmu!
+          </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-4">
+        <div className="grid md:grid-cols-3 gap-4 mx-4">
           {packages?.map((pkg, index) => {
             const tryOutData = convertPackageToTryOutData(pkg, index);
 

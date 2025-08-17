@@ -168,14 +168,14 @@ export default function SubjectMateriPage() {
     }
   };
 
-  // Simulate drill completion
-  const simulateDrillCompletion = (videoId: string) => {
-    toggleDrillCompleted(videoId);
-    toast.success("Drill completed! Next video unlocked.");
-  };
-
   const handleBack = () => {
     router.push("/video/materi");
+  };
+
+  const formatDuration = (duration: number) => {
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
   };
 
   if (!subject) {
@@ -296,7 +296,7 @@ export default function SubjectMateriPage() {
 
                     <div className="min-w-[120px] text-center">
                       <span className="font-bold text-black">
-                        {video.duration}
+                        {formatDuration(video.duration)}
                       </span>
                     </div>
                   </div>

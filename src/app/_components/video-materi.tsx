@@ -18,7 +18,7 @@ export default function VideoMateri() {
                 <div key={category.type} className="w-full">
                     <Separator className="h-1 bg-gray-200 mb-4" />
 
-                    <div className="flex flex-row font-bold text-xl gap-2">
+                    <div className="flex flex-row font-bold text-md md:text-xl gap-2 text-left">
                         <p>Video Materi</p>
                         <p className="text-[#d78e0c] italic">
                             from ZERO to Nero {category.type.toUpperCase()}
@@ -27,23 +27,23 @@ export default function VideoMateri() {
                     <p className="text-gray-600 mb-4">Video Pembelajaran Materi dan Quiz</p>
                     
                     {/* Subject Cards */}
-                    <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                    <div className="flex flex-wrap gap-4 justify-start">
                         {category.subjects.map((subject) => (
                             <div
                                 key={subject.id}
                                 onClick={() => handleSubjectClick(subject)}
-                                className="max-w-[150px] min-w-[150px] flex flex-col items-center justify-center p-3 border border-[#2b8057] rounded-[10px] bg-white hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
+                                className="max-w-[120px] min-w-[120px] md:max-w-[150px] md:min-w-[150px] flex flex-col items-center justify-center p-3 border border-[#2b8057] rounded-[10px] bg-white hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
                             >
-                                <div className="w-16 h-16 bg-[#2b8057] rounded-[9px] flex items-center justify-center shadow-sm mb-2">
+                                <div className="w-18 h-18 bg-[#2b8057] rounded-[9px] flex items-center justify-center shadow-sm mb-2">
                                     <Image
                                         src={subject.image}
                                         alt={subject.title}
-                                        width={40}
-                                        height={40}
+                                        width={50}
+                                        height={50}
                                         className="object-cover"
                                     />
                                 </div>
-                                <h3 className="text-sm font-medium text-[#545454] text-center leading-tight">
+                                <h3 className="text-xs md:text-sm font-medium text-[#545454] text-center leading-tight">
                                     {subject.title}
                                 </h3>
                             </div>

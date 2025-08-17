@@ -106,7 +106,11 @@ const navigationItems = [
   // },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  packageType?: string;
+}
+
+export default function Navbar({ packageType }: NavbarProps) {
   const session = useSession();
   const user = session.data?.user;
   const pathname = usePathname();
@@ -258,22 +262,27 @@ export default function Navbar() {
                 <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
 
                   <div className="py-2">
-                    <Link
-                      href="/profile"
-                      onClick={closeProfileDropdown}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <HiUser className="h-4 w-4" />
-                      Profil
-                    </Link>
-                    <Link
-                      href="/pilihan-ptn"
-                      onClick={closeProfileDropdown}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <RiPencilFill className="h-4 w-4" />
-                      Pilihan PTN
-                    </Link>
+                    {packageType === "utbk" && (
+                      <>
+                      <Link
+                        href="/profile"
+                        onClick={closeProfileDropdown}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <HiUser className="h-4 w-4" />
+                        Profil
+                      </Link>
+                      <Link
+                        href="/pilihan-ptn"
+                        onClick={closeProfileDropdown}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <RiPencilFill className="h-4 w-4" />
+                        Pilihan PTN
+                      </Link>
+                      </>
+                    )}
+                    
                     <Link
                       href="/beli-paket"
                       onClick={closeProfileDropdown}
