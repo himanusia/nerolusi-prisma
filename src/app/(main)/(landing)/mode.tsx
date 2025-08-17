@@ -31,7 +31,7 @@ export default function Mode() {
         onCheckedChange={handleModeChange}
         leftLabel="TKA"
         rightLabel="UTBK"
-        // disabled={true}
+        disabled={true}
       />
     </div>
   );

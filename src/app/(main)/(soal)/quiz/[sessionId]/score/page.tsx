@@ -185,6 +185,7 @@ export default function ScorePage() {
       <div className="flex flex-col justify-center gap-4 sm:flex-row">
         <Link href={`/quiz/${sessionIdString}`}>
           <Button className="bg-[#2b8057] text-white hover:bg-[#1f5a40]">
+            {/* TODO: Add review functionality */}
             🔄 Review
           </Button>
         </Link>
