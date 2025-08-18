@@ -8,9 +8,14 @@ import TryOutCard, { type TryOutData } from "~/app/_components/tryout-card";
 interface TryOutTersediaProps {
   tryOuts: TryOutData[];
   onTryOutClick?: (tryOut: TryOutData) => void;
+  onPurchase?: (tryOutId: string) => Promise<void>;
 }
 
-export default function TryOutTersedia({ tryOuts, onTryOutClick }: TryOutTersediaProps) {
+export default function TryOutTersedia({
+  tryOuts,
+  onTryOutClick,
+  onPurchase,
+}: TryOutTersediaProps) {
   const router = useRouter();
 
   return (
@@ -22,17 +27,22 @@ export default function TryOutTersedia({ tryOuts, onTryOutClick }: TryOutTersedi
             Kerjakan Try Out mu untuk melihat hasil belajarmu!
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => router.push('/tryout')}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => router.push("/tryout")}
+        >
           Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
         </Button>
       </div>
 
-      <div className="flex gap-2 w-full overflow-x-scroll scrollbar-thin scrollbar-track-transparent pb-2">
+      <div className="flex w-full gap-2 overflow-x-scroll pb-2 scrollbar-thin scrollbar-track-transparent">
         {tryOuts.map((tryOut) => (
-          <TryOutCard 
-            key={tryOut.id} 
-            tryOut={tryOut} 
-            onTryOutClick={onTryOutClick} 
+          <TryOutCard
+            key={tryOut.id}
+            tryOut={tryOut}
+            onTryOutClick={onTryOutClick}
+            onPurchase={onPurchase}
           />
         ))}
       </div>

@@ -14,6 +14,7 @@ import {
 } from "~/app/_components/ui/avatar";
 
 export default function ScoresPage() {
+  const { packageId } = useParams();
   const packageIdString = Array.isArray(packageId)
     ? (packageId[0] ?? "")
     : packageId;
@@ -45,15 +46,6 @@ export default function ScoresPage() {
       (sum, subtest) => sum + (subtest.quizSession?.[0]?.numCorrect ?? 0),
       0,
     ) || 0;
-  const totalWrong =
-    sortedSubtests?.reduce(
-      (sum, subtest) =>
-        sum +
-        ((subtest.quizSession?.[0]?.numQuestion ?? 0) -
-          (subtest.quizSession?.[0]?.numCorrect ?? 0) -
-          (subtest.quizSession?.[0]?.numAnswered ?? 0)),
-      0,
-    ) || 0;
   const averageScore =
     sortedSubtests?.reduce(
       (sum, subtest) => sum + (subtest.quizSession?.[0]?.score ?? 0),
@@ -66,6 +58,8 @@ export default function ScoresPage() {
       (sum, subtest) => sum + (subtest.quizSession?.[0]?.numAnswered ?? 0),
       0,
     );
+
+  const totalWrong = totalQuestions - totalCorrect - totalKosong;
 
   // Check if package end date has passed to show scores
   const isPackageEndDatePassed =

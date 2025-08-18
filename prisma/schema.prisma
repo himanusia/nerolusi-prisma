@@ -72,6 +72,7 @@ model User {
   userAnswers   UserAnswer[] 
   quizSession   QuizSession[]
   UserMateriProgress UserMateriProgress[]
+  UserPackage   UserPackage[]
 }
 
 model Account {
@@ -99,6 +100,15 @@ model Session {
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPackage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packageId      String
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Class {
@@ -153,6 +163,7 @@ model Package {
   subtests    Subtest[]
   class       Class?       @relation(fields: [classId], references: [id], onDelete: Cascade)
   quizSession QuizSession[]
+  userPackage UserPackage[]
 }
 
 model Subtest {
