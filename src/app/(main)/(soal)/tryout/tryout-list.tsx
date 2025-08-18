@@ -174,7 +174,7 @@ const TryoutList = ({ classId }: TryoutListProps) => {
           </p>
         </div>
 
-        <div className="mx-4 grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {packages?.map((pkg, index) => {
             const tryOutData = convertPackageToTryOutData(pkg, index);
 
