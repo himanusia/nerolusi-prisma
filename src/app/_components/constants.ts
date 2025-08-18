@@ -90,18 +90,18 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
         image: "/subject/sejarah.png",
         slug: "sejarah",
       },
-      {
-        id: 12,
-        title: "PPKN",
-        image: "/subject/ppkn.png",
-        slug: "ppkn",
-      },
-      {
-        id: 13,
-        title: "Projek Kreatif & Kewirausahaan",
-        image: "/subject/pkk.png",
-        slug: "projek-kreatif-kewirausahaan",
-      },
+      // {
+      //   id: 12,
+      //   title: "PPKN",
+      //   image: "/subject/ppkn.png",
+      //   slug: "ppkn",
+      // },
+      // {
+      //   id: 13,
+      //   title: "Projek Kreatif & Kewirausahaan",
+      //   image: "/subject/pkk.png",
+      //   slug: "projek-kreatif-kewirausahaan",
+      // },
     ],
   },
 ];
