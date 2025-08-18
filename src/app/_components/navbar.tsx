@@ -269,7 +269,7 @@ export default function Navbar({ isTka }: NavbarProps) {
                 <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
 
                   <div className="py-2">
-                    {!isTka && (
+                    {/* {!isTka && (
                       <>
                       <Link
                         href="/profile"
@@ -288,7 +288,7 @@ export default function Navbar({ isTka }: NavbarProps) {
                         Pilihan PTN
                       </Link>
                       </>
-                    )}
+                    )} */}
                     
                     <Link
                       href="/beli-paket"
@@ -396,7 +396,7 @@ export default function Navbar({ isTka }: NavbarProps) {
                 <>
                   <div className="border-t border-gray-200 pt-4 mb-4">
                     <div className="space-y-2">
-                      {!isTka && (
+                      {/* {!isTka && (
                         <>
                           <Link
                             href="/profile"
@@ -415,7 +415,7 @@ export default function Navbar({ isTka }: NavbarProps) {
                             <span className="font-medium">Pilihan PTN</span>
                           </Link>
                         </>
-                      )}
+                      )} */}
                       
                       <Link
                         href="/beli-paket"

@@ -28,7 +28,7 @@ export default function HeadJenisSubtest({
           <h2 className="font-bold text-[#2B8057] text-3xl">
             {title}
           </h2>
-          {!isTka && (
+          {/* {!isTka && (
             <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
               {Object.values(SubtestType).map((type) => (
                 <Button key={type} className="flex-1 text-xs text-white">
@@ -36,7 +36,7 @@ export default function HeadJenisSubtest({
                 </Button>
               ))}
             </div>
-          )}
+          )} */}
           
         </div>
       </div>
@@ -51,7 +51,7 @@ export default function HeadJenisSubtest({
           </div>
           <h2 className="ml-4 text-xl font-bold text-[#2B8057]">{title}</h2>
         </div>
-        {!isTka && (
+        {/* {!isTka && (
           <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
             {Object.values(SubtestType).map((type) => (
               <Button key={type} className="flex-1 text-xs text-white">
@@ -59,7 +59,7 @@ export default function HeadJenisSubtest({
               </Button>
             ))}
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

@@ -234,7 +234,7 @@ export default function ScoresPage() {
         {/* Right Panel - Detailed Scores */}
         <div className="w-full md:w-2/3">
           {/* Success Message */}
-          {!isTka && isPackageEndDatePassed && (
+          {/* {!isTka && isPackageEndDatePassed && (
             <div className="mb-6 rounded-xl border border-[#acaeba] bg-gradient-to-t from-[#2d69db] to-[#223a67] p-6 text-white">
               <div className="text-start">
                 <h3 className="text-md mb-3 text-xl font-bold text-white md:text-xl">
@@ -267,7 +267,7 @@ export default function ScoresPage() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Waiting Message */}
           {!isPackageEndDatePassed && (
