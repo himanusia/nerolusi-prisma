@@ -39,7 +39,7 @@ export default function VideoHeader({ isTka }: VideoHeaderProps) {
           <p className="text-xs text-black">Mode:</p>
           <div className="flex items-center bg-[#f2f2f2] rounded-[7px] border border-[#acaeba] relative">
             {/* Sliding background indicator */}
-            {isTka && (
+            {/* {isTka && ( */}
               <div 
               className={`absolute top-1 bottom-1 rounded-[7px] transition-all duration-300 ease-in-out ${
                 isMateri ? 'bg-[radial-gradient(circle,#5dffb1,#29b270)]' : 'bg-[radial-gradient(circle,#bbdefb,#64b7fb)]'
@@ -49,8 +49,8 @@ export default function VideoHeader({ isTka }: VideoHeaderProps) {
                 transform: isMateri ? 'translateX(90px)' : 'translateX(5px)',
               }}
             />
-            )}
-            {!isTka && (
+            {/* )} */}
+            {/* {!isTka && (
               <div 
               className={`absolute top-1 bottom-1 rounded-[7px] transition-all duration-300 ease-in-out ${
                 isMateri ? 'bg-[radial-gradient(circle,#5dffb1,#29b270)]' : 'bg-[radial-gradient(circle,#bbdefb,#64b7fb)]'
@@ -60,7 +60,7 @@ export default function VideoHeader({ isTka }: VideoHeaderProps) {
                 transform: isMateri ? 'translateX(105px)' : 'translateX(5px)',
               }}
             />
-            )}
+            )} */}
             
             <button
               onClick={() => handleModeChange(false)}
@@ -70,7 +70,8 @@ export default function VideoHeader({ isTka }: VideoHeaderProps) {
                   : 'text-[#b4b4b4] hover:text-gray-800'
               }`}
             >
-              {isTka ? 'Umum' : 'Rekaman'}
+              {/* {isTka ? 'Umum' : 'Rekaman'} */}
+              Umum
             </button>
             <button
               onClick={() => handleModeChange(true)}
