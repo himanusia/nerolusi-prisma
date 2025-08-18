@@ -5,7 +5,7 @@ WORKDIR /app
 
 COPY prisma ./
 
-COPY bun.lockb package.json ./
+COPY bun.lock* package.json ./
 
 RUN bun install
 
