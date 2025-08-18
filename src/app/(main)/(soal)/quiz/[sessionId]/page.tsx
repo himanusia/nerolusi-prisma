@@ -63,7 +63,8 @@ export default function QuizPage() {
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails?.endTime) <= new Date()
+      new Date(sessionDetails?.endTime) <= new Date() &&
+      (sessionDetails?.score == null || sessionDetails?.score === undefined)
     ) {
       router.push(`/quiz/${sessionIdString}/score`);
     }
@@ -426,20 +427,50 @@ export default function QuizPage() {
                         {/* Show correct answer after quiz ends */}
                         {new Date(sessionDetails?.endTime) < new Date() &&
                           questions[currentQuestionIndex].answers[0] && (
-                            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                              <label className="mb-2 block text-sm font-medium text-green-800">
-                                Jawaban Benar:
-                              </label>
-                              <div className="rounded-lg bg-white p-3 text-gray-900">
-                                <Editor
-                                  content={
-                                    questions[currentQuestionIndex].answers[0]
-                                      .content
-                                  }
-                                  className="border-none"
-                                />
+                            <>
+                              {/* User's Answer */}
+                              {(() => {
+                                const userAnswer = selectedAnswers.get(
+                                  questions[currentQuestionIndex].id,
+                                );
+                                const userAnswerText = typeof userAnswer === "string" ? userAnswer : "";
+                                const correctAnswer = questions[currentQuestionIndex].answers[0].content;
+                                const isCorrect = userAnswerText.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+                                
+                                return (
+                                  <div className={`rounded-lg border p-4 ${
+                                    isCorrect 
+                                      ? "border-green-200 bg-green-50" 
+                                      : "border-red-200 bg-red-50"
+                                  }`}>
+                                    <label className={`mb-2 block text-sm font-medium ${
+                                      isCorrect ? "text-green-800" : "text-red-800"
+                                    }`}>
+                                      Jawaban Anda: {isCorrect ? "(Benar)" : "(Salah)"}
+                                    </label>
+                                    <div className="rounded-lg bg-white p-3 text-gray-900">
+                                      {userAnswerText || "Tidak dijawab"}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                              
+                              {/* Correct Answer */}
+                              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                                <label className="mb-2 block text-sm font-medium text-green-800">
+                                  Jawaban Benar:
+                                </label>
+                                <div className="rounded-lg bg-white p-3 text-gray-900">
+                                  <Editor
+                                    content={
+                                      questions[currentQuestionIndex].answers[0]
+                                        .content
+                                    }
+                                    className="border-none"
+                                  />
+                                </div>
                               </div>
-                            </div>
+                            </>
                           )}
                       </div>
                     ) : (

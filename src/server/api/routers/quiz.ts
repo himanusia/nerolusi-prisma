@@ -384,6 +384,7 @@ export const quizRouter = createTRPCRouter({
 
         let totalCorrect = 0;
         let totalScore = 0;
+        let totalAnswered = 0;
 
         // Calculate total correct answers and total score
         quizSession.userAnswers.forEach((userAnswer) => {
@@ -396,6 +397,7 @@ export const quizRouter = createTRPCRouter({
             const userAnswerIds = userAnswer.answerChoices.map(
               (choice) => choice.answerId,
             );
+            totalAnswered++;
 
             // Check if arrays are equal (same length and same elements)
             const isCorrect =
@@ -408,6 +410,7 @@ export const quizRouter = createTRPCRouter({
             }
           } else if (userAnswer.essayAnswer !== null) {
             // For essay questions
+            totalAnswered++;
             const correctEssayAnswer = userAnswer.question.answers.find(
               (ans) => ans.isCorrect,
             );
@@ -430,6 +433,7 @@ export const quizRouter = createTRPCRouter({
             score: totalScore,
             numQuestion: quizSession.subtest.questions.length,
             numCorrect: totalCorrect,
+            numAnswered: totalAnswered,
           },
         });
       });

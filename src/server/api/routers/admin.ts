@@ -26,26 +26,9 @@ export const adminRouter = createTRPCRouter({
       orderBy: {
         createdAt: "desc",
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        class: {
-          select: {
-            name: true,
-          },
-        },
-      },
     });
 
-    // For now, we'll return users with a coins field set to 0
-    // In a real app, you'd have a coins field in the User model or a separate UserCoins table
-    return users.map((user) => ({
-      ...user,
-      coins: 0, // Placeholder - you'd need to add this field to your User model
-    }));
+    return users;
   }),
 
   // Coin operations (placeholder implementations)
@@ -57,9 +40,28 @@ export const adminRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Placeholder - you'd need to implement coin tracking in your database
-      // For now, we'll just return success
-      return { success: true };
+        const user = await ctx.db.user.findUnique({
+          where: {
+            id: input.userId,
+          },
+        });
+
+        if (!user) {
+          throw new Error("User not found");
+        }
+
+        user.token += input.amount;
+
+        await ctx.db.user.update({
+          where: {
+            id: input.userId,
+          },
+          data: {
+            token: user.token,
+          },
+        });
+
+        return { success: true };
     }),
 
   removeCoins: adminProcedure
@@ -70,8 +72,27 @@ export const adminRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Placeholder - you'd need to implement coin tracking in your database
-      // For now, we'll just return success
+      const user = await ctx.db.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      user.token -= input.amount;
+
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          token: user.token,
+        },
+      });
+
       return { success: true };
     }),
 
@@ -87,7 +108,7 @@ export const adminRouter = createTRPCRouter({
       },
       orderBy: {
         createdAt: "desc",
-      }
+      },
     });
 
     // Transform to match expected interface
@@ -304,10 +325,10 @@ export const adminRouter = createTRPCRouter({
             material: {
               include: {
                 subject: true,
-              }
-            }
-          }
-        }
+              },
+            },
+          },
+        },
       },
     });
 
