@@ -113,7 +113,7 @@ export default function NontonPage() {
       </div>
 
       {/* Tutor Information */}
-      <div className="mt-6 overflow-auto rounded-lg border border-gray-400 bg-white p-6">
+      {/* <div className="mt-6 overflow-auto rounded-lg border border-gray-400 bg-white p-6">
         <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
           <div className="flex flex-1 items-center space-x-4">
             <Avatar className="flex size-12 items-center justify-center md:size-16">
@@ -132,7 +132,7 @@ export default function NontonPage() {
             <span>Kontak</span>
           </Button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }
