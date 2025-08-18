@@ -32,7 +32,7 @@ export default function VideoMateri() {
                             <div
                                 key={subject.id}
                                 onClick={() => handleSubjectClick(subject)}
-                                className="max-w-[120px] min-w-[120px] md:max-w-[150px] md:min-w-[150px] flex flex-col items-center justify-center p-3 border border-[#2b8057] rounded-[10px] bg-white hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
+                                className="max-w-[80px] min-w-[80px] md:max-w-[150px] md:min-w-[150px] flex flex-col items-center justify-center px-1 py-2 md:p-3 border border-[#2b8057] rounded-[10px] bg-white hover:shadow-lg hover:scale-105 transition-all duration-200 cursor-pointer"
                             >
                                 <div className="w-18 h-18 bg-[#2b8057] rounded-[9px] flex items-center justify-center shadow-sm mb-2">
                                     <Image
@@ -43,7 +43,7 @@ export default function VideoMateri() {
                                         className="object-cover"
                                     />
                                 </div>
-                                <h3 className="text-xs md:text-sm font-medium text-[#545454] text-center leading-tight">
+                                <h3 className="text-[11px] md:text-sm font-medium text-[#545454] text-center leading-tight">
                                     {subject.title}
                                 </h3>
                             </div>
