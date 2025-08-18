@@ -163,7 +163,7 @@ export default function TryOutCard({
   return (
     <>
       <Card
-        className={`w-96 shrink-0 cursor-pointer overflow-hidden border-[#acaeba] transition-shadow hover:shadow-lg ${statusInfo.cardClassName}`}
+        className={`max-w-96 shrink-0 cursor-pointer overflow-hidden border-[#acaeba] transition-shadow hover:shadow-lg ${statusInfo.cardClassName}`}
         onClick={handleCardClick}
       >
         <CardContent className="p-0">
