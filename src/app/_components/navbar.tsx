@@ -23,6 +23,7 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { HiHome, HiMiniVideoCamera } from "react-icons/hi2";
 import { RiPencilFill, RiToolsFill, RiBook2Fill } from "react-icons/ri";
 import { HiUser, HiShoppingCart, HiLogout } from "react-icons/hi";
+import { FaWhatsapp } from "react-icons/fa";
 
 // const soal: { title: string; href: string }[] = [
 //   {
@@ -104,6 +105,12 @@ const navigationItems = [
   //   icon: <RiBook2Fill className="h-5 w-5"/>,
   //   isActive: (pathname: string) => pathname.startsWith("/modul"),
   // },
+  {
+    title: "Bantuan",
+    href: "https://wa.me/6285591402079",
+    icon: <FaWhatsapp className="h-5 w-5"/>,
+    isActive: (pathname: string) => pathname.startsWith("/whatsapp"),
+  },
 ];
 
 interface NavbarProps {
