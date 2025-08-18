@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Play, Lock } from "lucide-react";
 import { Button } from "~/app/_components/ui/button";
@@ -15,6 +15,7 @@ import { MaterialSection, Video } from "~/server/api/routers/materi";
 import LoadingPage from "~/app/loading";
 import ErrorPage from "~/app/error";
 import NoPackagePage from "~/app/no-package";
+import Image from "next/image";
 
 export default function SubjectMateriPage() {
   const params = useParams();
@@ -203,13 +204,13 @@ export default function SubjectMateriPage() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 flex flex-col min-h-screen">
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="mb-1 text-2xl font-bold text-[#2b8057]">
             {subject.title}
           </h1>
-          <p className="text-gray-600">Marathon LENGKAP materi PK!</p>
+          <p className="text-gray-600">Marathon LENGKAP materi {subject.title}!</p>
         </div>
         <Button
           variant="outline"
@@ -377,6 +378,41 @@ export default function SubjectMateriPage() {
           )}
         </div>
       ))}
+      {sections.length === 0 && (
+        <div className="flex items-center justify-center">
+          <div className="flex flex-col gap-3 items-center bg-[#2B8057] px-[90px] py-3 max-w-[400px] rounded-3xl">
+            <div className="bg-white rounded-full p-2">
+              <Image
+                src="/logo.png"
+                alt="logo"
+                width={50}
+                height={50}
+                className="object-contain"
+              />
+            </div>
+            <div>
+              <p className="text-white font-bold text-3xl text-center">Coming Soon...</p>
+              <p className="text-white font-bold text-lg text-right pb-[20px]">- Nerolusi</p>
+            </div>
+          </div>
+        </div>
+      )}
+      {sections.length != 0 && (
+        <div className="flex items-center justify-center">
+          <div className="flex flex-col items-center justify-center bg-[#2B8057] px-10 max-w-[400px] rounded-bl rounded-br rounded-3xl">
+            <div className="-translate-y-1/2 bg-white rounded-full p-2">
+              <Image
+                src="/logo.png"
+                alt="logo"
+                width={50}
+                height={50}
+                className="object-contain"
+              />
+            </div>
+            <p className="text-white font-bold text-3xl -mt-[20px] pb-[20px]">More To Come SOON!</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
