@@ -10,7 +10,7 @@ interface InformasiUtamaProps {
 }
 
 export default function InformasiUtama({
-  videoUrl = "https://youtu.be/feCUIiyGryo",
+  videoUrl = "https://youtu.be/Ndwc6qKl1LY",
   title = "Informasi Utama TKA!",
   description = "Informasi Utama TKA!",
 }: InformasiUtamaProps) {
