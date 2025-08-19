@@ -71,7 +71,7 @@ export default function TryoutEditPage() {
   const [packageForm, setPackageForm] = useState({
     name: "",
     type: "tryout" as const,
-    classId: 1,
+    classId: null,
     TOstart: "",
     TOend: "",
     tokenPrice: 0,
@@ -105,7 +105,7 @@ export default function TryoutEditPage() {
       setPackageForm({
         name: packageData.name || "",
         type: "tryout",
-        classId: packageData.classId || 1,
+        classId: packageData.classId,
         TOstart: packageData.TOstart
           ? new Date(packageData.TOstart).toISOString().slice(0, 16)
           : "",
@@ -229,7 +229,7 @@ export default function TryoutEditPage() {
                   setPackageForm({
                     name: packageData.name || "",
                     type: "tryout",
-                    classId: packageData.classId || 1,
+                    classId: packageData.classId,
                     TOstart: packageData.TOstart
                       ? new Date(packageData.TOstart).toISOString().slice(0, 16)
                       : "",
@@ -302,9 +302,9 @@ export default function TryoutEditPage() {
             <div>
               <Label htmlFor="class">Class</Label>
               <Select
-                value={packageForm.classId.toString()}
+                value={packageForm.classId?.toString() || ""}
                 onValueChange={(value) =>
-                  setPackageForm({ ...packageForm, classId: parseInt(value) })
+                  setPackageForm({ ...packageForm, classId: value ? parseInt(value) : null })
                 }
                 disabled={!isEditing}
               >
