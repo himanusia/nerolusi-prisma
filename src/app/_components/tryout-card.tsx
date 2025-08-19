@@ -173,7 +173,7 @@ export default function TryOutCard({
             >
               <div className="flex h-1/2 flex-col items-center justify-center border-r border-[#acaeba] bg-[#2b8057] p-3">
                 <div className="text-xs font-bold">Try Out</div>
-                <div className="mt-1 text-xs font-bold">SNBT</div>
+                <div className="mt-1 text-xs font-bold">TKA</div>
               </div>
               <div
                 className={`flex-1/2 flex w-full items-center justify-center border-r border-[#acaeba] bg-transparent py-2 text-center text-3xl font-bold text-black`}
