@@ -233,28 +233,28 @@ export default function SubjectMateriPage() {
             onClick={() => toggleSection(section.id)}
           >
             <div className="flex-1">
-              <h3 className="font-bold text-black">
+              <h3 className="font-bold text-black text-sm md:text-md">
                 Materi {section.index} -{" "}
                 {section.title.replace(`Materi ${section.index} - `, "")}
               </h3>
               {section.subtitle && (
-                <p className="mt-1 text-sm text-black">{section.subtitle}</p>
+                <p className="mt-1 text-xs md:text-sm text-black">{section.subtitle}</p>
               )}
             </div>
 
             <div className="flex items-center gap-6">
-              <div className="text-sm text-black">
+              <div className="text-xs md:text-sm text-black">
                 <span className="font-bold">{section.videoCount} Videos</span>
               </div>
-              <div className="text-sm text-black">
+              <div className="text-xs md:text-sm text-black">
                 <span className="font-bold">
                   Total durasi: {section.totalDuration}
                 </span>
               </div>
               {section.isExpanded ? (
-                <BiSolidDownArrow className="h-5 w-5 text-black" />
+                <BiSolidDownArrow className="h-3 w-3 md:h-5 md:w-5 text-black" />
               ) : (
-                <BiSolidUpArrow className="h-5 w-5 text-black" />
+                <BiSolidUpArrow className="h-3 w-3 md:h-5 md:w-5 text-black" />
               )}
             </div>
           </div>
@@ -265,52 +265,52 @@ export default function SubjectMateriPage() {
               {section.videos.map((video) => (
                 <div
                   key={video.id}
-                  className={`flex cursor-pointer items-center justify-between border-t border-[#acaeba] px-6 py-4 transition-colors hover:bg-gray-50 ${
+                  className={`flex flex-row cursor-pointer items-center justify-between border-t border-[#acaeba] px-3 py-2 md:px-6 md:py-4 transition-colors hover:bg-gray-50 ${
                     video.isCompleted
                       ? "bg-gradient-to-r from-[#9ad09f] to-[#cbffd0]"
                       : "bg-white"
                   }`}
                   onClick={() => handleVideoClick(video)}
                 >
-                  <div className="flex flex-1 items-center gap-4">
+                  <div className="flex w-full sm:w-auto flex-row items-center gap-4">
                     <div
-                      className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                      className={`flex h-6 w-6 md:h-10 md:w-10 items-center justify-center rounded-full ${
                         video.isLocked ? "bg-gray-300" : "bg-black"
                       }`}
                     >
                       {video.isLocked ? (
-                        <Lock className="h-5 w-5 text-white" />
+                        <Lock className="h-3 w-3 md:h-5 md:w-5 text-white" />
                       ) : (
-                        <Play className="h-5 w-5 fill-white text-white" />
+                        <Play className="h-3 w-3 md:h-5 md:w-5 fill-white text-white" />
                       )}
                     </div>
 
-                    <div className="flex-1">
-                      <h4 className="text-lg font-semibold text-black">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-md md:text-lg font-semibold text-black break-words whitespace-pre-line">
                         {video.title}
                       </h4>
                     </div>
 
-                    <div className="min-w-[100px] text-center">
+                    <div className="hidden md:block min-w-[100px] text-center">
                       <span className="font-bold text-black">----</span>
                     </div>
 
-                    <div className="min-w-[120px] text-center">
-                      <span className="font-bold text-black">
+                    <div className="min-w-[70px] md:min-w-[120px] text-center">
+                      <span className="font-bold text-black text-sm md:text-md">
                         {formatDuration(video.duration)}
                       </span>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-5">
+                  <div className="flex w-full md:w-auto flex-row items-center gap-1 md:gap-5">
                     {/* Completion Status */}
                     <div className="flex max-w-[100px] flex-row items-center gap-0">
-                      <span className="text-center text-sm font-bold text-black">
+                      <span className="text-center text-xs md:text-sm font-bold text-black whitespace-nowrap">
                         Sudah ditonton:
                       </span>
                       <div className="flex items-center">
                         {video.isCompleted ? (
-                          <div className="flex h-6 w-6 items-center justify-center rounded bg-[#35c05f] font-bold text-white">
+                          <div className="flex h-4 w-4 md:h-6 md:w-6 items-center justify-center rounded bg-[#35c05f] font-bold text-white">
                             ✓
                           </div>
                         ) : (
@@ -323,7 +323,7 @@ export default function SubjectMateriPage() {
                               })
                             }
                             disabled={video.isLocked}
-                            className="h-5 w-5 rounded border-[#acaeba] text-[#2b8057] focus:ring-[#2b8057] disabled:opacity-50"
+                            className="h-3 w-3 md:h-5 md:w-5 rounded border-[#acaeba] text-[#2b8057] focus:ring-[#2b8057] disabled:opacity-50"
                             onClick={(e) => e.stopPropagation()}
                           />
                         )}
@@ -331,14 +331,14 @@ export default function SubjectMateriPage() {
                     </div>
 
                     {/* Drill Buttons */}
-                    <div className="flex min-w-[200px] items-center justify-end gap-2">
+                    <div className="flex max-w-[120px] md:min-w-[200px] items-center justify-end md:gap-2">
                       {video.hasQuiz && (
                         <>
                           {video.drillId && !video.isDrillCompleted ? (
-                            <div className="flex gap-2">
+                            <div className="flex ml-2 md:gap-2">
                               <Button
                                 size="sm"
-                                className={`min-h-[40px] max-w-[105px] p-2 text-xs ${
+                                className={`max-w-[60px] md:min-h-[40px] md:max-w-[105px] p-1 md:p-2 text-xs ${
                                   !video.isCompleted || video.isLocked
                                     ? "cursor-not-allowed border-2 border-[#a6a6a6] bg-[#d9d9d9]"
                                     : "border-2 border-white bg-[#ffca28] hover:bg-[#ffca28]/80"
@@ -349,23 +349,23 @@ export default function SubjectMateriPage() {
                                   handleDrillClick(video);
                                 }}
                               >
-                                <p className="leading-tigh text-xs">
+                                <p className="leading-tight text-[9px] md:text-xs text-left">
                                   Kerjakan Drill Soal
                                 </p>
-                                <RiPencilFill className="ml-1 h-10 w-10" />
+                                <RiPencilFill className="hidden md:block md:ml-1 md:h-10 md:w-10" />
                               </Button>
                             </div>
                           ) : (
                             <Button
                               size="sm"
-                              className="max-w-[100px] rounded-[5px] border-2 border-white bg-gradient-to-b from-[#223a67] to-[#2d69db] p-2 text-xs font-bold text-white hover:bg-blue-600"
+                              className="max-w-[60px] md:max-w-[100px] rounded-[5px] border-2 border-white bg-gradient-to-b from-[#223a67] to-[#2d69db] p-1 md:p-2 text-[9px] md:text-xs font-bold text-white hover:bg-blue-600"
                               onClick={(e) => {
                                 e.stopPropagation();
                                 handleViewScoreClick(video);
                               }}
                             >
                               <p>Lihat Hasil</p>
-                              <HiOutlineDocumentReport className="ml-1 h-4 w-4" />
+                              <HiOutlineDocumentReport className="hidden md:block ml-1 h-4 w-4" />
                             </Button>
                           )}
                         </>
