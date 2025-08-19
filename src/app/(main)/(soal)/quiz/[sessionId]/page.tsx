@@ -66,7 +66,7 @@ export default function QuizPage() {
       new Date(sessionDetails?.endTime) <= new Date() &&
       (sessionDetails?.score == null || sessionDetails?.score === undefined)
     ) {
-      router.push(`/quiz/${sessionIdString}/score`);
+      handleSubmit();
     }
   }, [sessionDetails, router, sessionIdString]);
 
@@ -374,11 +374,14 @@ export default function QuizPage() {
 
                   {/* Question Content */}
                   <div className="rounded-lg bg-gray-50 p-4">
-                    <Editor
+                    {/* <Editor
                       key={questions[currentQuestionIndex].id}
                       content={questions[currentQuestionIndex].content}
                       className="border-none"
-                    />
+                    /> */}
+                    <div className="whitespace-pre-line text-base">
+                      {questions[currentQuestionIndex].content}
+                    </div>
                     {questions[currentQuestionIndex].imageUrl && (
                       <Image
                         src={questions[currentQuestionIndex].imageUrl}
@@ -433,20 +436,34 @@ export default function QuizPage() {
                                 const userAnswer = selectedAnswers.get(
                                   questions[currentQuestionIndex].id,
                                 );
-                                const userAnswerText = typeof userAnswer === "string" ? userAnswer : "";
-                                const correctAnswer = questions[currentQuestionIndex].answers[0].content;
-                                const isCorrect = userAnswerText.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
-                                
+                                const userAnswerText =
+                                  typeof userAnswer === "string"
+                                    ? userAnswer
+                                    : "";
+                                const correctAnswer =
+                                  questions[currentQuestionIndex].answers[0]
+                                    .content;
+                                const isCorrect =
+                                  userAnswerText.trim().toLowerCase() ===
+                                  correctAnswer.trim().toLowerCase();
+
                                 return (
-                                  <div className={`rounded-lg border p-4 ${
-                                    isCorrect 
-                                      ? "border-green-200 bg-green-50" 
-                                      : "border-red-200 bg-red-50"
-                                  }`}>
-                                    <label className={`mb-2 block text-sm font-medium ${
-                                      isCorrect ? "text-green-800" : "text-red-800"
-                                    }`}>
-                                      Jawaban Anda: {isCorrect ? "(Benar)" : "(Salah)"}
+                                  <div
+                                    className={`rounded-lg border p-4 ${
+                                      isCorrect
+                                        ? "border-green-200 bg-green-50"
+                                        : "border-red-200 bg-red-50"
+                                    }`}
+                                  >
+                                    <label
+                                      className={`mb-2 block text-sm font-medium ${
+                                        isCorrect
+                                          ? "text-green-800"
+                                          : "text-red-800"
+                                      }`}
+                                    >
+                                      Jawaban Anda:{" "}
+                                      {isCorrect ? "(Benar)" : "(Salah)"}
                                     </label>
                                     <div className="rounded-lg bg-white p-3 text-gray-900">
                                       {userAnswerText || "Tidak dijawab"}
@@ -454,7 +471,7 @@ export default function QuizPage() {
                                   </div>
                                 );
                               })()}
-                              
+
                               {/* Correct Answer */}
                               <div className="rounded-lg border border-green-200 bg-green-50 p-4">
                                 <label className="mb-2 block text-sm font-medium text-green-800">
@@ -616,9 +633,12 @@ export default function QuizPage() {
                         <h4 className="mb-2 font-semibold text-blue-900">
                           Penjelasan:
                         </h4>
-                        <Editor
+                        {/* <Editor
                           content={questions[currentQuestionIndex].explanation}
-                        />
+                        /> */}
+                        <div className="whitespace-pre-line">
+                          {questions[currentQuestionIndex].explanation}
+                        </div>
                       </div>
                     )}
 

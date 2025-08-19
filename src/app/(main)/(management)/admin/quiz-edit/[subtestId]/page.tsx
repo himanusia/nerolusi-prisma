@@ -414,12 +414,12 @@ export default function QuizEditPage() {
               </label>
               <Textarea
                 value={editingQuestion.questionText}
-                onChange={(e) =>
+                onChange={(e) => {
                   setEditingQuestion({
                     ...editingQuestion,
                     questionText: e.target.value,
-                  })
-                }
+                  });
+                }}
                 rows={4}
                 placeholder="Enter your question here..."
               />
@@ -723,11 +723,9 @@ export default function QuizEditPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <Editor
-                      key={currentQuestion.id}
-                      content={currentQuestion.questionText}
-                      isEdit={false}
-                    />
+                    <div className="whitespace-pre-line text-base">
+                      {currentQuestion.questionText}
+                    </div>
                   </div>
 
                   {/* Display question image if exists */}
