@@ -53,9 +53,9 @@ export default function InformasiUtama({
             {title}
           </h1>
           <p className="mb-6 text-lg text-gray-600">{description}</p>
-          <Button variant="default" onClick={handleWatchMore}>
+          {/* <Button variant="default" onClick={handleWatchMore}>
             Watch More &gt;
-          </Button>
+          </Button> */}
         </div>
       </div>
     </div>

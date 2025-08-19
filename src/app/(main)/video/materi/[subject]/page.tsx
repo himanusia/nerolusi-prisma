@@ -258,7 +258,7 @@ export default function SubjectMateriPage() {
                 <div className="text-xs md:text-sm text-black">
                   <span className="font-bold">{section.videoCount} Videos</span>
                 </div>
-                <div className="text-xs md:text-sm text-black">
+                <div className="hidden md:block text-xs md:text-sm text-black">
                   <span className="font-bold">
                     Total durasi: {getTotalDuration(section)}
                   </span>
@@ -307,14 +307,14 @@ export default function SubjectMateriPage() {
                         <span className="font-bold text-black">----</span>
                       </div>
 
-                      <div className="min-w-[70px] md:min-w-[120px] text-center">
+                      <div className="hidden md:block min-w-[70px] md:min-w-[120px] text-center">
                         <span className="font-bold text-black text-sm md:text-md">
                           {formatDuration(video.duration)}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex w-full md:w-auto flex-row items-center gap-1 md:gap-5">
+                    <div className="flex w-full md:w-auto flex-row items-center gap-1 md:gap-5 ml-1 md:ml-0">
                       {/* Completion Status */}
                       <div className="flex max-w-[100px] flex-row items-center gap-0">
                         <span className="text-center text-xs md:text-sm font-bold text-black whitespace-nowrap">
