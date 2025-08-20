@@ -3,6 +3,7 @@ import { HiMiniVideoCamera } from "react-icons/hi2";
 import { Button } from "~/app/_components/ui/button";
 import ModulCard from "./modul-card";
 import HeadJenisSubtest from "~/app/_components/head-jenis-subtest";
+import { redirect } from "next/navigation";
 
 const modules = [
   {
@@ -39,10 +40,13 @@ const modules = [
   },
 ];
 
+const isTka = true;
+
 export default function ModulPage() {
   return (
+    redirect("/modul/materi"),
     <div className="flex flex-col gap-4">
-      <HeadJenisSubtest title="Materi & Catatan" type="modul" />
+      <HeadJenisSubtest title="Materi & Catatan" type="modul" isTka={isTka} />
       <div className="flex flex-col">
         <h2 className="text-2xl font-bold text-green-600">Bahan Materi</h2>
         <p className="text-gray-700">

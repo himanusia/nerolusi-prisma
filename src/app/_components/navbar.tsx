@@ -99,12 +99,12 @@ const navigationItems = [
     icon: <HiMiniVideoCamera className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/video"),
   },
-  // {
-  //   title: "Modul",
-  //   href: "/modul",
-  //   icon: <RiBook2Fill className="h-5 w-5"/>,
-  //   isActive: (pathname: string) => pathname.startsWith("/modul"),
-  // },
+  {
+    title: "Modul",
+    href: "/modul",
+    icon: <RiBook2Fill className="h-5 w-5"/>,
+    isActive: (pathname: string) => pathname.startsWith("/modul/materi"),
+  },
   {
     title: "Bantuan",
     href: "https://wa.me/6285591402079",
