@@ -44,6 +44,7 @@ import {
 } from "~/app/_components/ui/select";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
+import { getAllSubjects } from "~/app/_components/constants";
 
 const SUBTEST_TYPES = [
   { value: "pu", label: "Kemampuan Penalaran Umum" },
@@ -196,7 +197,7 @@ export default function TryoutEditPage() {
   };
 
   const getSubtestTypeLabel = (type: string) => {
-    return SUBTEST_TYPES.find((t) => t.value === type)?.label || type;
+    return SUBTEST_TYPES.find((t) => t.value === type)?.label || type.replace("_", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" ");
   };
 
   if (isLoading) return <LoadingPage />;
@@ -456,6 +457,13 @@ export default function TryoutEditPage() {
                             {type.label}
                           </SelectItem>
                         ))}
+                        {
+                          getAllSubjects().map((subject) => (
+                            <SelectItem key={subject.slug.replace("-", "_")} value={subject.slug.replace("-", "_")}>
+                              {subject.title}
+                            </SelectItem>
+                          ))
+                        }
                       </SelectContent>
                     </Select>
                     {subtestForm.type === "" && (

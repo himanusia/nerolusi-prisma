@@ -1,3 +1,4 @@
+import { SubtestType } from "@prisma/client";
 import { z } from "zod";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 
@@ -215,7 +216,7 @@ export const adminRouter = createTRPCRouter({
   createSubtest: adminProcedure
     .input(
       z.object({
-        type: z.enum(["pu", "ppu", "pbm", "pk", "pm", "lbe", "lbi", "materi"]),
+        type: z.enum(Object.values(SubtestType) as [SubtestType, ...SubtestType[]]),
         packageId: z.string(),
         duration: z.number(),
       }),

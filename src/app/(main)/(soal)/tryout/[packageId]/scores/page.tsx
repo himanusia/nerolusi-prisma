@@ -91,7 +91,7 @@ export default function ScoresPage() {
       case "pm":
         return { short: "PM", full: "Penalaran Matematika" };
       default:
-        return { short: String(type).toUpperCase(), full: String(type) };
+        return { short: String(type).replace("_", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" "), full: "" };
     }
   };
 
