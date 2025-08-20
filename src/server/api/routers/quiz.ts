@@ -966,23 +966,55 @@ export const quizRouter = createTRPCRouter({
           },
         });
 
-        // Delete existing answers
-        await tx.answer.deleteMany({
+        // Get existing answers
+        const existingAnswers = await tx.answer.findMany({
           where: { questionId: input.questionId },
         });
 
-        // Create new answers
+        const existingAnswerIds = existingAnswers.map((a) => a.id);
+        const inputAnswerIds = input.answers
+          .map((a) => a.id)
+          .filter((id) => id !== undefined) as number[];
+
+        // Find answers to delete (exist in DB but not in input)
+        const answersToDelete = existingAnswerIds.filter(
+          (id) => !inputAnswerIds.includes(id),
+        );
+
+        // Delete orphaned answers
+        if (answersToDelete.length > 0) {
+          await tx.answer.deleteMany({
+            where: {
+              id: { in: answersToDelete },
+            },
+          });
+        }
+
+        // Update or create answers
         const answers = await Promise.all(
-          input.answers.map((answer, index) =>
-            tx.answer.create({
-              data: {
-                questionId: question.id,
-                content: answer.content,
-                isCorrect: answer.isCorrect,
-                index: index,
-              },
-            }),
-          ),
+          input.answers.map(async (answer, index) => {
+            if (answer.id && existingAnswerIds.includes(answer.id)) {
+              // Update existing answer
+              return await tx.answer.update({
+                where: { id: answer.id },
+                data: {
+                  content: answer.content,
+                  isCorrect: answer.isCorrect,
+                  index: index,
+                },
+              });
+            } else {
+              // Create new answer
+              return await tx.answer.create({
+                data: {
+                  questionId: question.id,
+                  content: answer.content,
+                  isCorrect: answer.isCorrect,
+                  index: index,
+                },
+              });
+            }
+          }),
         );
 
         return { question, answers };

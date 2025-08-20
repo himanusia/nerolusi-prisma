@@ -62,7 +62,14 @@ export default function TryOutPage() {
       case "pm":
         return "Penalaran Matematika";
       default:
-        return type;
+        return type
+          .replace("_", " ")
+          .split(" ")
+          .map(
+            (word) =>
+              word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+          )
+          .join(" ");
     }
   };
 
@@ -287,7 +294,15 @@ export default function TryOutPage() {
                         case "pm":
                           return "Penalaran Matematika";
                         default:
-                          return subtest.type;
+                          return subtest.type
+                            .replace("_", " ")
+                            .split(" ")
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() +
+                                word.slice(1).toLowerCase(),
+                            )
+                            .join(" ");
                       }
                     })()}
                   </div>
@@ -358,8 +373,16 @@ export default function TryOutPage() {
                     return { short: "PM", full: "Penalaran Matematika" };
                   default:
                     return {
-                      short: String(currentSubtest.type).toUpperCase(),
-                      full: String(currentSubtest.type),
+                      short: "",
+                      full: String(currentSubtest.type)
+                        .replace("_", " ")
+                        .split(" ")
+                        .map(
+                          (word) =>
+                            word.charAt(0).toUpperCase() +
+                            word.slice(1).toLowerCase(),
+                        )
+                        .join(" "),
                     };
                 }
               })();

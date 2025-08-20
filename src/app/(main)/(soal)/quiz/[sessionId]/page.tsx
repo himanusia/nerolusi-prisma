@@ -265,8 +265,32 @@ export default function QuizPage() {
                       return "Literasi Bahasa Inggris";
                     case "lbi":
                       return "Literasi Bahasa Indonesia";
+                    case "matematika_wajib":
+                      return "Matematika Wajib";
+                    case "bahasa_indonesia":
+                      return "Bahasa Indonesia";
+                    case "bahasa_inggris":
+                      return "Bahasa Inggris";
+                    case "matematika_lanjut":
+                      return "Matematika Lanjut";
+                    case "fisika":
+                      return "Fisika";
+                    case "kimia":
+                      return "Kimia";
+                    case "biologi":
+                      return "Biologi";
+                    case "ekonomi":
+                      return "Ekonomi";
+                    case "geografi":
+                      return "Geografi";
+                    case "sejarah":
+                      return "Sejarah";
+                    case "ppkn":
+                      return "PPKn";
+                    case "projek_kreatif_kewirausahaan":
+                      return "Projek Kreatif Kewirausahaan";
                     default:
-                      return sessionDetails?.subtest.type;
+                      return "";
                   }
                 })()}
               </h1>
@@ -374,14 +398,14 @@ export default function QuizPage() {
 
                   {/* Question Content */}
                   <div className="rounded-lg bg-gray-50 p-4">
-                    {/* <Editor
+                    <Editor
                       key={questions[currentQuestionIndex].id}
                       content={questions[currentQuestionIndex].content}
                       className="border-none"
-                    /> */}
-                    <div className="whitespace-pre-line text-base">
+                    />
+                    {/* <div className="whitespace-pre-line text-base">
                       {questions[currentQuestionIndex].content}
-                    </div>
+                    </div> */}
                     {questions[currentQuestionIndex].imageUrl && (
                       <Image
                         src={questions[currentQuestionIndex].imageUrl}
@@ -633,12 +657,12 @@ export default function QuizPage() {
                         <h4 className="mb-2 font-semibold text-blue-900">
                           Penjelasan:
                         </h4>
-                        {/* <Editor
+                        <Editor
                           content={questions[currentQuestionIndex].explanation}
-                        /> */}
-                        <div className="whitespace-pre-line">
+                        />
+                        {/* <div className="whitespace-pre-line">
                           {questions[currentQuestionIndex].explanation}
-                        </div>
+                        </div> */}
                       </div>
                     )}
 

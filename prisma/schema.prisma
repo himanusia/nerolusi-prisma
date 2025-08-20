@@ -29,6 +29,19 @@ enum SubtestType {
   lbe
   lbi
   materi
+  matematika_wajib
+  bahasa_indonesia
+  bahasa_inggris
+  matematika_lanjut
+  fisika
+  kimia
+  biologi
+  ekonomi
+  sosiologi
+  geografi
+  sejarah
+  ppkn
+  projek_kreatif_kewirausahaan
 }
 
 enum QuestionType {

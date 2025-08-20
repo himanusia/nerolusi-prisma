@@ -53,6 +53,7 @@ interface Question {
   orderIndex: number;
   score: number;
   imageUrl?: string;
+  explanation?: string; // Add explanation field
   answers: Answer[];
 }
 
@@ -122,6 +123,7 @@ export default function QuizEditPage() {
           orderIndex: q.index,
           score: q.score,
           imageUrl: q.imageUrl || undefined,
+          explanation: q.explanation || undefined, // Map explanation from API
           answers: q.answers.map((a) => ({
             id: a.id,
             text: a.content,
@@ -148,6 +150,7 @@ export default function QuizEditPage() {
       orderIndex: questions.length + 1,
       score: 10,
       imageUrl: undefined,
+      explanation: undefined, // Initialize explanation as undefined
       answers: [
         { text: "", isCorrect: false },
         { text: "", isCorrect: false },
@@ -230,6 +233,7 @@ export default function QuizEditPage() {
         content: editingQuestion.questionText,
         type: editingQuestion.questionType,
         score: editingQuestion.score,
+        explanation: editingQuestion.explanation || undefined,
         imageUrl: editingQuestion.imageUrl,
         answers: editingQuestion.answers.map((a) => ({
           id: a.id,
@@ -244,6 +248,7 @@ export default function QuizEditPage() {
         content: editingQuestion.questionText,
         type: editingQuestion.questionType,
         score: editingQuestion.score,
+        explanation: editingQuestion.explanation || undefined,
         imageUrl: editingQuestion.imageUrl,
         answers: editingQuestion.answers.map((a) => ({
           content: a.text,
@@ -412,7 +417,18 @@ export default function QuizEditPage() {
               <label className="mb-2 block text-sm font-medium">
                 Question Text
               </label>
-              <Textarea
+              <Editor
+                isEdit={true}
+                content={editingQuestion.questionText}
+                onContentChange={(newContent) => {
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    questionText: newContent,
+                  });
+                }}
+                className={"p-2"}
+              />
+              {/* <Textarea
                 value={editingQuestion.questionText}
                 onChange={(e) => {
                   setEditingQuestion({
@@ -422,7 +438,7 @@ export default function QuizEditPage() {
                 }}
                 rows={4}
                 placeholder="Enter your question here..."
-              />
+              /> */}
             </div>
 
             {/* Image Upload */}
@@ -503,6 +519,27 @@ export default function QuizEditPage() {
                   </p>
                 </div>
               )}
+            </div>
+
+            {/* Explanation (Optional) */}
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Pembahasan (Opsional)
+                <span className="ml-2 text-xs text-muted-foreground">
+                  Penjelasan jawaban untuk membantu siswa memahami
+                </span>
+              </label>
+              <Editor
+                isEdit={true}
+                content={editingQuestion.explanation || ""}
+                onContentChange={(newContent) => {
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    explanation: newContent || undefined,
+                  });
+                }}
+                className={"p-2"}
+              />
             </div>
 
             {/* Essay Answer (only for essay questions) */}
@@ -723,9 +760,13 @@ export default function QuizEditPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <div className="whitespace-pre-line text-base">
+                    {/* <div className="whitespace-pre-line text-base">
                       {currentQuestion.questionText}
-                    </div>
+                    </div> */}
+                    <Editor
+                      isEdit={false}
+                      content={currentQuestion.questionText}
+                    />
                   </div>
 
                   {/* Display question image if exists */}
