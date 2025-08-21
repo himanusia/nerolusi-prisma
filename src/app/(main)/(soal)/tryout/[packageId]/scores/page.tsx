@@ -137,9 +137,9 @@ export default function ScoresPage() {
               <h2 className="text-center text-xl font-bold text-white md:text-2xl">
                 {session?.user?.name}
               </h2>
-              <p className="text-md text-center font-semibold text-white md:text-xl">
+              {/* <p className="text-md text-center font-semibold text-white md:text-xl">
                 SMA Islam Cikal Harapan I BSD
-              </p>
+              </p> */}
             </div>
 
             {/* Score Summary Cards */}

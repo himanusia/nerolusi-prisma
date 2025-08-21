@@ -639,7 +639,10 @@ export default function QuizPage() {
                                         <CheckCircle className="h-4 w-4 text-green-600" />
                                       )}
                                     </div>
-                                    <Editor content={answer.content} />
+                                    <div className="flex px-3 py-4 border rounded-lg border-gray-200">
+                                      {answer.content}
+                                    </div>
+                                    {/* <Editor content={answer.content} /> */}
                                   </div>
                                 </label>
                               );

@@ -410,7 +410,7 @@ export default function TryOutPage() {
                           clipRule="evenodd"
                         />
                       </svg>
-                      <span className="font-semibold">20 Soal</span>
+                      <span className="font-semibold">{currentSubtest._count.questions ?? "?"} Soal</span>
                     </div>
 
                     <div className="flex items-center gap-2">
