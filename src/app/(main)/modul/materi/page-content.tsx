@@ -47,35 +47,22 @@ export default function PageContent() {
     sessions: [
       {
         id: 1,
-        title: "Catatan LiveClass #1",
+        title: "Matematika Wajib",
         pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/25-Program-Dinamis-(2025)-Bagian1.pdf",
+          "https://test2.nerolusi.com/modul_matwa.pdf",
       },
       {
         id: 2,
-        title: "Catatan LiveClass #2",
+        title: "Bahasa Indonesia",
         pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/26-Program-Dinamis-(2025)-Bagian2.pdf",
+          "https://test2.nerolusi.com/modul_bindo.pdf",
       },
       {
         id: 3,
-        title: "Catatan LiveClass #3",
+        title: "Bahasa Inggris",
         pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2019-2020/Teori-P-NP-dan-NPC-(Bagian%201).pdf",
+          "https://test2.nerolusi.com/modul_bing.pdf",
       },
-      {
-        id: 4,
-        title: "Catatan LiveClass #4",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2019-2020/Teori-P-NP-dan-NPC-(Bagian%202).pdf",
-      },
-      {
-        id: 5,
-        title: "Catatan LiveClass #5",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/01-Pengantar-Strategi-Algoritma-(2025).pdf",
-      },
-      { id: 6, title: "Catatan LiveClass #6", pdfUrl: "no" },
     ],
   };
 
