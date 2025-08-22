@@ -43,7 +43,7 @@ export default function PageContent() {
   }, [isMobileDialogOpen]);
   // Mock data - replace with actual data fetching
   const subtestData = {
-    title: `Daftar Catatan`,
+    title: `Daftar Modul`,
     sessions: [
       {
         id: 1,
