@@ -503,6 +503,9 @@ export default function QuizPage() {
                                 </label>
                                 <div className="rounded-lg bg-white p-3 text-gray-900">
                                   <Editor
+                                    key={
+                                      questions[currentQuestionIndex].id
+                                    }
                                     content={
                                       questions[currentQuestionIndex].answers[0]
                                         .content
@@ -661,6 +664,7 @@ export default function QuizPage() {
                           Penjelasan:
                         </h4>
                         <Editor
+                          key={questions[currentQuestionIndex].id}
                           content={questions[currentQuestionIndex].explanation}
                         />
                         {/* <div className="whitespace-pre-line">
