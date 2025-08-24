@@ -391,8 +391,8 @@ export default function SubjectMateriPage() {
           </div>
         ))}
         {sections.length === 0 && (
-          <div className="flex items-center justify-center translate-y-[100px]">
-            <div className="flex flex-col gap-3 items-center bg-[#2B8057] px-[90px] py-3 max-w-[400px] rounded-3xl">
+          <div className="flex items-center justify-center">
+            <div className="flex flex-col gap-3 items-center bg-[#2B8057] px-[90px] py-3 max-w-[500px] rounded-3xl">
               <div className="bg-white rounded-full p-2">
                 <Image
                   src="/logo.png"
@@ -403,7 +403,8 @@ export default function SubjectMateriPage() {
                 />
               </div>
               <div>
-                <p className="text-white font-bold text-3xl text-center">Coming Soon...</p>
+                <p className="text-white font-bold text-3xl text-center mb-2">Dalam proses...</p>
+                <p className="text-white font-bold text-sm text-center">Materi akan ditambah 3+ materi perminggunya dan akan 100% komplit pada tanggal 15 September 2025</p>
                 <p className="text-white font-bold text-lg text-right pb-[20px]">- Nerolusi</p>
               </div>
             </div>
