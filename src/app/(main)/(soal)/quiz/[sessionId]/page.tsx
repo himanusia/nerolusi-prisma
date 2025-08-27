@@ -22,6 +22,7 @@ import {
   Flag,
 } from "lucide-react";
 import Link from "next/link";
+import { getYouTubeVideoId } from "~/utils/get-youtube-id";
 
 export default function QuizPage() {
   const { sessionId } = useParams(); // drill = subject, subtest = videoId
@@ -503,9 +504,7 @@ export default function QuizPage() {
                                 </label>
                                 <div className="rounded-lg bg-white p-3 text-gray-900">
                                   <Editor
-                                    key={
-                                      questions[currentQuestionIndex].id
-                                    }
+                                    key={questions[currentQuestionIndex].id}
                                     content={
                                       questions[currentQuestionIndex].answers[0]
                                         .content
@@ -642,7 +641,7 @@ export default function QuizPage() {
                                         <CheckCircle className="h-4 w-4 text-green-600" />
                                       )}
                                     </div>
-                                    <div className="flex px-3 py-4 border rounded-lg border-gray-200">
+                                    <div className="flex rounded-lg border border-gray-200 px-3 py-4">
                                       {answer.content}
                                     </div>
                                     {/* <Editor content={answer.content} /> */}
@@ -672,6 +671,51 @@ export default function QuizPage() {
                         </div> */}
                       </div>
                     )}
+                  {new Date(sessionDetails?.endTime) < new Date() &&
+                    questions[currentQuestionIndex].videoExplanation &&
+                    (() => {
+                      const videoUrl =
+                        questions[currentQuestionIndex].videoExplanation;
+                      const youtubeId = getYouTubeVideoId(videoUrl);
+                      if (!youtubeId) {
+                        return (
+                          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <h4 className="mb-2 font-semibold text-blue-900">
+                              Video Penjelasan:
+                            </h4>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="mb-4 text-6xl">⚠️</div>
+                                <h2 className="mb-2 text-2xl font-bold text-gray-800">
+                                  Invalid Video URL
+                                </h2>
+                                <p className="text-gray-600">
+                                  This doesn't appear to be a valid YouTube
+                                  video.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                          <h4 className="mb-2 font-semibold text-blue-900">
+                            Video Penjelasan:
+                          </h4>
+                          <div className="relative w-full">
+                            <div className="aspect-video overflow-hidden rounded-lg">
+                              <iframe
+                                className="h-full w-full"
+                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              ></iframe>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                   {/* Navigation Buttons */}
                   <div className="flex items-center justify-between pt-4">

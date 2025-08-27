@@ -54,6 +54,7 @@ interface Question {
   score: number;
   imageUrl?: string;
   explanation?: string; // Add explanation field
+  videoExplanation?: string; // Add videoExplanation field
   answers: Answer[];
 }
 
@@ -124,6 +125,7 @@ export default function QuizEditPage() {
           score: q.score,
           imageUrl: q.imageUrl || undefined,
           explanation: q.explanation || undefined, // Map explanation from API
+          videoExplanation: q.videoExplanation || undefined, // Map videoExplanation from API
           answers: q.answers.map((a) => ({
             id: a.id,
             text: a.content,
@@ -151,6 +153,7 @@ export default function QuizEditPage() {
       score: 10,
       imageUrl: undefined,
       explanation: undefined, // Initialize explanation as undefined
+      videoExplanation: undefined, // Initialize videoExplanation as undefined
       answers: [
         { text: "", isCorrect: false },
         { text: "", isCorrect: false },
@@ -234,6 +237,7 @@ export default function QuizEditPage() {
         type: editingQuestion.questionType,
         score: editingQuestion.score,
         explanation: editingQuestion.explanation || undefined,
+        videoExplanation: editingQuestion.videoExplanation || undefined,
         imageUrl: editingQuestion.imageUrl,
         answers: editingQuestion.answers.map((a) => ({
           id: a.id,
@@ -249,6 +253,7 @@ export default function QuizEditPage() {
         type: editingQuestion.questionType,
         score: editingQuestion.score,
         explanation: editingQuestion.explanation || undefined,
+        videoExplanation: editingQuestion.videoExplanation || undefined,
         imageUrl: editingQuestion.imageUrl,
         answers: editingQuestion.answers.map((a) => ({
           content: a.text,
@@ -539,6 +544,26 @@ export default function QuizEditPage() {
                   });
                 }}
                 className={"p-2"}
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Link Video Pembahasan (Opsional)
+                <span className="ml-2 text-xs text-muted-foreground">
+                  Video pembahasan untuk membantu siswa memahami
+                </span>
+              </label>
+              <Input
+                value={editingQuestion.videoExplanation || ""}
+                onChange={(e) => {
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    videoExplanation: e.target.value || undefined,
+                  });
+                }}
+                placeholder="Masukkan link video pembahasan"
+                className="flex-1"
               />
             </div>
 

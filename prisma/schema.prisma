@@ -8,7 +8,252 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Enums
+model User {
+  id                 String               @id @default(cuid())
+  name               String?
+  email              String?              @unique
+  emailVerified      DateTime?
+  image              String?
+  role               Role                 @default(user)
+  enrolledUtbk       Boolean              @default(false)
+  enrolledTka        Boolean              @default(false)
+  token              Int                  @default(0)
+  createdAt          DateTime             @default(now())
+  classid            Int?
+  accounts           Account[]
+  quizSession        QuizSession[]
+  sessions           Session[]
+  class              Class?               @relation(fields: [classid], references: [id])
+  userAnswers        UserAnswer[]
+  UserMateriProgress UserMateriProgress[]
+  UserPackage        UserPackage[]
+}
+
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String?
+  access_token             String?
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String?
+  session_state            String?
+  refresh_token_expires_in Int?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model UserPackage {
+  id        String   @id @default(cuid())
+  userId    String
+  packageId String
+  createdAt DateTime @default(now())
+  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Class {
+  id        Int       @id @default(autoincrement())
+  name      String
+  createdAt DateTime  @default(now())
+  packages  Package[]
+  users     User[]
+}
+
+model Subject {
+  id        Int         @id @default(autoincrement())
+  name      String
+  type      SubjectType
+  createdAt DateTime    @default(now())
+  materials Material[]
+}
+
+model Material {
+  id        Int      @id @default(autoincrement())
+  index     Int
+  name      String
+  subjectId Int
+  createdAt DateTime @default(now())
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topics    Topic[]
+}
+
+model Topic {
+  id           Int                  @id @default(autoincrement())
+  index        Int
+  name         String
+  materialId   Int
+  createdAt    DateTime             @default(now())
+  videoId      String               @unique
+  subtestId    String?              @unique
+  material     Material             @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  subtest      Subtest?             @relation(fields: [subtestId], references: [id])
+  video        Video                @relation(fields: [videoId], references: [id])
+  userProgress UserMateriProgress[]
+}
+
+model Package {
+  id          String        @id @default(cuid())
+  name        String
+  type        PackageType
+  classId     Int?
+  TOstart     DateTime?
+  TOend       DateTime?
+  tokenPrice  Int?
+  createdAt   DateTime      @default(now())
+  class       Class?        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  quizSession QuizSession[]
+  subtests    Subtest[]
+  userPackage UserPackage[]
+}
+
+model Subtest {
+  id          String        @id @default(cuid())
+  type        SubtestType
+  packageId   String?
+  duration    Int?
+  questions   Question[]
+  quizSession QuizSession[]
+  package     Package?      @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  topics      Topic?
+}
+
+model Question {
+  id               Int          @id @default(autoincrement())
+  index            Int
+  content          String
+  imageUrl         String?
+  type             QuestionType
+  score            Int
+  explanation      String?
+  videoExplanation String?
+  subtestId        String
+  answers          Answer[]
+  subtest          Subtest      @relation(fields: [subtestId], references: [id], onDelete: Cascade)
+  userAnswers      UserAnswer[]
+}
+
+model Answer {
+  id          Int                @id @default(autoincrement())
+  content     String
+  index       Int
+  isCorrect   Boolean            @default(false)
+  questionId  Int
+  question    Question           @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswerChoice[]
+}
+
+model UserAnswer {
+  id            Int                @id @default(autoincrement())
+  essayAnswer   String?
+  questionId    Int
+  userId        String
+  quizSessionId String
+  question      Question           @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  quizSession   QuizSession        @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
+  user          User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  answerChoices UserAnswerChoice[]
+
+  @@unique([userId, quizSessionId, questionId], name: "userId_quizSessionId_questionId")
+}
+
+model UserAnswerChoice {
+  id           Int        @id @default(autoincrement())
+  userAnswerId Int
+  answerId     Int
+  answer       Answer     @relation(fields: [answerId], references: [id], onDelete: Cascade)
+  userAnswer   UserAnswer @relation(fields: [userAnswerId], references: [id], onDelete: Cascade)
+
+  @@unique([userAnswerId, answerId], name: "userAnswerId_answerId")
+}
+
+model UserMateriProgress {
+  id               String   @id @default(cuid())
+  userId           String
+  topicId          Int
+  isDrillCompleted Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  topic            Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Video {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  url         String
+  duration    Int
+  createdAt   DateTime  @default(now())
+  type        VideoType @default(rekaman)
+  topic       Topic?
+}
+
+model Folder {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String?
+  files       File[]
+}
+
+model File {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
+  folderId    Int
+  folder      Folder  @relation(fields: [folderId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model QuizSession {
+  id          String       @id @default(cuid())
+  startTime   DateTime     @default(now())
+  endTime     DateTime?
+  duration    Int
+  score       Int?
+  numQuestion Int?
+  numAnswered Int?
+  numCorrect  Int?
+  type        SessionType
+  userId      String
+  packageId   String?
+  subtestId   String?
+  package     Package?     @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  subtest     Subtest?     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userAnswers UserAnswer[]
+
+  @@unique([userId, subtestId], name: "unique_user_subtest")
+}
+
+model Announcement {
+  id        Int      @id @default(autoincrement())
+  title     String?
+  content   String?
+  url       String?
+  createdAt DateTime @default(now())
+}
+
 enum Role {
   user
   teacher
@@ -64,250 +309,4 @@ enum SubjectType {
 enum SessionType {
   package
   subtest
-}
-
-// Models
-model User {
-  id            String         @id @default(cuid())
-  name          String?
-  email         String?        @unique
-  emailVerified DateTime?
-  image         String?
-  role          Role           @default(user)
-  enrolledUtbk  Boolean        @default(false)
-  enrolledTka   Boolean        @default(false)
-  token         Int            @default(0)
-  createdAt     DateTime       @default(now())
-  classid       Int?
-  class         Class?         @relation(fields: [classid], references: [id])
-  accounts      Account[]      
-  sessions      Session[]      
-  userAnswers   UserAnswer[] 
-  quizSession   QuizSession[]
-  UserMateriProgress UserMateriProgress[]
-  UserPackage   UserPackage[]
-}
-
-model Account {
-  id                       String  @id @default(cuid())
-  userId                   String
-  type                     String
-  provider                 String
-  providerAccountId        String
-  refresh_token            String? 
-  access_token             String? 
-  expires_at               Int?
-  token_type               String?
-  scope                    String?
-  id_token                 String? 
-  session_state            String?
-  refresh_token_expires_in Int?
-  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-}
-
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model UserPackage {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId      String
-  package   Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-}
-
-model Class {
-  id        Int           @id @default(autoincrement())
-  name      String
-  createdAt DateTime      @default(now())
-  users     User[]
-  packages  Package[]
-}
-
-model Subject {
-  id        Int      @id @default(autoincrement())
-  name      String
-  type      SubjectType
-  createdAt DateTime @default(now())
-  materials  Material[]
-}
-
-model Material {
-  id        Int      @id @default(autoincrement())
-  index     Int
-  name      String
-  subjectId Int
-  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-  topics    Topic[]
-}
-
-model Topic {
-  id        Int      @id @default(autoincrement())
-  index     Int
-  name      String
-  materialId Int
-  createdAt DateTime @default(now())
-  videoId   String      @unique
-  video     Video    @relation(fields: [videoId], references: [id])
-  subtestId String?      @unique
-  subtest   Subtest?  @relation(fields: [subtestId], references: [id])
-  material   Material  @relation(fields: [materialId], references: [id], onDelete: Cascade)
-  userProgress UserMateriProgress[]
-}
-
-model Package {
-  id          String       @id @default(cuid())
-  name        String
-  type        PackageType
-  classId     Int?
-  TOstart     DateTime?
-  TOend       DateTime?
-  tokenPrice  Int?
-  createdAt   DateTime     @default(now())
-  subtests    Subtest[]
-  class       Class?       @relation(fields: [classId], references: [id], onDelete: Cascade)
-  quizSession QuizSession[]
-  userPackage UserPackage[]
-}
-
-model Subtest {
-  id          String     @id @default(cuid())
-  type        SubtestType
-  packageId   String?
-  duration    Int?
-  package     Package?     @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  questions   Question[]
-  quizSession QuizSession[]
-  topics    Topic?
-}
-
-model Question {
-  id                  Int           @id @default(autoincrement())
-  index               Int
-  content             String        
-  imageUrl            String?
-  type                QuestionType
-  score               Int
-  explanation         String?
-  answers             Answer[]    
-  subtestId           String         
-  subtest             Subtest      @relation(fields: [subtestId], references: [id], onDelete: Cascade)
-  userAnswers         UserAnswer[] 
-}
-
-model Answer {
-  id         Int      @id @default(autoincrement())
-  content    String   
-  index      Int
-  isCorrect  Boolean  @default(false)       
-  questionId Int
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userAnswers UserAnswerChoice[]
-}
-
-model UserAnswer {
-  id            Int         @id @default(autoincrement())
-  essayAnswer   String?
-  questionId    Int
-  question      Question    @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  userId        String 
-  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  quizSessionId String
-  quizSession   QuizSession @relation(fields: [quizSessionId], references: [id], onDelete: Cascade)
-  answerChoices UserAnswerChoice[]
-
-  @@unique([userId, quizSessionId, questionId], name: "userId_quizSessionId_questionId")
-}
-
-model UserAnswerChoice {
-  id            Int      @id @default(autoincrement())
-  userAnswerId  Int
-  userAnswer    UserAnswer @relation(fields: [userAnswerId], references: [id], onDelete: Cascade)
-  answerId Int
-  answer  Answer @relation(fields: [answerId], references: [id], onDelete: Cascade)
-
-  @@unique([userAnswerId, answerId], name: "userAnswerId_answerId")
-}
-
-model UserMateriProgress {
-  id      String     @id @default(cuid())
-  userId    String
-  topicId  Int      
-  isDrillCompleted Boolean @default(false)
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  topic    Topic  @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-}
-
-model Video {
-  id          String   @id @default(cuid())
-  title       String
-  description String?
-  url         String
-  duration    Int
-  createdAt   DateTime @default(now())
-  type        VideoType @default(rekaman)
-  topic       Topic?
-}
-
-model Folder {
-  id          Int     @id @default(autoincrement())
-  name        String
-  description String?
-  files       File[]
-}
-
-model File {
-  id          Int     @id @default(autoincrement())
-  title       String
-  description String?
-  url         String
-  folderId    Int
-  folder      Folder  @relation(fields: [folderId], references: [id], onDelete: Cascade)
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-model QuizSession {
-  id           String         @id @default(cuid())
-  startTime    DateTime    @default(now())
-  endTime      DateTime?
-  duration     Int
-  score        Int?
-  numQuestion  Int?
-  numAnswered  Int?
-  numCorrect   Int?
-  type         SessionType
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  packageId    String?
-  package      Package?     @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  subtestId    String?
-  subtest      Subtest?     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
-  userAnswers  UserAnswer[]
-  
-  @@unique([userId, subtestId], name: "unique_user_subtest")
-}
-
-model Announcement {
-  id          Int      @id @default(autoincrement())
-  title       String?
-  content     String?  
-  url         String?
-  createdAt   DateTime @default(now())
 }
