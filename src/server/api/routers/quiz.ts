@@ -884,6 +884,7 @@ export const quizRouter = createTRPCRouter({
         score: z.number(),
         imageUrl: z.string().optional(),
         explanation: z.string().optional(),
+        videoExplanation: z.string().optional(),
         answers: z.array(
           z.object({
             content: z.string(),
@@ -912,6 +913,7 @@ export const quizRouter = createTRPCRouter({
             score: input.score,
             imageUrl: input.imageUrl,
             explanation: input.explanation,
+            videoExplanation: input.videoExplanation,
             index: nextIndex,
           },
         });
@@ -943,6 +945,7 @@ export const quizRouter = createTRPCRouter({
         score: z.number(),
         imageUrl: z.string().optional(),
         explanation: z.string().optional(),
+        videoExplanation: z.string().optional(),
         answers: z.array(
           z.object({
             id: z.number().optional(),
@@ -963,6 +966,7 @@ export const quizRouter = createTRPCRouter({
             score: input.score,
             imageUrl: input.imageUrl,
             explanation: input.explanation,
+            videoExplanation: input.videoExplanation,
           },
         });
 
