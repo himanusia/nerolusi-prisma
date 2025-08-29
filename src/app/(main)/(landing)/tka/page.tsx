@@ -140,7 +140,7 @@ export default function MainPage() {
       toast.info(
         "Tryout akan dimulai pada " + new Date(pkg.TOstart).toLocaleString(),
       );
-    } else if (status.type === "available") {
+    } else if (status.type === "available" || !pkg.tokenPrice) {
       router.push(`/tryout/${pkg.id}`);
     }
     // Note: Purchase case is now handled directly by TryOutCard component

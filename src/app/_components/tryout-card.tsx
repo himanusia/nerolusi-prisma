@@ -37,7 +37,7 @@ export default function TryOutCard({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCardClick = () => {
-    if (tryOut.status === "unpurchased" && onPurchase) {
+    if (tryOut.status === "unpurchased" && tryOut.tokenPrice && onPurchase) {
       // Show purchase dialog for unpurchased packages
       setShowPurchaseDialog(true);
     } else {
@@ -75,7 +75,8 @@ export default function TryOutCard({
         return {
           showArrow: false,
           showCoin: false,
-          cardClassName: "bg-gradient-to-r from-gray-200 to-gray-300 opacity-75",
+          cardClassName:
+            "bg-gradient-to-r from-gray-200 to-gray-300 opacity-75",
         };
       case "completed":
         return {
@@ -137,20 +138,22 @@ export default function TryOutCard({
                     </div>
                   )}
                   <div className="flex items-end gap-3">
-                    {statusInfo.showCoin && tryOut.tokenPrice && (
-                      <div className="flex items-center gap-1 rounded-full px-3 py-1 text-black">
-                        <Image
-                          src="/coin.webp"
-                          alt="Coin"
-                          width={16}
-                          height={16}
-                          className="mr-1 inline-block"
-                        />
-                        <span className="text-lg font-bold">
-                          {tryOut.tokenPrice}
-                        </span>
-                      </div>
-                    )}
+                    {statusInfo.showCoin &&
+                      tryOut.tokenPrice !== undefined &&
+                      tryOut.tokenPrice !== null && (
+                        <div className="flex items-center gap-1 rounded-full px-3 py-1 text-black">
+                          <Image
+                            src="/coin.webp"
+                            alt="Coin"
+                            width={16}
+                            height={16}
+                            className="mr-1 inline-block"
+                          />
+                          <span className="text-lg font-bold">
+                            {tryOut.tokenPrice}
+                          </span>
+                        </div>
+                      )}
 
                     {statusInfo.showArrow && (
                       <ImArrowRight className="h-6 w-6 text-[#2b8057]" />
