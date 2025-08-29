@@ -55,29 +55,12 @@ export default function MainPage() {
     });
   };
 
-  // Transform API data to TryOutData format using the same logic as tryout-list
   const convertPackageToTryOutData = (
     pkg: TryoutPackage,
     index: number,
   ): TryOutData => {
     const status = getPackageStatus(pkg);
     const packageNumber = index + 1;
-
-    let tryOutStatus: TryOutData["status"];
-    switch (status.type) {
-      case "completed":
-        tryOutStatus = "finished";
-        break;
-      case "purchased":
-        tryOutStatus = "available";
-        break;
-      case "expired":
-        tryOutStatus = "expired";
-        break;
-      default:
-        tryOutStatus = "upcoming";
-        break;
-    }
 
     return {
       id: pkg.id,
@@ -94,11 +77,11 @@ export default function MainPage() {
               year: "numeric",
             })}`
           : "Tanggal belum ditentukan",
-      status: tryOutStatus,
+      isEnded: new Date(pkg.TOend) < new Date(),
+      status: status.type,
       number: packageNumber.toString(),
       participants: 0,
       difficulty: "medium",
-      token: status.showCoin ? status.cost : undefined,
       tokenPrice: pkg.tokenPrice, // Include tokenPrice for purchase dialog
     };
   };
@@ -113,39 +96,18 @@ export default function MainPage() {
     if (isCompleted) {
       return {
         type: "completed" as const,
-        bgColor: "bg-green-500",
-        textColor: "text-white",
-        buttonText: "Lihat Hasil",
-        showArrow: false,
-        showCoin: false,
-      };
-    } else if (isPackageEndDatePassed) {
-      return {
-        type: "expired" as const,
-        bgColor: "bg-gray-500",
-        textColor: "text-white",
-        buttonText: "Terlewat",
-        showArrow: false,
-        showCoin: false,
       };
     } else if (isPurchased && isPackageStarted) {
       return {
-        type: "purchased" as const,
-        bgColor: "bg-white",
-        textColor: "text-black",
-        buttonText: "Mulai",
-        showArrow: true,
-        showCoin: false,
+        type: "available" as const,
+      };
+    } else if (isPurchased && !isPackageStarted) {
+      return {
+        type: "upcoming" as const,
       };
     } else {
       return {
         type: "unpurchased" as const,
-        bgColor: "bg-white",
-        textColor: "text-black",
-        buttonText: "Beli",
-        showArrow: false,
-        showCoin: true,
-        cost: pkg.tokenPrice ?? 1,
       };
     }
   };
@@ -174,9 +136,11 @@ export default function MainPage() {
 
     if (status.type === "completed") {
       router.push(`/tryout/${pkg.id}/scores`);
-    } else if (status.type === "expired") {
-      toast.info("Waktu pengerjaan tryout ini telah berakhir");
-    } else if (status.type === "purchased") {
+    } else if (status.type === "upcoming") {
+      toast.info(
+        "Tryout akan dimulai pada " + new Date(pkg.TOstart).toLocaleString(),
+      );
+    } else if (status.type === "available") {
       router.push(`/tryout/${pkg.id}`);
     }
     // Note: Purchase case is now handled directly by TryOutCard component

@@ -13,7 +13,8 @@ export interface TryOutData {
   title: string;
   subtitle: string;
   dateRange: string;
-  status: "available" | "upcoming" | "finished" | "ongoing" | "expired";
+  status: "available" | "upcoming" | "unpurchased" | "completed";
+  isEnded: boolean;
   number: string;
   participants: number;
   difficulty: "easy" | "medium" | "hard";
@@ -36,7 +37,7 @@ export default function TryOutCard({
   const [isLoading, setIsLoading] = useState(false);
 
   const handleCardClick = () => {
-    if (tryOut.status === "upcoming" && onPurchase) {
+    if (tryOut.status === "unpurchased" && onPurchase) {
       // Show purchase dialog for unpurchased packages
       setShowPurchaseDialog(true);
     } else {
@@ -66,91 +67,30 @@ export default function TryOutCard({
     switch (status) {
       case "available":
         return {
-          badge: {
-            label: "Tersedia",
-            className: "bg-green-100 text-green-800 border-green-200",
-          },
-          button: {
-            label: "Mulai",
-            disabled: false,
-            className: "bg-green-600 hover:bg-green-700",
-          },
           showArrow: true,
           showCoin: false,
           cardClassName: "",
         };
       case "upcoming":
         return {
-          badge: {
-            label: "Segera",
-            className: "bg-blue-100 text-blue-800",
-          },
-          button: {
-            label: "Daftar",
-            disabled: false,
-            className: "bg-blue-600 hover:bg-blue-700",
-          },
           showArrow: false,
-          showCoin: true,
-          cardClassName: "",
+          showCoin: false,
+          cardClassName: "bg-gradient-to-r from-gray-200 to-gray-300 opacity-75",
         };
-      case "finished":
+      case "completed":
         return {
-          badge: {
-            label: "Selesai",
-            className: "bg-green-100 text-green-800 border-green-200",
-          },
-          button: {
-            label: "Lihat Hasil",
-            disabled: false,
-            className: "bg-green-600 hover:bg-green-700",
-          },
           showArrow: false,
           showCoin: false,
           cardClassName: "bg-gradient-to-r from-[#9ad09f] to-[#cbffd0]",
         };
-      case "expired":
+      case "unpurchased":
         return {
-          badge: {
-            label: "Terlewat",
-            className: "bg-gray-100 text-gray-800 border-gray-200",
-          },
-          button: {
-            label: "Terlewat",
-            disabled: true,
-            className: "bg-gray-400",
-          },
           showArrow: false,
-          showCoin: false,
-          cardClassName:
-            "bg-gradient-to-r from-gray-200 to-gray-300 opacity-75",
-        };
-      case "ongoing":
-        return {
-          badge: {
-            label: "Berlangsung",
-            className: "bg-orange-100 text-orange-800 border-orange-200",
-          },
-          button: {
-            label: "Lanjutkan",
-            disabled: false,
-            className: "bg-orange-600 hover:bg-orange-700",
-          },
-          showArrow: true,
-          showCoin: false,
+          showCoin: true,
           cardClassName: "",
         };
       default:
         return {
-          badge: {
-            label: "Tidak Tersedia",
-            className: "bg-gray-100 text-gray-600 border-gray-200",
-          },
-          button: {
-            label: "Tidak Tersedia",
-            disabled: true,
-            className: "bg-gray-400",
-          },
           showArrow: false,
           showCoin: false,
           cardClassName: "",
@@ -163,7 +103,7 @@ export default function TryOutCard({
   return (
     <>
       <Card
-        className={`max-w-96 shrink-0 cursor-pointer overflow-hidden border-[#acaeba] transition-shadow hover:shadow-lg ${statusInfo.cardClassName}`}
+        className={`min-w-72 max-w-96 shrink-0 cursor-pointer overflow-hidden border-[#acaeba] transition-shadow hover:shadow-lg ${statusInfo.cardClassName}`}
         onClick={handleCardClick}
       >
         <CardContent className="p-0">
@@ -190,10 +130,14 @@ export default function TryOutCard({
                 <p className="mb-2 text-sm text-gray-600">{tryOut.subtitle}</p>
 
                 <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <CalendarIcon className="h-4 w-4" />
-                  <span>{tryOut.dateRange}</span>
+                  {!tryOut.isEnded && (
+                    <div>
+                      <CalendarIcon className="h-4 w-4" />
+                      <span>{tryOut.dateRange}</span>
+                    </div>
+                  )}
                   <div className="flex items-end gap-3">
-                    {statusInfo.showCoin && tryOut.token && (
+                    {statusInfo.showCoin && tryOut.tokenPrice && (
                       <div className="flex items-center gap-1 rounded-full px-3 py-1 text-black">
                         <Image
                           src="/coin.webp"
@@ -203,7 +147,7 @@ export default function TryOutCard({
                           className="mr-1 inline-block"
                         />
                         <span className="text-lg font-bold">
-                          {tryOut.token}
+                          {tryOut.tokenPrice}
                         </span>
                       </div>
                     )}
@@ -261,7 +205,7 @@ export default function TryOutCard({
                 />
                 {isLoading
                   ? "Membeli..."
-                  : `Ya ${tryOut.tokenPrice ?? tryOut.token ?? 1}`}
+                  : `Ya ${tryOut.tokenPrice ?? tryOut.tokenPrice ?? 1}`}
               </Button>
               <Button
                 onClick={() => setShowPurchaseDialog(false)}
