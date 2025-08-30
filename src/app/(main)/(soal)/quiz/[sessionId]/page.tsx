@@ -428,7 +428,7 @@ export default function QuizPage() {
                           </label>
                           <textarea
                             rows={4}
-                            className="w-full rounded-lg border p-3"
+                            className="w-full rounded-lg border p-3 text-sm"
                             placeholder="Tulis jawaban Anda di sini..."
                             value={
                               typeof selectedAnswers.get(
@@ -490,7 +490,7 @@ export default function QuizPage() {
                                       Jawaban Anda:{" "}
                                       {isCorrect ? "(Benar)" : "(Salah)"}
                                     </label>
-                                    <div className="rounded-lg bg-white p-3 text-gray-900">
+                                    <div className="rounded-lg bg-white p-3 text-gray-900 text-sm">
                                       {userAnswerText || "Tidak dijawab"}
                                     </div>
                                   </div>
@@ -658,7 +658,7 @@ export default function QuizPage() {
                   {/* Explanation (shown after session ends) */}
                   {new Date(sessionDetails?.endTime) < new Date() &&
                     questions[currentQuestionIndex].explanation && (
-                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
                         <h4 className="mb-2 font-semibold text-blue-900">
                           Penjelasan:
                         </h4>
@@ -718,7 +718,7 @@ export default function QuizPage() {
                     })()}
 
                   {/* Navigation Buttons */}
-                  <div className="flex items-center justify-between pt-4">
+                  <div className="flex flex-col md:flex-row items-center justify-between pt-4 space-y-2 md:space-y-0">
                     <Button
                       variant="outline"
                       onClick={() =>

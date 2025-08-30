@@ -34,7 +34,7 @@ export default function Editor({
   content,
   onContentChange,
   className,
-  fontSize = "text-base",
+  fontSize = "text-sm",
   ...props
 }: {
   isEdit?: boolean;
@@ -66,7 +66,7 @@ export default function Editor({
         class: cn(
           "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[150px] p-3",
           fontSize === "text-sm" && "text-sm",
-          fontSize === "text-base" && "text-base", 
+          fontSize === "text-sm" && "text-sm", 
           fontSize === "text-lg" && "text-lg"
         ),
       },
