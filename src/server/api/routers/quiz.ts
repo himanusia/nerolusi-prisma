@@ -131,6 +131,7 @@ export const quizRouter = createTRPCRouter({
           userId: input.userId,
           subtestId: input.subtestId,
         },
+        orderBy: { endTime: "desc" },
       });
     }),
 
