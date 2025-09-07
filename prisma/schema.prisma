@@ -242,8 +242,6 @@ model QuizSession {
   subtest     Subtest?     @relation(fields: [subtestId], references: [id], onDelete: Cascade)
   user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   userAnswers UserAnswer[]
-
-  @@unique([userId, subtestId], name: "unique_user_subtest")
 }
 
 model Announcement {
