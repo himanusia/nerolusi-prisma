@@ -611,7 +611,7 @@ export default function TryOutPage() {
                                 clipRule="evenodd"
                               />
                             </svg>
-                            <span className="font-semibold">{selectedSubtest.quizSession[0].numQuestion} Soal</span>
+                            <span className="font-semibold">{selectedSubtest?._count?.questions ?? "?"} Soal</span>
                           </div>
 
                           <div className="flex items-center gap-2">
