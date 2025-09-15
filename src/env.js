@@ -48,6 +48,8 @@ export const env = createEnv({
     AUTH_URL: process.env.AUTH_URL,
     AUTH_GOOGLE_ID: process.env.AUTH_GOOGLE_ID,
     AUTH_GOOGLE_SECRET: process.env.AUTH_GOOGLE_SECRET,
+    ANALYTICS_SRC: process.env.ANALYTICS_SRC,
+    ANALYTICS_ID: process.env.ANALYTICS_ID,
   },
   /**
    * Run `build` or `dev` with `SKIP_ENV_VALIDATION` to skip env validation. This is especially
