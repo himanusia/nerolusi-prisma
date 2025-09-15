@@ -21,6 +21,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        <script defer src={process.env.ANALYTICS_SRC} data-website-id={process.env.ANALYTICS_ID}></script>
+      </head>
+      
       <body>
         <SessionProvider>
           <TRPCReactProvider>

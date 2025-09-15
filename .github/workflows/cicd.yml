@@ -87,6 +87,8 @@ jobs:
             AUTH_URL=${{ vars.AUTH_URL }}
             AUTH_GOOGLE_ID=${{ secrets.AUTH_GOOGLE_ID }}
             AUTH_GOOGLE_SECRET=${{ secrets.AUTH_GOOGLE_SECRET }}
+            ANALYTICS_SRC=${{ vars.ANALYTICS_SRC }}
+            ANALYTICS_ID=${{ vars.ANALYTICS_ID }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
