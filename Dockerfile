@@ -1,6 +1,8 @@
 FROM oven/bun:1 AS builder
 WORKDIR /app
 COPY bun.lock package.json ./
+COPY prisma ./prisma
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 RUN bun install --frozen-lockfile
 COPY . .
 RUN bun run build
