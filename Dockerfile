@@ -16,10 +16,12 @@ FROM oven/bun:1 AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
+RUN apt-get update -y && apt-get install -y openssl ca-certificates && rm -rf /var/lib/apt/lists/*
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/bun.lock ./bun.lock
+COPY --from=builder /app/prisma ./prisma
 EXPOSE 3000
 CMD ["bun", "run", "start"]
