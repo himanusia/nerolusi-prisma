@@ -390,7 +390,7 @@ export default function SubjectMateriPage() {
             )}
           </div>
         ))}
-        {(sections.length === 0 || sections.length!=0) && (
+        {/* {(sections.length === 0 || sections.length!=0) && (
           <div className="flex items-center justify-center translate-y-[50px]">
             <div className="flex flex-col gap-3 items-center bg-[#2B8057] px-[90px] py-3 max-w-[500px] rounded-3xl">
               <div className="bg-white rounded-full p-2">
@@ -409,7 +409,7 @@ export default function SubjectMateriPage() {
               </div>
             </div>
           </div>
-        )}
+        )} */}
         {/* {sections.length != 0 && (
           <div className="flex justify-center translate-y-[50px]">
             <div className="flex flex-col items-center justify-center bg-[#2B8057] px-10 max-w-[400px] rounded-br rounded-bl rounded-3xl">
