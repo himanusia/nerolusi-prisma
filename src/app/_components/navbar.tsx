@@ -23,6 +23,7 @@ import { HiMenu, HiX } from "react-icons/hi";
 import { HiHome, HiMiniVideoCamera } from "react-icons/hi2";
 import { RiPencilFill, RiToolsFill, RiBook2Fill } from "react-icons/ri";
 import { HiUser, HiShoppingCart, HiLogout } from "react-icons/hi";
+import { FaWhatsapp } from "react-icons/fa";
 
 // const soal: { title: string; href: string }[] = [
 //   {
@@ -98,15 +99,25 @@ const navigationItems = [
     icon: <HiMiniVideoCamera className="h-5 w-5"/>,
     isActive: (pathname: string) => pathname.startsWith("/video"),
   },
-  // {
-  //   title: "Modul",
-  //   href: "/modul",
-  //   icon: <RiBook2Fill className="h-5 w-5"/>,
-  //   isActive: (pathname: string) => pathname.startsWith("/modul"),
-  // },
+  {
+    title: "Modul",
+    href: "/modul",
+    icon: <RiBook2Fill className="h-5 w-5"/>,
+    isActive: (pathname: string) => pathname.startsWith("/modul/materi"),
+  },
+  {
+    title: "Bantuan",
+    href: "https://wa.me/6285591402079",
+    icon: <FaWhatsapp className="h-5 w-5"/>,
+    isActive: (pathname: string) => pathname.startsWith("/whatsapp"),
+  },
 ];
 
-export default function Navbar() {
+interface NavbarProps {
+  isTka: boolean;
+}
+
+export default function Navbar({ isTka }: NavbarProps) {
   const session = useSession();
   const user = session.data?.user;
   const pathname = usePathname();
@@ -258,22 +269,27 @@ export default function Navbar() {
                 <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
 
                   <div className="py-2">
-                    <Link
-                      href="/profile"
-                      onClick={closeProfileDropdown}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <HiUser className="h-4 w-4" />
-                      Profil
-                    </Link>
-                    <Link
-                      href="/pilihan-ptn"
-                      onClick={closeProfileDropdown}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      <RiPencilFill className="h-4 w-4" />
-                      Pilihan PTN
-                    </Link>
+                    {/* {!isTka && (
+                      <>
+                      <Link
+                        href="/profile"
+                        onClick={closeProfileDropdown}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <HiUser className="h-4 w-4" />
+                        Profil
+                      </Link>
+                      <Link
+                        href="/pilihan-ptn"
+                        onClick={closeProfileDropdown}
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      >
+                        <RiPencilFill className="h-4 w-4" />
+                        Pilihan PTN
+                      </Link>
+                      </>
+                    )} */}
+                    
                     <Link
                       href="/beli-paket"
                       onClick={closeProfileDropdown}
@@ -380,22 +396,27 @@ export default function Navbar() {
                 <>
                   <div className="border-t border-gray-200 pt-4 mb-4">
                     <div className="space-y-2">
-                      <Link
-                        href="/profile"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <HiUser className="h-5 w-5" />
-                        <span className="font-medium">Profil</span>
-                      </Link>
-                      <Link
-                        href="/pilihan-ptn"
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <RiPencilFill className="h-5 w-5" />
-                        <span className="font-medium">Pilihan PTN</span>
-                      </Link>
+                      {/* {!isTka && (
+                        <>
+                          <Link
+                            href="/profile"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <HiUser className="h-5 w-5" />
+                            <span className="font-medium">Profil</span>
+                          </Link>
+                          <Link
+                            href="/pilihan-ptn"
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          >
+                            <RiPencilFill className="h-5 w-5" />
+                            <span className="font-medium">Pilihan PTN</span>
+                          </Link>
+                        </>
+                      )} */}
+                      
                       <Link
                         href="/beli-paket"
                         onClick={() => setIsMobileMenuOpen(false)}

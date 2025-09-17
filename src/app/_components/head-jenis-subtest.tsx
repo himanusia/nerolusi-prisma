@@ -6,11 +6,13 @@ import { GiOpenBook } from "react-icons/gi";
 interface HeadJenisSubtestProps {
   title: string;
   type: "modul" | "rekaman";
+  isTka: boolean;
 }
 
 export default function HeadJenisSubtest({
   title,
   type,
+  isTka,
 }: HeadJenisSubtestProps) {
   return (
     <div className="flex items-center rounded-lg ">
@@ -26,13 +28,16 @@ export default function HeadJenisSubtest({
           <h2 className="font-bold text-[#2B8057] text-3xl">
             {title}
           </h2>
-          <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
-            {Object.values(SubtestType).map((type) => (
-              <Button key={type} className="flex-1 text-xs text-white">
-                {type.toUpperCase()}
-              </Button>
-            ))}
-          </div>
+          {/* {!isTka && (
+            <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
+              {Object.values(SubtestType).map((type) => (
+                <Button key={type} className="flex-1 text-xs text-white">
+                  {type.toUpperCase()}
+                </Button>
+              ))}
+            </div>
+          )} */}
+          
         </div>
       </div>
       <div className="flex w-full flex-col justify-center gap-4 sm:hidden">
@@ -46,13 +51,15 @@ export default function HeadJenisSubtest({
           </div>
           <h2 className="ml-4 text-xl font-bold text-[#2B8057]">{title}</h2>
         </div>
-        <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
-          {Object.values(SubtestType).map((type) => (
-            <Button key={type} className="flex-1 text-xs text-white">
-              {type.toUpperCase()}
-            </Button>
-          ))}
-        </div>
+        {/* {!isTka && (
+          <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
+            {Object.values(SubtestType).map((type) => (
+              <Button key={type} className="flex-1 text-xs text-white">
+                {type.toUpperCase()}
+              </Button>
+            ))}
+          </div>
+        )} */}
       </div>
     </div>
   );

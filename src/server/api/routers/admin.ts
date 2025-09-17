@@ -1,3 +1,4 @@
+import { SubtestType } from "@prisma/client";
 import { z } from "zod";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 
@@ -26,26 +27,9 @@ export const adminRouter = createTRPCRouter({
       orderBy: {
         createdAt: "desc",
       },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        class: {
-          select: {
-            name: true,
-          },
-        },
-      },
     });
 
-    // For now, we'll return users with a coins field set to 0
-    // In a real app, you'd have a coins field in the User model or a separate UserCoins table
-    return users.map((user) => ({
-      ...user,
-      coins: 0, // Placeholder - you'd need to add this field to your User model
-    }));
+    return users;
   }),
 
   // Coin operations (placeholder implementations)
@@ -57,8 +41,27 @@ export const adminRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Placeholder - you'd need to implement coin tracking in your database
-      // For now, we'll just return success
+      const user = await ctx.db.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      user.token += input.amount;
+
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          token: user.token,
+        },
+      });
+
       return { success: true };
     }),
 
@@ -70,8 +73,27 @@ export const adminRouter = createTRPCRouter({
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Placeholder - you'd need to implement coin tracking in your database
-      // For now, we'll just return success
+      const user = await ctx.db.user.findUnique({
+        where: {
+          id: input.userId,
+        },
+      });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      user.token -= input.amount;
+
+      await ctx.db.user.update({
+        where: {
+          id: input.userId,
+        },
+        data: {
+          token: user.token,
+        },
+      });
+
       return { success: true };
     }),
 
@@ -87,7 +109,7 @@ export const adminRouter = createTRPCRouter({
       },
       orderBy: {
         createdAt: "desc",
-      }
+      },
     });
 
     // Transform to match expected interface
@@ -124,7 +146,6 @@ export const adminRouter = createTRPCRouter({
         data: {
           name: input.name,
           type: "tryout",
-          classId: 1, // Default class - you may want to make this configurable
           TOstart: new Date(input.startDate),
           TOend: new Date(input.endDate),
         },
@@ -170,7 +191,7 @@ export const adminRouter = createTRPCRouter({
       z.object({
         id: z.string(),
         name: z.string(),
-        classId: z.number(),
+        classId: z.number().optional().nullable(),
         TOstart: z.string(),
         TOend: z.string(),
         tokenPrice: z.number(),
@@ -181,7 +202,7 @@ export const adminRouter = createTRPCRouter({
         where: { id: input.id },
         data: {
           name: input.name,
-          classId: input.classId,
+          classId: input.classId ?? undefined,
           TOstart: new Date(input.TOstart),
           TOend: new Date(input.TOend),
           tokenPrice: input.tokenPrice,
@@ -195,7 +216,7 @@ export const adminRouter = createTRPCRouter({
   createSubtest: adminProcedure
     .input(
       z.object({
-        type: z.enum(["pu", "ppu", "pbm", "pk", "pm", "lbe", "lbi", "materi"]),
+        type: z.enum(Object.values(SubtestType) as [SubtestType, ...SubtestType[]]),
         packageId: z.string(),
         duration: z.number(),
       }),
@@ -233,7 +254,7 @@ export const adminRouter = createTRPCRouter({
   getTKAVideos: adminProcedure.query(async ({ ctx }) => {
     const videos = await ctx.db.video.findMany({
       where: {
-        type: "materi",
+        type: "rekaman",
       },
     });
     return videos;
@@ -245,21 +266,49 @@ export const adminRouter = createTRPCRouter({
         title: z.string(),
         description: z.string(),
         videoUrl: z.string(),
-        category: z.string(),
-        duration: z.string(),
-        thumbnailUrl: z.string().optional(),
+        duration: z.number(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
-      // Placeholder - you'd need a Video model
-      return { success: true };
+      await ctx.db.video.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          type: "rekaman",
+          url: input.videoUrl,
+          duration: input.duration,
+        },
+      });
+    }),
+
+  updateTKAVideo: adminProcedure
+    .input(
+      z.object({
+        id: z.string(),
+        title: z.string(),
+        description: z.string(),
+        videoUrl: z.string(),
+        duration: z.number(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.video.update({
+        where: { id: input.id },
+        data: {
+          title: input.title,
+          description: input.description,
+          url: input.videoUrl,
+          duration: input.duration,
+        },
+      });
     }),
 
   deleteTKAVideo: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      // Placeholder - you'd need a Video model
-      return { success: true };
+      await ctx.db.video.delete({
+        where: { id: input.id },
+      });
     }),
 
   // TKA Activities (placeholder)
@@ -300,7 +349,15 @@ export const adminRouter = createTRPCRouter({
       },
       include: {
         questions: true,
-        topics: true,
+        topics: {
+          include: {
+            material: {
+              include: {
+                subject: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -308,9 +365,9 @@ export const adminRouter = createTRPCRouter({
     return drills.map((drill) => ({
       id: drill.id,
       title: drill.topics?.name ?? "",
-      subject: "Matematika", // Default - you may want to add subject field
+      subject: drill.topics?.material?.subject.name ?? "",
       difficulty: "medium", // Default - you may want to add difficulty field
-      timeLimit: 600, // 10 minutes default
+      timeLimit: drill.duration, // 10 minutes default
       questionCount: drill.questions.length,
       isActive: true,
       attempts: 0, // Would need to count from quiz sessions

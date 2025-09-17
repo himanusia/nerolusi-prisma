@@ -50,13 +50,13 @@ const adminMenuItems = [
   //   icon: <RiBookmarkFill className="h-8 w-8 text-purple-600" />,
   //   color: "border-purple-200 hover:border-purple-300"
   // },
-  // {
-  //   title: "TKA Videos & Quiz",
-  //   description: "Manage TKA videos and mentors",
-  //   href: "/admin-tka/videos",
-  //   icon: <RiVideoFill className="h-8 w-8 text-red-600" />,
-  //   color: "border-red-200 hover:border-red-300"
-  // },
+  {
+    title: "TKA Videos",
+    description: "Manage TKA videos",
+    href: "/admin/videos",
+    icon: <RiVideoFill className="h-8 w-8 text-red-600" />,
+    color: "border-red-200 hover:border-red-300"
+  },
   // {
   //   title: "Activity Schedule",
   //   description: "Manage upcoming events and activities",
@@ -164,7 +164,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Recent Activity */}
-      <Card>
+      {/* <Card>
         <CardHeader>
           <CardTitle>Recent Activity</CardTitle>
         </CardHeader>
@@ -179,7 +179,7 @@ export default function AdminDashboard() {
             )}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

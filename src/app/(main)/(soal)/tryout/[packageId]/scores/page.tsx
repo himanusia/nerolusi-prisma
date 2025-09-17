@@ -46,15 +46,6 @@ export default function ScoresPage() {
       (sum, subtest) => sum + (subtest.quizSession?.[0]?.numCorrect ?? 0),
       0,
     ) || 0;
-  const totalWrong =
-    sortedSubtests?.reduce(
-      (sum, subtest) =>
-        sum +
-        ((subtest.quizSession?.[0]?.numQuestion ?? 0) -
-          (subtest.quizSession?.[0]?.numCorrect ?? 0) -
-          (subtest.quizSession?.[0]?.numAnswered ?? 0)),
-      0,
-    ) || 0;
   const averageScore =
     sortedSubtests?.reduce(
       (sum, subtest) => sum + (subtest.quizSession?.[0]?.score ?? 0),
@@ -68,6 +59,8 @@ export default function ScoresPage() {
       0,
     );
 
+  const totalWrong = totalQuestions - totalCorrect - totalKosong;
+
   // Check if package end date has passed to show scores
   const isPackageEndDatePassed =
     packageData?.TOend && new Date(packageData.TOend) < new Date();
@@ -78,6 +71,8 @@ export default function ScoresPage() {
         new Date(s.quizSession[0].endTime ?? "") <= new Date(),
     ).length || 0;
   const allSubtestsCompleted = completedCount === sortedSubtests?.length;
+  
+  const isTka = session?.user?.enrolledTka ?? false;
 
   const getSubtestName = (type: string) => {
     switch (type) {
@@ -96,7 +91,7 @@ export default function ScoresPage() {
       case "pm":
         return { short: "PM", full: "Penalaran Matematika" };
       default:
-        return { short: String(type).toUpperCase(), full: String(type) };
+        return { short: String(type).replace("_", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" "), full: "" };
     }
   };
 
@@ -142,9 +137,9 @@ export default function ScoresPage() {
               <h2 className="text-center text-xl font-bold text-white md:text-2xl">
                 {session?.user?.name}
               </h2>
-              <p className="text-md text-center font-semibold text-white md:text-xl">
+              {/* <p className="text-md text-center font-semibold text-white md:text-xl">
                 SMA Islam Cikal Harapan I BSD
-              </p>
+              </p> */}
             </div>
 
             {/* Score Summary Cards */}
@@ -200,7 +195,9 @@ export default function ScoresPage() {
                 {session?.user?.name}
               </h3>
               <p className="text-md font-bold text-black">
-                SMA Islam Cikal Harapan I BSD
+                {/* TODO: change to get from user data */}
+                {/* {session?.user?.school ? session.user.school : "-"} */}
+                -
               </p>
             </div>
 
@@ -237,7 +234,7 @@ export default function ScoresPage() {
         {/* Right Panel - Detailed Scores */}
         <div className="w-full md:w-2/3">
           {/* Success Message */}
-          {isPackageEndDatePassed && (
+          {/* {!isTka && isPackageEndDatePassed && (
             <div className="mb-6 rounded-xl border border-[#acaeba] bg-gradient-to-t from-[#2d69db] to-[#223a67] p-6 text-white">
               <div className="text-start">
                 <h3 className="text-md mb-3 text-xl font-bold text-white md:text-xl">
@@ -270,7 +267,7 @@ export default function ScoresPage() {
                 </div>
               </div>
             </div>
-          )}
+          )} */}
 
           {/* Waiting Message */}
           {!isPackageEndDatePassed && (

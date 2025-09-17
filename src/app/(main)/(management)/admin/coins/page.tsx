@@ -114,8 +114,8 @@ export default function CoinManagementPage() {
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <Coins className="h-5 w-5 text-yellow-500" />
-                  <span className="text-2xl font-bold">{user.coins || 0}</span>
-                  <span className="text-gray-500">coins</span>
+                  <span className="text-2xl font-bold">{user.token || 0}</span>
+                  <span className="text-gray-500">tokens</span>
                 </div>
               </div>
               
@@ -187,10 +187,10 @@ export default function CoinManagementPage() {
                           placeholder="Enter coin amount"
                           value={coinAmount}
                           onChange={(e) => setCoinAmount(e.target.value)}
-                          max={user.coins || 0}
+                          max={user.token || 0}
                         />
                         <p className="text-sm text-gray-500 mt-1">
-                          Current balance: {user.coins || 0} coins
+                          Current balance: {user.token || 0} tokens
                         </p>
                       </div>
                     </div>

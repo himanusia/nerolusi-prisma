@@ -37,6 +37,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { QuestionType } from "@prisma/client";
+import { UploadDropzone } from "~/utils/uploadthing";
+import Image from "next/image";
 
 interface Answer {
   id?: number;
@@ -50,6 +52,9 @@ interface Question {
   questionType: QuestionType;
   orderIndex: number;
   score: number;
+  imageUrl?: string;
+  explanation?: string; // Add explanation field
+  videoExplanation?: string; // Add videoExplanation field
   answers: Answer[];
 }
 
@@ -118,6 +123,9 @@ export default function QuizEditPage() {
           questionType: q.type,
           orderIndex: q.index,
           score: q.score,
+          imageUrl: q.imageUrl || undefined,
+          explanation: q.explanation || undefined, // Map explanation from API
+          videoExplanation: q.videoExplanation || undefined, // Map videoExplanation from API
           answers: q.answers.map((a) => ({
             id: a.id,
             text: a.content,
@@ -143,6 +151,9 @@ export default function QuizEditPage() {
       questionType: QuestionType.mulChoice,
       orderIndex: questions.length + 1,
       score: 10,
+      imageUrl: undefined,
+      explanation: undefined, // Initialize explanation as undefined
+      videoExplanation: undefined, // Initialize videoExplanation as undefined
       answers: [
         { text: "", isCorrect: false },
         { text: "", isCorrect: false },
@@ -225,6 +236,9 @@ export default function QuizEditPage() {
         content: editingQuestion.questionText,
         type: editingQuestion.questionType,
         score: editingQuestion.score,
+        explanation: editingQuestion.explanation || undefined,
+        videoExplanation: editingQuestion.videoExplanation || undefined,
+        imageUrl: editingQuestion.imageUrl,
         answers: editingQuestion.answers.map((a) => ({
           id: a.id,
           content: a.text,
@@ -238,6 +252,9 @@ export default function QuizEditPage() {
         content: editingQuestion.questionText,
         type: editingQuestion.questionType,
         score: editingQuestion.score,
+        explanation: editingQuestion.explanation || undefined,
+        videoExplanation: editingQuestion.videoExplanation || undefined,
+        imageUrl: editingQuestion.imageUrl,
         answers: editingQuestion.answers.map((a) => ({
           content: a.text,
           isCorrect: a.isCorrect,
@@ -405,16 +422,148 @@ export default function QuizEditPage() {
               <label className="mb-2 block text-sm font-medium">
                 Question Text
               </label>
-              <Textarea
+              <Editor
+                isEdit={true}
+                content={editingQuestion.questionText}
+                onContentChange={(newContent) => {
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    questionText: newContent,
+                  });
+                }}
+                className={"p-2"}
+              />
+              {/* <Textarea
                 value={editingQuestion.questionText}
-                onChange={(e) =>
+                onChange={(e) => {
                   setEditingQuestion({
                     ...editingQuestion,
                     questionText: e.target.value,
-                  })
-                }
+                  });
+                }}
                 rows={4}
                 placeholder="Enter your question here..."
+              /> */}
+            </div>
+
+            {/* Image Upload */}
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Question Image (Optional)
+              </label>
+              {editingQuestion.imageUrl ? (
+                <div className="space-y-2">
+                  <Image
+                    src={editingQuestion.imageUrl}
+                    alt="Question image"
+                    width={400}
+                    height={300}
+                    className="rounded-lg border"
+                    onError={(e) => {
+                      console.error("Image load error:", e);
+                      toast.error("Failed to load image");
+                    }}
+                  />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setEditingQuestion((prev) =>
+                        prev
+                          ? {
+                              ...prev,
+                              imageUrl: undefined,
+                            }
+                          : prev,
+                      );
+                      toast.success("Image removed");
+                    }}
+                  >
+                    Remove Image
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <UploadDropzone
+                    className="rounded-lg border"
+                    endpoint="imageUploader"
+                    onClientUploadComplete={(res) => {
+                      console.log("Upload complete:", res);
+                      const imageUrl = res?.[0]?.url;
+                      if (imageUrl) {
+                        setEditingQuestion((prev) =>
+                          prev
+                            ? {
+                                ...prev,
+                                imageUrl: imageUrl,
+                              }
+                            : prev,
+                        );
+                        toast.success("Image uploaded successfully!");
+                      } else {
+                        console.error("No image URL in response:", res);
+                        toast.error(
+                          "Upload completed but no image URL received",
+                        );
+                      }
+                    }}
+                    onUploadError={(error) => {
+                      console.error("Upload error:", error);
+                      toast.error(`Upload failed: ${error.message}`);
+                    }}
+                    onUploadBegin={(name) => {
+                      console.log("Upload beginning for file:", name);
+                      toast.info("Uploading image...");
+                    }}
+                    onUploadProgress={(progress) => {
+                      console.log("Upload progress:", progress);
+                    }}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Supported formats: PNG, JPG, JPEG. Max size: 4MB
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Explanation (Optional) */}
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Pembahasan (Opsional)
+                <span className="ml-2 text-xs text-muted-foreground">
+                  Penjelasan jawaban untuk membantu siswa memahami
+                </span>
+              </label>
+              <Editor
+                isEdit={true}
+                content={editingQuestion.explanation || ""}
+                onContentChange={(newContent) => {
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    explanation: newContent || undefined,
+                  });
+                }}
+                className={"p-2"}
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium">
+                Link Video Pembahasan (Opsional)
+                <span className="ml-2 text-xs text-muted-foreground">
+                  Video pembahasan untuk membantu siswa memahami
+                </span>
+              </label>
+              <Input
+                value={editingQuestion.videoExplanation || ""}
+                onChange={(e) => {
+                  setEditingQuestion({
+                    ...editingQuestion,
+                    videoExplanation: e.target.value || undefined,
+                  });
+                }}
+                placeholder="Masukkan link video pembahasan"
+                className="flex-1"
               />
             </div>
 
@@ -636,12 +785,27 @@ export default function QuizEditPage() {
               <CardContent>
                 <div className="space-y-4">
                   <div>
+                    {/* <div className="whitespace-pre-line text-base">
+                      {currentQuestion.questionText}
+                    </div> */}
                     <Editor
-                      key={currentQuestion.id}
-                      content={currentQuestion.questionText}
                       isEdit={false}
+                      content={currentQuestion.questionText}
                     />
                   </div>
+
+                  {/* Display question image if exists */}
+                  {currentQuestion.imageUrl && (
+                    <div>
+                      <Image
+                        src={currentQuestion.imageUrl}
+                        alt="Question image"
+                        width={400}
+                        height={300}
+                        className="rounded-lg border"
+                      />
+                    </div>
+                  )}
 
                   {(currentQuestion.questionType === QuestionType.mulChoice ||
                     currentQuestion.questionType ===

@@ -9,13 +9,15 @@ export default function ProfileDetail() {
     const { data: session, status } = useSession();
     const user = session?.user;
     const isLoading = status === "loading";
+    const userTokens = session?.user?.token ?? 0;
 
   return (
     <div className="size-full mb-4">
       <div className="hidden w-full items-center justify-evenly md:flex ">
         <div className="flex flex-wrap items-center gap-3">
           <ProfilCard user={{ image: user?.image ?? "", name: user?.name ?? "" }} />
-          <TokenCard tokenAmount={2} />
+          {/* TODO: bener g? */}
+          <TokenCard tokenAmount={userTokens} />
         </div>
         <Mode />
 

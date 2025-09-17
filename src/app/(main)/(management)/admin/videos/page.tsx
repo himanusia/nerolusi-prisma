@@ -38,11 +38,13 @@ export default function TKAVideosPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingVideo, setEditingVideo] = useState<any>(null);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     videoUrl: "",
-    duration: "",
+    duration: 0,
   });
 
   const {
@@ -52,6 +54,7 @@ export default function TKAVideosPage() {
     isError,
   } = api.admin.getTKAVideos.useQuery();
   const createVideoMutation = api.admin.createTKAVideo.useMutation();
+  const updateVideoMutation = api.admin.updateTKAVideo.useMutation();
   const deleteVideoMutation = api.admin.deleteTKAVideo.useMutation();
 
   const filteredVideos = videos?.filter((video) => {
@@ -70,11 +73,45 @@ export default function TKAVideosPage() {
         title: "",
         description: "",
         videoUrl: "",
-        duration: "",
+        duration: 0,
       });
       await refetch();
     } catch (error: any) {
       toast.error(error.message || "Failed to create video");
+    }
+  };
+
+  const handleEditVideo = (video: any) => {
+    setEditingVideo(video);
+    setFormData({
+      title: video.title,
+      description: video.description || "",
+      videoUrl: video.url,
+      duration: video.duration,
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateVideo = async () => {
+    if (!editingVideo) return;
+
+    try {
+      await updateVideoMutation.mutateAsync({
+        id: editingVideo.id,
+        ...formData,
+      });
+      toast.success("Video updated successfully!");
+      setIsEditDialogOpen(false);
+      setEditingVideo(null);
+      setFormData({
+        title: "",
+        description: "",
+        videoUrl: "",
+        duration: 0,
+      });
+      await refetch();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to update video");
     }
   };
 
@@ -165,9 +202,12 @@ export default function TKAVideosPage() {
                   <Input
                     value={formData.duration}
                     onChange={(e) =>
-                      setFormData({ ...formData, duration: e.target.value })
+                      setFormData({
+                        ...formData,
+                        duration: parseInt(e.target.value),
+                      })
                     }
-                    placeholder="e.g. 15:30"
+                    placeholder="(minutes)"
                   />
                 </div>
               </div>
@@ -178,6 +218,77 @@ export default function TKAVideosPage() {
                 disabled={createVideoMutation.isPending}
               >
                 Add Video
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit Video Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit TKA Video</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <Label>Video Title</Label>
+                <Input
+                  value={formData.title}
+                  onChange={(e) =>
+                    setFormData({ ...formData, title: e.target.value })
+                  }
+                  placeholder="Enter video title"
+                />
+              </div>
+              <div>
+                <Label>Description</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) =>
+                    setFormData({ ...formData, description: e.target.value })
+                  }
+                  placeholder="Enter description"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <Label>Video URL</Label>
+                <Input
+                  value={formData.videoUrl}
+                  onChange={(e) =>
+                    setFormData({ ...formData, videoUrl: e.target.value })
+                  }
+                  placeholder="Enter YouTube URL or video ID"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Duration</Label>
+                  <Input
+                    value={formData.duration}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        duration: parseInt(e.target.value),
+                      })
+                    }
+                    placeholder="(minutes)"
+                  />
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleUpdateVideo}
+                // disabled={updateVideoMutation?.isPending}
+              >
+                Update Video
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -234,12 +345,15 @@ export default function TKAVideosPage() {
                 </div>
 
                 <div className="flex gap-2 pt-3">
-                  <Link href={`/admin-tka/videos/${video.id}/edit`}>
-                    <Button size="sm" variant="outline" className="flex-1">
-                      <Edit className="mr-1 h-4 w-4" />
-                      Edit
-                    </Button>
-                  </Link>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => handleEditVideo(video)}
+                  >
+                    <Edit className="mr-1 h-4 w-4" />
+                    Edit
+                  </Button>
                   <Button
                     size="sm"
                     variant="outline"

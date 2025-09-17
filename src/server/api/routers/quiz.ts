@@ -131,6 +131,7 @@ export const quizRouter = createTRPCRouter({
           userId: input.userId,
           subtestId: input.subtestId,
         },
+        orderBy: { endTime: "desc" },
       });
     }),
 
@@ -384,6 +385,7 @@ export const quizRouter = createTRPCRouter({
 
         let totalCorrect = 0;
         let totalScore = 0;
+        let totalAnswered = 0;
 
         // Calculate total correct answers and total score
         quizSession.userAnswers.forEach((userAnswer) => {
@@ -396,6 +398,7 @@ export const quizRouter = createTRPCRouter({
             const userAnswerIds = userAnswer.answerChoices.map(
               (choice) => choice.answerId,
             );
+            totalAnswered++;
 
             // Check if arrays are equal (same length and same elements)
             const isCorrect =
@@ -408,6 +411,7 @@ export const quizRouter = createTRPCRouter({
             }
           } else if (userAnswer.essayAnswer !== null) {
             // For essay questions
+            totalAnswered++;
             const correctEssayAnswer = userAnswer.question.answers.find(
               (ans) => ans.isCorrect,
             );
@@ -430,6 +434,7 @@ export const quizRouter = createTRPCRouter({
             score: totalScore,
             numQuestion: quizSession.subtest.questions.length,
             numCorrect: totalCorrect,
+            numAnswered: totalAnswered,
           },
         });
       });
@@ -880,6 +885,7 @@ export const quizRouter = createTRPCRouter({
         score: z.number(),
         imageUrl: z.string().optional(),
         explanation: z.string().optional(),
+        videoExplanation: z.string().optional(),
         answers: z.array(
           z.object({
             content: z.string(),
@@ -908,6 +914,7 @@ export const quizRouter = createTRPCRouter({
             score: input.score,
             imageUrl: input.imageUrl,
             explanation: input.explanation,
+            videoExplanation: input.videoExplanation,
             index: nextIndex,
           },
         });
@@ -939,6 +946,7 @@ export const quizRouter = createTRPCRouter({
         score: z.number(),
         imageUrl: z.string().optional(),
         explanation: z.string().optional(),
+        videoExplanation: z.string().optional(),
         answers: z.array(
           z.object({
             id: z.number().optional(),
@@ -959,26 +967,59 @@ export const quizRouter = createTRPCRouter({
             score: input.score,
             imageUrl: input.imageUrl,
             explanation: input.explanation,
+            videoExplanation: input.videoExplanation,
           },
         });
 
-        // Delete existing answers
-        await tx.answer.deleteMany({
+        // Get existing answers
+        const existingAnswers = await tx.answer.findMany({
           where: { questionId: input.questionId },
         });
 
-        // Create new answers
+        const existingAnswerIds = existingAnswers.map((a) => a.id);
+        const inputAnswerIds = input.answers
+          .map((a) => a.id)
+          .filter((id) => id !== undefined) as number[];
+
+        // Find answers to delete (exist in DB but not in input)
+        const answersToDelete = existingAnswerIds.filter(
+          (id) => !inputAnswerIds.includes(id),
+        );
+
+        // Delete orphaned answers
+        if (answersToDelete.length > 0) {
+          await tx.answer.deleteMany({
+            where: {
+              id: { in: answersToDelete },
+            },
+          });
+        }
+
+        // Update or create answers
         const answers = await Promise.all(
-          input.answers.map((answer, index) =>
-            tx.answer.create({
-              data: {
-                questionId: question.id,
-                content: answer.content,
-                isCorrect: answer.isCorrect,
-                index: index,
-              },
-            }),
-          ),
+          input.answers.map(async (answer, index) => {
+            if (answer.id && existingAnswerIds.includes(answer.id)) {
+              // Update existing answer
+              return await tx.answer.update({
+                where: { id: answer.id },
+                data: {
+                  content: answer.content,
+                  isCorrect: answer.isCorrect,
+                  index: index,
+                },
+              });
+            } else {
+              // Create new answer
+              return await tx.answer.create({
+                data: {
+                  questionId: question.id,
+                  content: answer.content,
+                  isCorrect: answer.isCorrect,
+                  index: index,
+                },
+              });
+            }
+          }),
         );
 
         return { question, answers };

@@ -44,6 +44,7 @@ import {
 } from "~/app/_components/ui/select";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
+import { getAllSubjects } from "~/app/_components/constants";
 
 const SUBTEST_TYPES = [
   { value: "pu", label: "Kemampuan Penalaran Umum" },
@@ -60,6 +61,11 @@ type SubtestFormData = {
   duration: number;
 };
 
+function toDatetimeLocalStringLocal(date: Date) {
+  const pad = (n: number) => n.toString().padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
+
 export default function TryoutEditPage() {
   const params = useParams();
   const router = useRouter();
@@ -71,7 +77,7 @@ export default function TryoutEditPage() {
   const [packageForm, setPackageForm] = useState({
     name: "",
     type: "tryout" as const,
-    classId: 1,
+    classId: null,
     TOstart: "",
     TOend: "",
     tokenPrice: 0,
@@ -105,12 +111,12 @@ export default function TryoutEditPage() {
       setPackageForm({
         name: packageData.name || "",
         type: "tryout",
-        classId: packageData.classId || 1,
+        classId: packageData.classId,
         TOstart: packageData.TOstart
-          ? new Date(packageData.TOstart).toISOString().slice(0, 16)
+          ? toDatetimeLocalStringLocal(new Date(packageData.TOstart))
           : "",
         TOend: packageData.TOend
-          ? new Date(packageData.TOend).toISOString().slice(0, 16)
+          ? toDatetimeLocalStringLocal(new Date(packageData.TOend))
           : "",
         tokenPrice: packageData.tokenPrice || 0,
       });
@@ -196,7 +202,16 @@ export default function TryoutEditPage() {
   };
 
   const getSubtestTypeLabel = (type: string) => {
-    return SUBTEST_TYPES.find((t) => t.value === type)?.label || type;
+    return (
+      SUBTEST_TYPES.find((t) => t.value === type)?.label ||
+      type
+        .replace("_", " ")
+        .split(" ")
+        .map(
+          (word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(" ")
+    );
   };
 
   if (isLoading) return <LoadingPage />;
@@ -229,7 +244,7 @@ export default function TryoutEditPage() {
                   setPackageForm({
                     name: packageData.name || "",
                     type: "tryout",
-                    classId: packageData.classId || 1,
+                    classId: packageData.classId,
                     TOstart: packageData.TOstart
                       ? new Date(packageData.TOstart).toISOString().slice(0, 16)
                       : "",
@@ -302,9 +317,12 @@ export default function TryoutEditPage() {
             <div>
               <Label htmlFor="class">Class</Label>
               <Select
-                value={packageForm.classId.toString()}
+                value={packageForm.classId?.toString() || ""}
                 onValueChange={(value) =>
-                  setPackageForm({ ...packageForm, classId: parseInt(value) })
+                  setPackageForm({
+                    ...packageForm,
+                    classId: value ? parseInt(value) : null,
+                  })
                 }
                 disabled={!isEditing}
               >
@@ -454,6 +472,14 @@ export default function TryoutEditPage() {
                         {SUBTEST_TYPES.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
                             {type.label}
+                          </SelectItem>
+                        ))}
+                        {getAllSubjects().map((subject) => (
+                          <SelectItem
+                            key={subject.slug.replace("-", "_")}
+                            value={subject.slug.replace("-", "_")}
+                          >
+                            {subject.title}
                           </SelectItem>
                         ))}
                       </SelectContent>

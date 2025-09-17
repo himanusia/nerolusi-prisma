@@ -4,7 +4,7 @@ import {
   teacherProcedure,
   userProcedure,
 } from "~/server/api/trpc";
-import { QuestionType, Type, SubtestType, Prisma } from "@prisma/client";
+// import { QuestionType, Type, SubtestType, Prisma } from "@prisma/client";
 
 export const packageRouter = createTRPCRouter({
   // Get All Packages
@@ -33,17 +33,22 @@ export const packageRouter = createTRPCRouter({
   getTryoutPackages: userProcedure
     .input(
       z.object({
-        classId: z.number(),
+        classId: z.number().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       return await ctx.db.package.findMany({
         where: {
-          classId: input.classId,
+          ...(input.classId && { classId: input.classId }), // Only add classId filter if it exists
           type: "tryout",
         },
         include: {
           quizSession: {
+            where: {
+              userId: ctx.session.user.id,
+            },
+          },
+          userPackage: {
             where: {
               userId: ctx.session.user.id,
             },
@@ -86,730 +91,799 @@ export const packageRouter = createTRPCRouter({
       return packageData;
     }),
 
-  // Get Users by Package with Scores
-  getUsersByPackage: userProcedure
+  purchasePackage: userProcedure
     .input(
       z.object({
         packageId: z.string(),
       }),
     )
-    .query(async ({ ctx, input }) => {
-      const users = await ctx.db.user.findMany({
-        where: {
-          quizSession: {
-            some: {
-              packageId: input.packageId,
-            },
-          },
-        },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          quizSession: {
-            where: {
-              packageId: input.packageId,
-            },
-            select: {
-              id: true,
-              package: {
-                select: {
-                  _count: { select: { subtests: true } },
-                },
-              },
-              subtest: {
-                select: {
-                  type: true,
-                },
-              },
-            },
-          },
-          userAnswers: {
-            where: {
-              quizSession: {
-                packageId: input.packageId,
-              }
-            },
-            select: {
-              question: {
-                select: {
-                  score: true,
-                  answers: {
-                    select: {
-                      content: true,
-                    },
-                  },
-                },
-              },
-              essayAnswer: true,
-            },
-          },
-        },
-      });
+    .mutation(async ({ ctx, input }) => {
+      const { packageId } = input;
 
-      const subtests = await ctx.db.subtest.findMany({
-        where: {
-          packageId: input.packageId,
-        },
-        select: { id: true, type: true },
-      });
-
-      const packageName = await ctx.db.package.findUnique({
-        where: {
-          id: input.packageId,
-        },
-        select: { name: true },
-      });
-
-      // Calculate scores for each user
-      const usersWithScores = users.map((user) => {
-        // Ensure user has a quiz session
-        const quizSession = user.quizSession[0];
-        if (!quizSession) {
-          return {
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            score: null,
-            quizSession: user.quizSession,
-          };
+      return await ctx.db.$transaction(async (tx) => {
+        // Check if the package exists
+        const pkg = await tx.package.findUnique({
+          where: { id: packageId },
+        });
+        if (!pkg) {
+          throw new Error("Package not found");
         }
 
-        // Total number of subtests
-        const totalSubtests = quizSession.package._count.subtests || 1;
+        // Check if user already purchased this package
+        const existingPurchase = await tx.userPackage.findFirst({
+          where: {
+            userId: ctx.session.user.id,
+            packageId: pkg.id,
+          },
+        });
+        if (existingPurchase) {
+          throw new Error("Package already purchased");
+        }
 
-        // Calculate total score for the user
-        const totalScore = user.userAnswers.reduce((total, answer) => {
-          if (answer.question.correctAnswerChoice !== null) {
-            // Multiple-choice scoring
-            return (
-              total +
-              (answer.answerChoice === answer.question.correctAnswerChoice
-                ? answer.question.score
-                : 0)
-            );
-          } else if (answer.essayAnswer !== null) {
-            // Essay scoring
-            const isEssayCorrect =
-              answer.essayAnswer.trim().toLowerCase() ===
-              answer.question.answers[0]?.content.trim().toLowerCase();
-            return total + (isEssayCorrect ? answer.question.score : 0);
-          }
-          return total;
-        }, 0);
+        const price = pkg.tokenPrice ?? 1;
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          score: Math.round((totalScore / totalSubtests) * 100) / 100,
-          quizSession: user.quizSession,
-        };
+        // Get current user data to ensure we have the latest token count
+        const currentUser = await tx.user.findUnique({
+          where: { id: ctx.session.user.id },
+          select: { token: true },
+        });
+
+        if (!currentUser) {
+          throw new Error("User not found");
+        }
+
+        if (currentUser.token < price) {
+          throw new Error("Token is not sufficient");
+        }
+
+        const newToken = currentUser.token - price;
+
+        // Update user token
+        await tx.user.update({
+          where: {
+            id: ctx.session.user.id,
+          },
+          data: {
+            token: newToken,
+          },
+        });
+
+        // Create a new userPackage entry
+        await tx.userPackage.create({
+          data: {
+            userId: ctx.session.user.id,
+            packageId: pkg.id,
+          },
+        });
+
+        return { success: true, newTokenBalance: newToken };
       });
-
-      return {
-        name: packageName.name,
-        subtests,
-        users: usersWithScores,
-      };
     }),
+
+  // Get Users by Package with Scores
+  // getUsersByPackage: userProcedure
+  //   .input(
+  //     z.object({
+  //       packageId: z.string(),
+  //     }),
+  //   )
+  //   .query(async ({ ctx, input }) => {
+  //     const users = await ctx.db.user.findMany({
+  //       where: {
+  //         quizSession: {
+  //           some: {
+  //             packageId: input.packageId,
+  //           },
+  //         },
+  //       },
+  //       select: {
+  //         id: true,
+  //         name: true,
+  //         email: true,
+  //         quizSession: {
+  //           where: {
+  //             packageId: input.packageId,
+  //           },
+  //           select: {
+  //             id: true,
+  //             package: {
+  //               select: {
+  //                 _count: { select: { subtests: true } },
+  //               },
+  //             },
+  //             subtest: {
+  //               select: {
+  //                 type: true,
+  //               },
+  //             },
+  //           },
+  //         },
+  //         userAnswers: {
+  //           where: {
+  //             quizSession: {
+  //               packageId: input.packageId,
+  //             },
+  //           },
+  //           select: {
+  //             question: {
+  //               select: {
+  //                 score: true,
+  //                 answers: {
+  //                   select: {
+  //                     content: true,
+  //                   },
+  //                 },
+  //               },
+  //             },
+  //             essayAnswer: true,
+  //           },
+  //         },
+  //       },
+  //     });
+
+  //     const subtests = await ctx.db.subtest.findMany({
+  //       where: {
+  //         packageId: input.packageId,
+  //       },
+  //       select: { id: true, type: true },
+  //     });
+
+  //     const packageName = await ctx.db.package.findUnique({
+  //       where: {
+  //         id: input.packageId,
+  //       },
+  //       select: { name: true },
+  //     });
+
+  //     // Calculate scores for each user
+  //     const usersWithScores = users.map((user) => {
+  //       // Ensure user has a quiz session
+  //       const quizSession = user.quizSession[0];
+  //       if (!quizSession) {
+  //         return {
+  //           id: user.id,
+  //           name: user.name,
+  //           email: user.email,
+  //           score: null,
+  //           quizSession: user.quizSession,
+  //         };
+  //       }
+
+  //       // Total number of subtests
+  //       const totalSubtests = quizSession.package._count.subtests || 1;
+
+  //       // Calculate total score for the user
+  //       const totalScore = user.userAnswers.reduce((total, answer) => {
+  //         if (answer.question.correctAnswerChoice !== null) {
+  //           // Multiple-choice scoring
+  //           return (
+  //             total +
+  //             (answer.answerChoice === answer.question.correctAnswerChoice
+  //               ? answer.question.score
+  //               : 0)
+  //           );
+  //         } else if (answer.essayAnswer !== null) {
+  //           // Essay scoring
+  //           const isEssayCorrect =
+  //             answer.essayAnswer.trim().toLowerCase() ===
+  //             answer.question.answers[0]?.content.trim().toLowerCase();
+  //           return total + (isEssayCorrect ? answer.question.score : 0);
+  //         }
+  //         return total;
+  //       }, 0);
+
+  //       return {
+  //         id: user.id,
+  //         name: user.name,
+  //         email: user.email,
+  //         score: Math.round((totalScore / totalSubtests) * 100) / 100,
+  //         quizSession: user.quizSession,
+  //       };
+  //     });
+
+  //     return {
+  //       name: packageName.name,
+  //       subtests,
+  //       users: usersWithScores,
+  //     };
+  //   }),
 
   // Create Package
-  createPackage: teacherProcedure
-    .input(
-      z.object({
-        name: z.string().min(1, "Name is required"),
-        type: z.nativeEnum(Type),
-        classId: z.number().positive("Class ID must be a positive number"),
-        TOstart: z.string().optional(),
-        TOend: z.string().optional(),
-        subtests: z.array(
-          z.object({
-            type: z.nativeEnum(SubtestType),
-            duration: z.number().optional(),
-            questions: z.array(
-              z.object({
-                index: z.number().positive("Index must be a positive number"),
-                content: z.string().min(1, "Content is required"),
-                imageUrl: z.string().optional(),
-                type: z.nativeEnum(QuestionType),
-                score: z
-                  .number()
-                  .min(0, "Score must be non-negative")
-                  .default(0),
-                explanation: z.string().optional(),
-                answers: z.array(
-                  z.object({
-                    index: z
-                      .number()
-                      .positive("Index must be a positive number"),
-                    content: z.string().min(1, "Answer content is required"),
-                  }),
-                ),
-                correctAnswerChoice: z.number().optional(),
-              }),
-            ),
-          }),
-        ),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        const { subtests, ...packageData } = input;
+  // createPackage: teacherProcedure
+  //   .input(
+  //     z.object({
+  //       name: z.string().min(1, "Name is required"),
+  //       type: z.nativeEnum(Type),
+  //       classId: z.number().positive("Class ID must be a positive number"),
+  //       TOstart: z.string().optional(),
+  //       TOend: z.string().optional(),
+  //       subtests: z.array(
+  //         z.object({
+  //           type: z.nativeEnum(SubtestType),
+  //           duration: z.number().optional(),
+  //           questions: z.array(
+  //             z.object({
+  //               index: z.number().positive("Index must be a positive number"),
+  //               content: z.string().min(1, "Content is required"),
+  //               imageUrl: z.string().optional(),
+  //               type: z.nativeEnum(QuestionType),
+  //               score: z
+  //                 .number()
+  //                 .min(0, "Score must be non-negative")
+  //                 .default(0),
+  //               explanation: z.string().optional(),
+  //               answers: z.array(
+  //                 z.object({
+  //                   index: z
+  //                     .number()
+  //                     .positive("Index must be a positive number"),
+  //                   content: z.string().min(1, "Answer content is required"),
+  //                 }),
+  //               ),
+  //               correctAnswerChoice: z.number().optional(),
+  //             }),
+  //           ),
+  //         }),
+  //       ),
+  //     }),
+  //   )
+  //   .mutation(async ({ input, ctx }) => {
+  //     try {
+  //       const { subtests, ...packageData } = input;
 
-        // Normalize date fields
-        const { classId, ...restPackageData } = packageData;
-        const normalizedPackageData = {
-          ...restPackageData,
-          name: packageData.name,
-          type: packageData.type,
-          TOstart: packageData.TOstart ? new Date(packageData.TOstart) : null,
-          TOend: packageData.TOend ? new Date(packageData.TOend) : null,
-        };
+  //       // Normalize date fields
+  //       const { classId, ...restPackageData } = packageData;
+  //       const normalizedPackageData = {
+  //         ...restPackageData,
+  //         name: packageData.name,
+  //         type: packageData.type,
+  //         TOstart: packageData.TOstart ? new Date(packageData.TOstart) : null,
+  //         TOend: packageData.TOend ? new Date(packageData.TOend) : null,
+  //       };
 
-        // Create Package without packageId in the input
-        const createdPackage = await ctx.db.package.create({
-          data: {
-            ...normalizedPackageData,
-            class: {
-              connect: { id: classId },
-            },
-          },
-        });
+  //       // Create Package without packageId in the input
+  //       const createdPackage = await ctx.db.package.create({
+  //         data: {
+  //           ...normalizedPackageData,
+  //           class: {
+  //             connect: { id: classId },
+  //           },
+  //         },
+  //       });
 
-        // Create Subtests, Questions, and Answers using created packageId
-        for (const subtest of subtests) {
-          await ctx.db.subtest.create({
-            data: {
-              type: subtest.type,
-              duration: subtest.duration,
-              packageId: createdPackage.id,
-              questions: {
-                create: subtest.questions.map((question) => ({
-                  index: question.index,
-                  content: question.content,
-                  imageUrl: question.imageUrl,
-                  type: question.type,
-                  score: question.score,
-                  explanation: question.explanation,
-                  correctAnswerChoice: question.correctAnswerChoice,
-                  packageId: createdPackage.id,
-                  answers: {
-                    create: question.answers.map((answer) => ({
-                      index: answer.index,
-                      content: answer.content,
-                    })),
-                  },
-                })),
-              },
-            },
-            include: {
-              questions: {
-                include: {
-                  answers: true,
-                },
-              },
-            },
-          });
-        }
+  //       // Create Subtests, Questions, and Answers using created packageId
+  //       for (const subtest of subtests) {
+  //         await ctx.db.subtest.create({
+  //           data: {
+  //             type: subtest.type,
+  //             duration: subtest.duration,
+  //             packageId: createdPackage.id,
+  //             questions: {
+  //               create: subtest.questions.map((question) => ({
+  //                 index: question.index,
+  //                 content: question.content,
+  //                 imageUrl: question.imageUrl,
+  //                 type: question.type,
+  //                 score: question.score,
+  //                 explanation: question.explanation,
+  //                 correctAnswerChoice: question.correctAnswerChoice,
+  //                 packageId: createdPackage.id,
+  //                 answers: {
+  //                   create: question.answers.map((answer) => ({
+  //                     index: answer.index,
+  //                     content: answer.content,
+  //                   })),
+  //                 },
+  //               })),
+  //             },
+  //           },
+  //           include: {
+  //             questions: {
+  //               include: {
+  //                 answers: true,
+  //               },
+  //             },
+  //           },
+  //         });
+  //       }
 
-        return createdPackage;
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error creating package:", error.message);
-          throw new Error("Error creating package: " + error.message);
-        }
-        throw error;
-      }
-    }),
+  //       return createdPackage;
+  //     } catch (error) {
+  //       if (error instanceof Error) {
+  //         console.error("Error creating package:", error.message);
+  //         throw new Error("Error creating package: " + error.message);
+  //       }
+  //       throw error;
+  //     }
+  //   }),
 
   // Update Package
-  updatePackage: teacherProcedure
-    .input(
-      z.object({
-        id: z.number().positive("Package ID must be a positive number"),
-        name: z.string().min(1, "Name is required").optional(),
-        type: z.nativeEnum(Type).optional(),
-        classId: z
-          .number()
-          .positive("Class ID must be a positive number")
-          .optional(),
-        TOstart: z.string().optional(),
-        TOend: z.string().optional(),
-        subtests: z
-          .array(
-            z.object({
-              id: z
-                .number()
-                .positive("Subtest ID must be a positive number")
-                .optional(),
-              type: z.nativeEnum(SubtestType),
-              duration: z.number().optional(),
-              questions: z
-                .array(
-                  z.object({
-                    id: z
-                      .number()
-                      .positive("Question ID must be a positive number")
-                      .optional(),
-                    index: z
-                      .number()
-                      .positive("Index must be a positive number"),
-                    content: z.string().min(1, "Content is required"),
-                    imageUrl: z.string().optional(),
-                    type: z.nativeEnum(QuestionType),
-                    score: z
-                      .number()
-                      .min(0, "Score must be non-negative")
-                      .default(0),
-                    explanation: z.string().optional(),
-                    correctAnswerChoice: z.number().optional(),
-                    answers: z.array(
-                      z.object({
-                        id: z
-                          .number()
-                          .positive("Answer ID must be a positive number")
-                          .optional(),
-                        index: z
-                          .number()
-                          .positive("Index must be a positive number"),
-                        content: z
-                          .string()
-                          .min(1, "Answer content is required"),
-                      }),
-                    ),
-                  }),
-                )
-                .optional(),
-            }),
-          )
-          .optional(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      try {
-        const { id, subtests, classId, TOstart, TOend, ...packageData } = input;
+  // updatePackage: teacherProcedure
+  //   .input(
+  //     z.object({
+  //       id: z.number().positive("Package ID must be a positive number"),
+  //       name: z.string().min(1, "Name is required").optional(),
+  //       type: z.nativeEnum(Type).optional(),
+  //       classId: z
+  //         .number()
+  //         .positive("Class ID must be a positive number")
+  //         .optional(),
+  //       TOstart: z.string().optional(),
+  //       TOend: z.string().optional(),
+  //       subtests: z
+  //         .array(
+  //           z.object({
+  //             id: z
+  //               .number()
+  //               .positive("Subtest ID must be a positive number")
+  //               .optional(),
+  //             type: z.nativeEnum(SubtestType),
+  //             duration: z.number().optional(),
+  //             questions: z
+  //               .array(
+  //                 z.object({
+  //                   id: z
+  //                     .number()
+  //                     .positive("Question ID must be a positive number")
+  //                     .optional(),
+  //                   index: z
+  //                     .number()
+  //                     .positive("Index must be a positive number"),
+  //                   content: z.string().min(1, "Content is required"),
+  //                   imageUrl: z.string().optional(),
+  //                   type: z.nativeEnum(QuestionType),
+  //                   score: z
+  //                     .number()
+  //                     .min(0, "Score must be non-negative")
+  //                     .default(0),
+  //                   explanation: z.string().optional(),
+  //                   correctAnswerChoice: z.number().optional(),
+  //                   answers: z.array(
+  //                     z.object({
+  //                       id: z
+  //                         .number()
+  //                         .positive("Answer ID must be a positive number")
+  //                         .optional(),
+  //                       index: z
+  //                         .number()
+  //                         .positive("Index must be a positive number"),
+  //                       content: z
+  //                         .string()
+  //                         .min(1, "Answer content is required"),
+  //                     }),
+  //                   ),
+  //                 }),
+  //               )
+  //               .optional(),
+  //           }),
+  //         )
+  //         .optional(),
+  //     }),
+  //   )
+  //   .mutation(async ({ input, ctx }) => {
+  //     try {
+  //       const { id, subtests, classId, TOstart, TOend, ...packageData } = input;
 
-        const updatedPackage = await ctx.db.$transaction(async (tx) => {
-          const updateData: Prisma.PackageUpdateInput = {
-            ...packageData,
-            TOstart: TOstart ? new Date(TOstart) : undefined,
-            TOend: TOend ? new Date(TOend) : undefined,
-            ...(classId && {
-              class: {
-                connect: { id: classId },
-              },
-            }),
-          };
+  //       const updatedPackage = await ctx.db.$transaction(async (tx) => {
+  //         const updateData: Prisma.PackageUpdateInput = {
+  //           ...packageData,
+  //           TOstart: TOstart ? new Date(TOstart) : undefined,
+  //           TOend: TOend ? new Date(TOend) : undefined,
+  //           ...(classId && {
+  //             class: {
+  //               connect: { id: classId },
+  //             },
+  //           }),
+  //         };
 
-          const pkg = await tx.package.update({
-            where: { id },
-            data: updateData,
-          });
+  //         const pkg = await tx.package.update({
+  //           where: { id },
+  //           data: updateData,
+  //         });
 
-          if (subtests) {
-            const existingSubtests = await tx.subtest.findMany({
-              where: { packageId: id },
-              select: { id: true },
-            });
-            const existingSubtestIds = existingSubtests.map((s) => s.id);
+  //         if (subtests) {
+  //           const existingSubtests = await tx.subtest.findMany({
+  //             where: { packageId: id },
+  //             select: { id: true },
+  //           });
+  //           const existingSubtestIds = existingSubtests.map((s) => s.id);
 
-            const inputSubtestIds = subtests
-              .filter((s) => s.id !== undefined)
-              .map((s) => s.id as number);
+  //           const inputSubtestIds = subtests
+  //             .filter((s) => s.id !== undefined)
+  //             .map((s) => s.id as number);
 
-            const subtestsToDelete = existingSubtestIds.filter(
-              (existingId) => !inputSubtestIds.includes(existingId),
-            );
+  //           const subtestsToDelete = existingSubtestIds.filter(
+  //             (existingId) => !inputSubtestIds.includes(existingId),
+  //           );
 
-            if (subtestsToDelete.length > 0) {
-              await tx.subtest.deleteMany({
-                where: { id: { in: subtestsToDelete } },
-              });
-            }
+  //           if (subtestsToDelete.length > 0) {
+  //             await tx.subtest.deleteMany({
+  //               where: { id: { in: subtestsToDelete } },
+  //             });
+  //           }
 
-            for (const subtest of subtests) {
-              if (subtest.id) {
-                const updatedSubtest = await tx.subtest.update({
-                  where: { id: subtest.id },
-                  data: {
-                    type: subtest.type,
-                    duration: subtest.duration,
-                  },
-                });
+  //           for (const subtest of subtests) {
+  //             if (subtest.id) {
+  //               const updatedSubtest = await tx.subtest.update({
+  //                 where: { id: subtest.id },
+  //                 data: {
+  //                   type: subtest.type,
+  //                   duration: subtest.duration,
+  //                 },
+  //               });
 
-                if (subtest.questions) {
-                  const existingQuestions = await tx.question.findMany({
-                    where: { subtestId: subtest.id },
-                    select: { id: true },
-                  });
-                  const existingQuestionIds = existingQuestions.map(
-                    (q) => q.id,
-                  );
+  //               if (subtest.questions) {
+  //                 const existingQuestions = await tx.question.findMany({
+  //                   where: { subtestId: subtest.id },
+  //                   select: { id: true },
+  //                 });
+  //                 const existingQuestionIds = existingQuestions.map(
+  //                   (q) => q.id,
+  //                 );
 
-                  const inputQuestionIds = subtest.questions
-                    .filter((q) => q.id !== undefined)
-                    .map((q) => q.id as number);
+  //                 const inputQuestionIds = subtest.questions
+  //                   .filter((q) => q.id !== undefined)
+  //                   .map((q) => q.id as number);
 
-                  const questionsToDelete = existingQuestionIds.filter(
-                    (existingId) => !inputQuestionIds.includes(existingId),
-                  );
+  //                 const questionsToDelete = existingQuestionIds.filter(
+  //                   (existingId) => !inputQuestionIds.includes(existingId),
+  //                 );
 
-                  if (questionsToDelete.length > 0) {
-                    await tx.question.deleteMany({
-                      where: { id: { in: questionsToDelete } },
-                    });
-                  }
+  //                 if (questionsToDelete.length > 0) {
+  //                   await tx.question.deleteMany({
+  //                     where: { id: { in: questionsToDelete } },
+  //                   });
+  //                 }
 
-                  for (const question of subtest.questions) {
-                    if (question.id) {
-                      const updatedQuestion = await tx.question.update({
-                        where: { id: question.id },
-                        data: {
-                          index: question.index,
-                          content: question.content,
-                          imageUrl: question.imageUrl,
-                          type: question.type,
-                          score: question.score,
-                          explanation: question.explanation,
-                          correctAnswerChoice: question.correctAnswerChoice,
-                          packageId: id,
-                        },
-                      });
+  //                 for (const question of subtest.questions) {
+  //                   if (question.id) {
+  //                     const updatedQuestion = await tx.question.update({
+  //                       where: { id: question.id },
+  //                       data: {
+  //                         index: question.index,
+  //                         content: question.content,
+  //                         imageUrl: question.imageUrl,
+  //                         type: question.type,
+  //                         score: question.score,
+  //                         explanation: question.explanation,
+  //                         correctAnswerChoice: question.correctAnswerChoice,
+  //                         packageId: id,
+  //                       },
+  //                     });
 
-                      if (question.answers) {
-                        const existingAnswers = await tx.answer.findMany({
-                          where: { questionId: question.id },
-                          select: { id: true },
-                        });
-                        const existingAnswerIds = existingAnswers.map(
-                          (a) => a.id,
-                        );
+  //                     if (question.answers) {
+  //                       const existingAnswers = await tx.answer.findMany({
+  //                         where: { questionId: question.id },
+  //                         select: { id: true },
+  //                       });
+  //                       const existingAnswerIds = existingAnswers.map(
+  //                         (a) => a.id,
+  //                       );
 
-                        const inputAnswerIds = question.answers
-                          .filter((a) => a.id !== undefined)
-                          .map((a) => a.id as number);
+  //                       const inputAnswerIds = question.answers
+  //                         .filter((a) => a.id !== undefined)
+  //                         .map((a) => a.id as number);
 
-                        const answersToDelete = existingAnswerIds.filter(
-                          (existingId) => !inputAnswerIds.includes(existingId),
-                        );
+  //                       const answersToDelete = existingAnswerIds.filter(
+  //                         (existingId) => !inputAnswerIds.includes(existingId),
+  //                       );
 
-                        if (answersToDelete.length > 0) {
-                          await tx.answer.deleteMany({
-                            where: { id: { in: answersToDelete } },
-                          });
-                        }
+  //                       if (answersToDelete.length > 0) {
+  //                         await tx.answer.deleteMany({
+  //                           where: { id: { in: answersToDelete } },
+  //                         });
+  //                       }
 
-                        for (const answer of question.answers) {
-                          if (answer.id) {
-                            await tx.answer.update({
-                              where: { id: answer.id },
-                              data: {
-                                index: answer.index,
-                                content: answer.content,
-                              },
-                            });
-                          } else {
-                            await tx.answer.create({
-                              data: {
-                                index: answer.index,
-                                content: answer.content,
-                                question: {
-                                  connect: { id: question.id },
-                                },
-                              },
-                            });
-                          }
-                        }
-                      }
-                    } else {
-                      const newQuestion = await tx.question.create({
-                        data: {
-                          index: question.index,
-                          content: question.content,
-                          imageUrl: question.imageUrl,
-                          type: question.type,
-                          score: question.score,
-                          explanation: question.explanation,
-                          correctAnswerChoice: question.correctAnswerChoice,
-                          packageId: id,
-                          subtest: {
-                            connect: { id: subtest.id },
-                          },
-                        },
-                      });
+  //                       for (const answer of question.answers) {
+  //                         if (answer.id) {
+  //                           await tx.answer.update({
+  //                             where: { id: answer.id },
+  //                             data: {
+  //                               index: answer.index,
+  //                               content: answer.content,
+  //                             },
+  //                           });
+  //                         } else {
+  //                           await tx.answer.create({
+  //                             data: {
+  //                               index: answer.index,
+  //                               content: answer.content,
+  //                               question: {
+  //                                 connect: { id: question.id },
+  //                               },
+  //                             },
+  //                           });
+  //                         }
+  //                       }
+  //                     }
+  //                   } else {
+  //                     const newQuestion = await tx.question.create({
+  //                       data: {
+  //                         index: question.index,
+  //                         content: question.content,
+  //                         imageUrl: question.imageUrl,
+  //                         type: question.type,
+  //                         score: question.score,
+  //                         explanation: question.explanation,
+  //                         correctAnswerChoice: question.correctAnswerChoice,
+  //                         packageId: id,
+  //                         subtest: {
+  //                           connect: { id: subtest.id },
+  //                         },
+  //                       },
+  //                     });
 
-                      if (question.answers) {
-                        for (const answer of question.answers) {
-                          await tx.answer.create({
-                            data: {
-                              index: answer.index,
-                              content: answer.content,
-                              question: {
-                                connect: { id: newQuestion.id },
-                              },
-                            },
-                          });
-                        }
-                      }
-                    }
-                  }
-                }
-              } else {
-                const newSubtest = await tx.subtest.create({
-                  data: {
-                    type: subtest.type,
-                    duration: subtest.duration,
-                    package: {
-                      connect: { id },
-                    },
-                  },
-                });
+  //                     if (question.answers) {
+  //                       for (const answer of question.answers) {
+  //                         await tx.answer.create({
+  //                           data: {
+  //                             index: answer.index,
+  //                             content: answer.content,
+  //                             question: {
+  //                               connect: { id: newQuestion.id },
+  //                             },
+  //                           },
+  //                         });
+  //                       }
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             } else {
+  //               const newSubtest = await tx.subtest.create({
+  //                 data: {
+  //                   type: subtest.type,
+  //                   duration: subtest.duration,
+  //                   package: {
+  //                     connect: { id },
+  //                   },
+  //                 },
+  //               });
 
-                if (subtest.questions) {
-                  for (const question of subtest.questions) {
-                    const newQuestion = await tx.question.create({
-                      data: {
-                        index: question.index,
-                        content: question.content,
-                        imageUrl: question.imageUrl,
-                        type: question.type,
-                        score: question.score,
-                        explanation: question.explanation,
-                        correctAnswerChoice: question.correctAnswerChoice,
-                        packageId: id,
-                        subtest: {
-                          connect: { id: newSubtest.id },
-                        },
-                      },
-                    });
+  //               if (subtest.questions) {
+  //                 for (const question of subtest.questions) {
+  //                   const newQuestion = await tx.question.create({
+  //                     data: {
+  //                       index: question.index,
+  //                       content: question.content,
+  //                       imageUrl: question.imageUrl,
+  //                       type: question.type,
+  //                       score: question.score,
+  //                       explanation: question.explanation,
+  //                       correctAnswerChoice: question.correctAnswerChoice,
+  //                       packageId: id,
+  //                       subtest: {
+  //                         connect: { id: newSubtest.id },
+  //                       },
+  //                     },
+  //                   });
 
-                    if (question.answers) {
-                      for (const answer of question.answers) {
-                        await tx.answer.create({
-                          data: {
-                            index: answer.index,
-                            content: answer.content,
-                            question: {
-                              connect: { id: newQuestion.id },
-                            },
-                          },
-                        });
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
+  //                   if (question.answers) {
+  //                     for (const answer of question.answers) {
+  //                       await tx.answer.create({
+  //                         data: {
+  //                           index: answer.index,
+  //                           content: answer.content,
+  //                           question: {
+  //                             connect: { id: newQuestion.id },
+  //                           },
+  //                         },
+  //                       });
+  //                     }
+  //                   }
+  //                 }
+  //               }
+  //             }
+  //           }
+  //         }
 
-          return pkg;
-        });
+  //         return pkg;
+  //       });
 
-        return updatedPackage;
-      } catch (error) {
-        if (error instanceof Error) {
-          console.error("Error updating package:", error.message);
-          throw new Error("Error updating package: " + error.message);
-        }
-        throw error;
-      }
-    }),
+  //       return updatedPackage;
+  //     } catch (error) {
+  //       if (error instanceof Error) {
+  //         console.error("Error updating package:", error.message);
+  //         throw new Error("Error updating package: " + error.message);
+  //       }
+  //       throw error;
+  //     }
+  //   }),
 
-  deletePackage: teacherProcedure
-    .input(
-      z.object({
-        id: z.number(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.package.delete({
-        where: {
-          id: input.id,
-        },
-      });
-    }),
+  // deletePackage: teacherProcedure
+  //   .input(
+  //     z.object({
+  //       id: z.number(),
+  //     }),
+  //   )
+  //   .mutation(async ({ ctx, input }) => {
+  //     return await ctx.db.package.delete({
+  //       where: {
+  //         id: input.id,
+  //       },
+  //     });
+  //   }),
 
   // Get a single Subtest by ID
-  getSubtest: userProcedure
-    .input(
-      z.object({
-        id: z.number().positive("Subtest ID must be a positive number"),
-      }),
-    )
-    .query(async ({ input, ctx }) => {
-      const subtest = await ctx.db.subtest.findUnique({
-        where: { id: input.id },
-        include: {
-          questions: {
-            include: {
-              answers: {
-                orderBy: {
-                  index: "asc",
-                },
-              },
-            },
-            orderBy: {
-              id: "asc",
-            },
-          },
-        },
-      });
+  // getSubtest: userProcedure
+  //   .input(
+  //     z.object({
+  //       id: z.number().positive("Subtest ID must be a positive number"),
+  //     }),
+  //   )
+  //   .query(async ({ input, ctx }) => {
+  //     const subtest = await ctx.db.subtest.findUnique({
+  //       where: { id: input.id },
+  //       include: {
+  //         questions: {
+  //           include: {
+  //             answers: {
+  //               orderBy: {
+  //                 index: "asc",
+  //               },
+  //             },
+  //           },
+  //           orderBy: {
+  //             id: "asc",
+  //           },
+  //         },
+  //       },
+  //     });
 
-      if (!subtest) {
-        throw new Error("Subtest not found");
-      }
+  //     if (!subtest) {
+  //       throw new Error("Subtest not found");
+  //     }
 
-      return subtest;
-    }),
+  //     return subtest;
+  //   }),
 
-  updateSubtest: teacherProcedure
-    .input(
-      z.object({
-        id: z.number().positive("Subtest ID must be a positive number"),
-        type: z.nativeEnum(SubtestType).optional(),
-        duration: z.number().optional(),
-        questions: z
-          .array(
-            z.object({
-              id: z
-                .number()
-                .positive("Question ID must be a positive number")
-                .optional(),
-              index: z.number().positive("Index must be a positive number"),
-              content: z.string().min(1, "Content is required"),
-              imageUrl: z.string().optional(),
-              type: z.nativeEnum(QuestionType),
-              score: z.number().min(0, "Score must be non-negative"),
-              explanation: z.string().optional(),
-              correctAnswerChoice: z.number().optional(),
-              answers: z.array(
-                z.object({
-                  id: z
-                    .number()
-                    .positive("Answer ID must be a positive number")
-                    .optional(),
-                  index: z.number().positive("Index must be a positive number"),
-                  content: z.string().min(1, "Answer content is required"),
-                }),
-              ),
-            }),
-          )
-          .optional(),
-      }),
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { id, type, duration, questions } = input;
+  // updateSubtest: teacherProcedure
+  //   .input(
+  //     z.object({
+  //       id: z.number().positive("Subtest ID must be a positive number"),
+  //       type: z.nativeEnum(SubtestType).optional(),
+  //       duration: z.number().optional(),
+  //       questions: z
+  //         .array(
+  //           z.object({
+  //             id: z
+  //               .number()
+  //               .positive("Question ID must be a positive number")
+  //               .optional(),
+  //             index: z.number().positive("Index must be a positive number"),
+  //             content: z.string().min(1, "Content is required"),
+  //             imageUrl: z.string().optional(),
+  //             type: z.nativeEnum(QuestionType),
+  //             score: z.number().min(0, "Score must be non-negative"),
+  //             explanation: z.string().optional(),
+  //             correctAnswerChoice: z.number().optional(),
+  //             answers: z.array(
+  //               z.object({
+  //                 id: z
+  //                   .number()
+  //                   .positive("Answer ID must be a positive number")
+  //                   .optional(),
+  //                 index: z.number().positive("Index must be a positive number"),
+  //                 content: z.string().min(1, "Answer content is required"),
+  //               }),
+  //             ),
+  //           }),
+  //         )
+  //         .optional(),
+  //     }),
+  //   )
+  //   .mutation(async ({ input, ctx }) => {
+  //     const { id, type, duration, questions } = input;
 
-      return await ctx.db.$transaction(
-        async (tx) => {
-          const updatedSubtest = await tx.subtest.update({
-            where: { id },
-            data: {
-              type,
-              duration,
-            },
-          });
+  //     return await ctx.db.$transaction(
+  //       async (tx) => {
+  //         const updatedSubtest = await tx.subtest.update({
+  //           where: { id },
+  //           data: {
+  //             type,
+  //             duration,
+  //           },
+  //         });
 
-          if (questions) {
-            const existingQuestionIds = questions
-              .filter((q) => q.id)
-              .map((q) => q.id);
-            await tx.question.deleteMany({
-              where: {
-                subtestId: id,
-                id: { notIn: existingQuestionIds },
-              },
-            });
+  //         if (questions) {
+  //           const existingQuestionIds = questions
+  //             .filter((q) => q.id)
+  //             .map((q) => q.id);
+  //           await tx.question.deleteMany({
+  //             where: {
+  //               subtestId: id,
+  //               id: { notIn: existingQuestionIds },
+  //             },
+  //           });
 
-            // Handle question updates in separate transactions
-            for (const question of questions) {
-              await ctx.db.$transaction(async (txQuestion) => {
-                if (question.id) {
-                  const updatedQuestion = await txQuestion.question.update({
-                    where: { id: question.id },
-                    data: {
-                      index: question.index,
-                      content: question.content,
-                      imageUrl: question.imageUrl,
-                      type: question.type,
-                      score: question.score,
-                      explanation: question.explanation,
-                      correctAnswerChoice: question.correctAnswerChoice,
-                    },
-                  });
+  //           // Handle question updates in separate transactions
+  //           for (const question of questions) {
+  //             await ctx.db.$transaction(async (txQuestion) => {
+  //               if (question.id) {
+  //                 const updatedQuestion = await txQuestion.question.update({
+  //                   where: { id: question.id },
+  //                   data: {
+  //                     index: question.index,
+  //                     content: question.content,
+  //                     imageUrl: question.imageUrl,
+  //                     type: question.type,
+  //                     score: question.score,
+  //                     explanation: question.explanation,
+  //                     correctAnswerChoice: question.correctAnswerChoice,
+  //                   },
+  //                 });
 
-                  const existingAnswerIds = question.answers
-                    .filter((a) => a.id)
-                    .map((a) => a.id);
+  //                 const existingAnswerIds = question.answers
+  //                   .filter((a) => a.id)
+  //                   .map((a) => a.id);
 
-                  await txQuestion.answer.deleteMany({
-                    where: {
-                      questionId: updatedQuestion.id,
-                      id: { notIn: existingAnswerIds },
-                    },
-                  });
+  //                 await txQuestion.answer.deleteMany({
+  //                   where: {
+  //                     questionId: updatedQuestion.id,
+  //                     id: { notIn: existingAnswerIds },
+  //                   },
+  //                 });
 
-                  for (const answer of question.answers) {
-                    if (answer.id) {
-                      await txQuestion.answer.update({
-                        where: { id: answer.id },
-                        data: {
-                          index: answer.index,
-                          content: answer.content,
-                        },
-                      });
-                    } else {
-                      await txQuestion.answer.create({
-                        data: {
-                          index: answer.index,
-                          content: answer.content,
-                          question: { connect: { id: updatedQuestion.id } },
-                        },
-                      });
-                    }
-                  }
-                } else {
-                  const subtest = await tx.subtest.findUnique({
-                    where: { id },
-                    select: { packageId: true },
-                  });
+  //                 for (const answer of question.answers) {
+  //                   if (answer.id) {
+  //                     await txQuestion.answer.update({
+  //                       where: { id: answer.id },
+  //                       data: {
+  //                         index: answer.index,
+  //                         content: answer.content,
+  //                       },
+  //                     });
+  //                   } else {
+  //                     await txQuestion.answer.create({
+  //                       data: {
+  //                         index: answer.index,
+  //                         content: answer.content,
+  //                         question: { connect: { id: updatedQuestion.id } },
+  //                       },
+  //                     });
+  //                   }
+  //                 }
+  //               } else {
+  //                 const subtest = await tx.subtest.findUnique({
+  //                   where: { id },
+  //                   select: { packageId: true },
+  //                 });
 
-                  if (!subtest) {
-                    throw new Error("Subtest not found");
-                  }
+  //                 if (!subtest) {
+  //                   throw new Error("Subtest not found");
+  //                 }
 
-                  const newQuestion = await tx.question.create({
-                    data: {
-                      index: question.index,
-                      content: question.content,
-                      imageUrl: question.imageUrl,
-                      type: question.type,
-                      score: question.score,
-                      explanation: question.explanation,
-                      correctAnswerChoice: question.correctAnswerChoice,
-                      subtest: { connect: { id } },
-                      packageId: subtest.packageId,
-                    },
-                  });
+  //                 const newQuestion = await tx.question.create({
+  //                   data: {
+  //                     index: question.index,
+  //                     content: question.content,
+  //                     imageUrl: question.imageUrl,
+  //                     type: question.type,
+  //                     score: question.score,
+  //                     explanation: question.explanation,
+  //                     correctAnswerChoice: question.correctAnswerChoice,
+  //                     subtest: { connect: { id } },
+  //                     packageId: subtest.packageId,
+  //                   },
+  //                 });
 
-                  for (const answer of question.answers) {
-                    await tx.answer.create({
-                      data: {
-                        index: answer.index,
-                        content: answer.content,
-                        question: { connect: { id: newQuestion.id } },
-                      },
-                    });
-                  }
-                }
-              });
-            }
-          }
+  //                 for (const answer of question.answers) {
+  //                   await tx.answer.create({
+  //                     data: {
+  //                       index: answer.index,
+  //                       content: answer.content,
+  //                       question: { connect: { id: newQuestion.id } },
+  //                     },
+  //                   });
+  //                 }
+  //               }
+  //             });
+  //           }
+  //         }
 
-          return updatedSubtest;
-        },
-        { timeout: 100000 },
-      );
-    }),
+  //         return updatedSubtest;
+  //       },
+  //       { timeout: 100000 },
+  //     );
+  //   }),
 });

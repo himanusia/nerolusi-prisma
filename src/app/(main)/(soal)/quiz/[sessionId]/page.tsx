@@ -22,6 +22,7 @@ import {
   Flag,
 } from "lucide-react";
 import Link from "next/link";
+import { getYouTubeVideoId } from "~/utils/get-youtube-id";
 
 export default function QuizPage() {
   const { sessionId } = useParams(); // drill = subject, subtest = videoId
@@ -63,9 +64,10 @@ export default function QuizPage() {
   useEffect(() => {
     if (
       sessionDetails?.endTime &&
-      new Date(sessionDetails?.endTime) <= new Date()
+      new Date(sessionDetails?.endTime) <= new Date() &&
+      (sessionDetails?.score == null || sessionDetails?.score === undefined)
     ) {
-      router.push(`/quiz/${sessionIdString}/score`);
+      handleSubmit();
     }
   }, [sessionDetails, router, sessionIdString]);
 
@@ -264,8 +266,32 @@ export default function QuizPage() {
                       return "Literasi Bahasa Inggris";
                     case "lbi":
                       return "Literasi Bahasa Indonesia";
+                    case "matematika_wajib":
+                      return "Matematika Wajib";
+                    case "bahasa_indonesia":
+                      return "Bahasa Indonesia";
+                    case "bahasa_inggris":
+                      return "Bahasa Inggris";
+                    case "matematika_lanjut":
+                      return "Matematika Lanjut";
+                    case "fisika":
+                      return "Fisika";
+                    case "kimia":
+                      return "Kimia";
+                    case "biologi":
+                      return "Biologi";
+                    case "ekonomi":
+                      return "Ekonomi";
+                    case "geografi":
+                      return "Geografi";
+                    case "sejarah":
+                      return "Sejarah";
+                    case "ppkn":
+                      return "PPKn";
+                    case "projek_kreatif_kewirausahaan":
+                      return "Projek Kreatif Kewirausahaan";
                     default:
-                      return sessionDetails?.subtest.type;
+                      return "";
                   }
                 })()}
               </h1>
@@ -378,6 +404,9 @@ export default function QuizPage() {
                       content={questions[currentQuestionIndex].content}
                       className="border-none"
                     />
+                    {/* <div className="whitespace-pre-line text-base">
+                      {questions[currentQuestionIndex].content}
+                    </div> */}
                     {questions[currentQuestionIndex].imageUrl && (
                       <Image
                         src={questions[currentQuestionIndex].imageUrl}
@@ -399,7 +428,7 @@ export default function QuizPage() {
                           </label>
                           <textarea
                             rows={4}
-                            className="w-full rounded-lg border p-3"
+                            className="w-full rounded-lg border p-3 text-sm"
                             placeholder="Tulis jawaban Anda di sini..."
                             value={
                               typeof selectedAnswers.get(
@@ -426,20 +455,65 @@ export default function QuizPage() {
                         {/* Show correct answer after quiz ends */}
                         {new Date(sessionDetails?.endTime) < new Date() &&
                           questions[currentQuestionIndex].answers[0] && (
-                            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                              <label className="mb-2 block text-sm font-medium text-green-800">
-                                Jawaban Benar:
-                              </label>
-                              <div className="rounded-lg bg-white p-3 text-gray-900">
-                                <Editor
-                                  content={
-                                    questions[currentQuestionIndex].answers[0]
-                                      .content
-                                  }
-                                  className="border-none"
-                                />
+                            <>
+                              {/* User's Answer */}
+                              {(() => {
+                                const userAnswer = selectedAnswers.get(
+                                  questions[currentQuestionIndex].id,
+                                );
+                                const userAnswerText =
+                                  typeof userAnswer === "string"
+                                    ? userAnswer
+                                    : "";
+                                const correctAnswer =
+                                  questions[currentQuestionIndex].answers[0]
+                                    .content;
+                                const isCorrect =
+                                  userAnswerText.trim().toLowerCase() ===
+                                  correctAnswer.trim().toLowerCase();
+
+                                return (
+                                  <div
+                                    className={`rounded-lg border p-4 ${
+                                      isCorrect
+                                        ? "border-green-200 bg-green-50"
+                                        : "border-red-200 bg-red-50"
+                                    }`}
+                                  >
+                                    <label
+                                      className={`mb-2 block text-sm font-medium ${
+                                        isCorrect
+                                          ? "text-green-800"
+                                          : "text-red-800"
+                                      }`}
+                                    >
+                                      Jawaban Anda:{" "}
+                                      {isCorrect ? "(Benar)" : "(Salah)"}
+                                    </label>
+                                    <div className="rounded-lg bg-white p-3 text-gray-900 text-sm">
+                                      {userAnswerText || "Tidak dijawab"}
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+
+                              {/* Correct Answer */}
+                              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
+                                <label className="mb-2 block text-sm font-medium text-green-800">
+                                  Jawaban Benar:
+                                </label>
+                                <div className="rounded-lg bg-white p-3 text-gray-900">
+                                  <Editor
+                                    key={questions[currentQuestionIndex].id}
+                                    content={
+                                      questions[currentQuestionIndex].answers[0]
+                                        .content
+                                    }
+                                    className="border-none"
+                                  />
+                                </div>
                               </div>
-                            </div>
+                            </>
                           )}
                       </div>
                     ) : (
@@ -567,7 +641,10 @@ export default function QuizPage() {
                                         <CheckCircle className="h-4 w-4 text-green-600" />
                                       )}
                                     </div>
-                                    <Editor content={answer.content} />
+                                    <div className="flex rounded-lg border border-gray-200 px-3 py-4">
+                                      {answer.content}
+                                    </div>
+                                    {/* <Editor content={answer.content} /> */}
                                   </div>
                                 </label>
                               );
@@ -581,18 +658,67 @@ export default function QuizPage() {
                   {/* Explanation (shown after session ends) */}
                   {new Date(sessionDetails?.endTime) < new Date() &&
                     questions[currentQuestionIndex].explanation && (
-                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
                         <h4 className="mb-2 font-semibold text-blue-900">
                           Penjelasan:
                         </h4>
                         <Editor
+                          key={questions[currentQuestionIndex].id}
                           content={questions[currentQuestionIndex].explanation}
                         />
+                        {/* <div className="whitespace-pre-line">
+                          {questions[currentQuestionIndex].explanation}
+                        </div> */}
                       </div>
                     )}
+                  {new Date(sessionDetails?.endTime) < new Date() &&
+                    questions[currentQuestionIndex].videoExplanation &&
+                    (() => {
+                      const videoUrl =
+                        questions[currentQuestionIndex].videoExplanation;
+                      const youtubeId = getYouTubeVideoId(videoUrl);
+                      if (!youtubeId) {
+                        return (
+                          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <h4 className="mb-2 font-semibold text-blue-900">
+                              Video Penjelasan:
+                            </h4>
+                            <div className="flex items-center justify-center">
+                              <div className="text-center">
+                                <div className="mb-4 text-6xl">⚠️</div>
+                                <h2 className="mb-2 text-2xl font-bold text-gray-800">
+                                  Invalid Video URL
+                                </h2>
+                                <p className="text-gray-600">
+                                  This doesn't appear to be a valid YouTube
+                                  video.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                          <h4 className="mb-2 font-semibold text-blue-900">
+                            Video Penjelasan:
+                          </h4>
+                          <div className="relative w-full">
+                            <div className="aspect-video overflow-hidden rounded-lg">
+                              <iframe
+                                className="h-full w-full"
+                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1`}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                              ></iframe>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
 
                   {/* Navigation Buttons */}
-                  <div className="flex items-center justify-between pt-4">
+                  <div className="flex flex-col md:flex-row items-center justify-between pt-4 space-y-2 md:space-y-0">
                     <Button
                       variant="outline"
                       onClick={() =>

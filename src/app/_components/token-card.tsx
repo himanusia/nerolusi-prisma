@@ -34,7 +34,8 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
   return (
     <>
       <div className="flex rounded-lg border border-gray-500 bg-[#e9e6ef] items-center max-w-[150px]">
-        <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-white px-4 py-2 text-xs md:text-md border-r border-gray-500">
+        <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-white px-4 py-2 text-xs md:text-md ">
+          {/* border-r border-gray-500 */}
           <h3 className="text-center">Token TryOut</h3>
           <div className="flex items-center justify-center">
             <img
@@ -46,14 +47,14 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
             <span className="ml-2 text-gray-700 font-bold text-xl">{tokenAmount}</span>
           </div>
         </div>
-        <Button 
+        {/* <Button 
           variant="ghost" 
           size="sm"
           className="bg-transparent rounded-none hover:bg-transparent"
           onClick={() => setShowTokenDialog(true)}
         >
           <Plus className="w-4 h-4 text-[#615e52] font-bold" />
-        </Button>
+        </Button> */}
       </div>
 
       {/* Token Purchase Dialog */}

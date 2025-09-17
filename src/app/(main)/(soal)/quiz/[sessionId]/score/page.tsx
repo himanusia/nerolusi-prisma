@@ -1,8 +1,10 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { getSubjectByName } from "~/app/_components/constants";
 import { Button } from "~/app/_components/ui/button";
 import { Card, CardContent } from "~/app/_components/ui/card";
@@ -28,6 +30,35 @@ export default function ScorePage() {
   } = api.quiz.getQuizSessionResult.useQuery({
     sessionId: sessionIdString,
   });
+
+  const session = useSession();
+
+  const startSessionMutation = api.quiz.createSession.useMutation();
+  const getSessionMutation = api.quiz.getSession.useMutation();
+
+  async function goToQuizSession(subtestId: string, duration: number) {
+    if (!session.data || !session.data.user) {
+      toast.error("Anda harus login terlebih dahulu");
+      return;
+    }
+
+    const userId = session.data.user.id;
+
+    try {
+      const quizSession = await startSessionMutation.mutateAsync({
+        userId,
+        subtestId,
+        duration: duration ?? 10000,
+      });
+
+      router.push(`/quiz/${quizSession.id}`);
+    } catch (error) {
+      console.error(error);
+      toast.error("Error creating session", {
+        description: error.message,
+      });
+    }
+  }
 
   useEffect(() => {
     if (
@@ -185,11 +216,14 @@ export default function ScorePage() {
       <div className="flex flex-col justify-center gap-4 sm:flex-row">
         <Link href={`/quiz/${sessionIdString}`}>
           <Button className="bg-[#2b8057] text-white hover:bg-[#1f5a40]">
+            {/* TODO: Add review functionality */}
             🔄 Review
           </Button>
         </Link>
 
-        <Link href={`${quizResult.subtest.type === "materi" ? `/video/materi/${subjectSlug}` : `/tryout/${quizResult.subtest.package?.id}`}`}>
+        <Link
+          href={`${quizResult.subtest.type === "materi" ? `/video/materi/${subjectSlug}` : `/tryout/${quizResult.subtest.package?.id}`}`}
+        >
           <Button
             variant="outline"
             className="border-[#2b8057] text-[#2b8057] hover:bg-[#2b8057] hover:text-white"
@@ -199,14 +233,27 @@ export default function ScorePage() {
           </Button>
         </Link>
         {quizResult.subtest.type === "materi" && (
-          <Link href={`/video/${quizResult.subtest.topics?.videoId}`}>
+          <>
+            <Link href={`/video/${quizResult.subtest.topics?.videoId}`}>
+              <Button
+                variant="outline"
+                className="border-gray-300 text-gray-600 hover:bg-gray-50"
+              >
+                📺 Tonton Ulang Video
+              </Button>
+            </Link>
             <Button
-              variant="outline"
-              className="border-gray-300 text-gray-600 hover:bg-gray-50"
+              className="bg-[#2b8057] text-white hover:bg-[#1f5a40]"
+              onClick={() =>
+                goToQuizSession(
+                  quizResult.subtest.id,
+                  quizResult.subtest.duration,
+                )
+              }
             >
-              📺 Tonton Ulang Video
+              📝 Try Again
             </Button>
-          </Link>
+          </>
         )}
       </div>
     </div>

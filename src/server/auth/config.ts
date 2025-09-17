@@ -3,6 +3,11 @@ import { type DefaultSession, type NextAuthConfig } from "next-auth";
 import Google from "next-auth/providers/google";
 import { db } from "~/server/db";
 
+const defaultAdmin = [
+  "nerolusi3@gmail.com",
+  "cpnerolusi@gmail.com"
+]
+
 declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
@@ -21,9 +26,9 @@ export const authConfig = {
   adapter: PrismaAdapter(db),
   events: {
     async createUser({ user }) {
-      if (user.email === "nerolusi3@gmail.com") {
+      if (user.email && defaultAdmin.includes(user.email)) {
         await db.user.update({
-          where: { email: user.email },
+          where: { id: user.id },
           data: { role: "admin" },
         });
       }

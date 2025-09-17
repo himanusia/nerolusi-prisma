@@ -34,12 +34,12 @@ export default function Editor({
   content,
   onContentChange,
   className,
-  fontSize = "text-base",
+  fontSize = "text-sm",
   ...props
 }: {
   isEdit?: boolean;
   content: string;
-  className?: React.HTMLAttributes<HTMLDivElement>;
+  className?: string;
   onContentChange?: (content: string) => void;
   fontSize?: "text-sm" | "text-base" | "text-lg";
 } & React.HTMLAttributes<HTMLDivElement>) {
@@ -61,6 +61,16 @@ export default function Editor({
     content: content,
     editable: isEdit ?? false,
     immediatelyRender: false,
+    editorProps: {
+      attributes: {
+        class: cn(
+          "prose prose-sm sm:prose-base lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[150px] p-3",
+          fontSize === "text-sm" && "text-sm",
+          fontSize === "text-sm" && "text-sm", 
+          fontSize === "text-lg" && "text-lg"
+        ),
+      },
+    },
     onUpdate: ({ editor }) => {
       const updatedContent = editor.getHTML().replace(/<p>\s*<\/p>$/, "");
       onContentChange?.(updatedContent);
@@ -70,188 +80,203 @@ export default function Editor({
   return (
     <div
       className={cn(
-        "flex h-full w-full flex-col rounded-lg", 
+        "flex flex-col rounded-lg border border-input", 
         className
       )}
       {...props}
     >
+      {/* Toolbar */}
       <div
-        className={`flex h-9 flex-row overflow-auto border-b scrollbar scrollbar-none ${!isEdit && "hidden"}`}
+        className={`flex flex-row overflow-auto border-b bg-muted/30 ${!isEdit && "hidden"}`}
       >
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().undo().run();
+            editor?.chain().focus().undo().run();
           }}
           variant={editor?.isActive("undo") ? "default" : "ghost"}
         >
-          <LuUndo className="size-5 flex-shrink-0" />
+          <LuUndo className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().redo().run();
+            editor?.chain().focus().redo().run();
           }}
           variant={editor?.isActive("redo") ? "default" : "ghost"}
         >
-          <LuRedo className="size-5 flex-shrink-0" />
+          <LuRedo className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleBold().run();
+            editor?.chain().focus().toggleBold().run();
           }}
           variant={editor?.isActive("bold") ? "default" : "ghost"}
         >
-          <LuBold className="size-5 flex-shrink-0" />
+          <LuBold className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleItalic().run();
+            editor?.chain().focus().toggleItalic().run();
           }}
           variant={editor?.isActive("italic") ? "default" : "ghost"}
         >
-          <LuItalic className="size-5 flex-shrink-0" />
+          <LuItalic className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleStrike().run();
+            editor?.chain().focus().toggleStrike().run();
           }}
           variant={editor?.isActive("strike") ? "default" : "ghost"}
         >
-          <LuStrikethrough className="size-5 flex-shrink-0" />
+          <LuStrikethrough className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleUnderline().run();
+            editor?.chain().focus().toggleUnderline().run();
           }}
           variant={editor?.isActive("underline") ? "default" : "ghost"}
         >
-          <LuUnderline className="size-5 flex-shrink-0" />
+          <LuUnderline className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().setTextAlign("left").run();
+            editor?.chain().focus().setTextAlign("left").run();
           }}
           variant={
             editor?.isActive({ textAlign: "left" }) ? "default" : "ghost"
           }
         >
-          <LuAlignLeft className="size-5 flex-shrink-0" />
+          <LuAlignLeft className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().setTextAlign("center").run();
+            editor?.chain().focus().setTextAlign("center").run();
           }}
           variant={
             editor?.isActive({ textAlign: "center" }) ? "default" : "ghost"
           }
         >
-          <LuAlignCenter className="size-5 flex-shrink-0" />
+          <LuAlignCenter className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().setTextAlign("right").run();
+            editor?.chain().focus().setTextAlign("right").run();
           }}
           variant={
             editor?.isActive({ textAlign: "right" }) ? "default" : "ghost"
           }
         >
-          <LuAlignLeft className="size-5 flex-shrink-0" />
+          <LuAlignLeft className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().setTextAlign("justify").run();
+            editor?.chain().focus().setTextAlign("justify").run();
           }}
           variant={
             editor?.isActive({ textAlign: "justify" }) ? "default" : "ghost"
           }
         >
-          <LuAlignJustify className="size-5 flex-shrink-0" />
+          <LuAlignJustify className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleHeading({ level: 1 }).run();
+            editor?.chain().focus().toggleHeading({ level: 1 }).run();
           }}
           variant={
             editor?.isActive("heading", { level: 1 }) ? "default" : "ghost"
           }
         >
-          <LuHeading1 className="size-5 flex-shrink-0" />
+          <LuHeading1 className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleHeading({ level: 2 }).run();
+            editor?.chain().focus().toggleHeading({ level: 2 }).run();
           }}
           variant={
             editor?.isActive("heading", { level: 2 }) ? "default" : "ghost"
           }
         >
-          <LuHeading2 className="size-5 flex-shrink-0" />
+          <LuHeading2 className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleHeading({ level: 3 }).run();
+            editor?.chain().focus().toggleHeading({ level: 3 }).run();
           }}
           variant={
             editor?.isActive("heading", { level: 3 }) ? "default" : "ghost"
           }
         >
-          <LuHeading3 className="size-5 flex-shrink-0" />
+          <LuHeading3 className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleBulletList().run();
+            editor?.chain().focus().toggleBulletList().run();
           }}
           variant={editor?.isActive("bulletList") ? "default" : "ghost"}
         >
-          <LuList className="size-5 flex-shrink-0" />
+          <LuList className="size-4" />
         </Button>
         <Button
-          className="h-full w-9 rounded-none border-r"
+          className="h-9 w-9 rounded-none border-r"
           type="button"
+          size="sm"
           onClick={() => {
-            editor.chain().focus().toggleOrderedList().run();
+            editor?.chain().focus().toggleOrderedList().run();
           }}
           variant={editor?.isActive("orderedList") ? "default" : "ghost"}
         >
-          <LuListOrdered className="size-5 flex-shrink-0" />
+          <LuListOrdered className="size-4" />
         </Button>
       </div>
-      <EditorContent 
-        editor={editor} 
-        className={cn(
-          "p-2",
-          fontSize === "text-sm" && "quiz-font-sm",
-          fontSize === "text-base" && "quiz-font-base", 
-          fontSize === "text-lg" && "quiz-font-lg"
-        )}
-      />
+      
+      {/* Editor Content */}
+      <div className="min-h-[150px] w-full">
+        <EditorContent 
+          editor={editor} 
+          className="h-full w-full"
+        />
+      </div>
     </div>
   );
 }

@@ -1,0 +1,110 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'prisma/**'
+      - 'package.json'
+      - 'bun.lock'
+      - 'next.config.js'
+      - 'tsconfig.json'
+      - 'postcss.config.js'
+      - 'tailwind.config.ts'
+      - '.github/workflows/**'
+      - 'Dockerfile'
+  release:
+    types: [published]
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'prisma/**'
+      - 'package.json'
+      - '.github/workflows/**'
+      - 'Dockerfile'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Build and Deploy Web
+    runs-on: ubuntu-latest
+    environment: Production
+    permissions:
+      contents: read
+      packages: write
+      deployments: write
+
+    steps:
+      - name: 1. Start Deployment
+        uses: bobheadxi/deployments@v1
+        id: deployment
+        with:
+          step: start
+          token: ${{ secrets.GITHUB_TOKEN }}
+          env: Production
+
+      - name: 2. Checkout
+        uses: actions/checkout@v5
+
+      - name: 3. Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 4. Login to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 5. Compute Docker tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}/web
+          tags: |
+            type=sha,prefix=
+            type=ref,event=tag
+            type=raw,value=latest
+
+      - name: 6. Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          build-args: |
+            DATABASE_URL=${{ secrets.DATABASE_URL }}
+            AUTH_SECRET=${{ secrets.AUTH_SECRET }}
+            AUTH_URL=${{ vars.AUTH_URL }}
+            AUTH_GOOGLE_ID=${{ secrets.AUTH_GOOGLE_ID }}
+            AUTH_GOOGLE_SECRET=${{ secrets.AUTH_GOOGLE_SECRET }}
+            ANALYTICS_SRC=${{ vars.ANALYTICS_SRC }}
+            ANALYTICS_ID=${{ vars.ANALYTICS_ID }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 7. Trigger Redeploy Webhook
+        if: github.event_name != 'pull_request'
+        run: curl -f -X POST ${{ secrets.WEBHOOK_URL }}
+
+      - name: 8. Update Deployment Status
+        uses: bobheadxi/deployments@v1
+        if: always()
+        with:
+          step: finish
+          token: ${{ secrets.GITHUB_TOKEN }}
+          status: ${{ job.status }}
+          env: ${{ steps.deployment.outputs.env }}
+          env_url: ${{ vars.AUTH_URL }}
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
