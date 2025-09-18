@@ -104,6 +104,53 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
       // },
     ],
   },
+  {
+    type: "utbk",
+    subjects: [
+      {
+        id: 12,
+        title: "Pengetahuan dan Pemahaman Umum",
+        image: "/subject/ppu.png",
+        slug: "ppu",
+      },
+      {
+        id: 13,
+        title: "Kemampuan Penalaran Umum",
+        image: "/subject/pu.png",
+        slug: "pu",
+      },
+      {
+        id: 14,
+        title: "Kemampuan Memahami Bacaan dan Menulis",
+        image: "/subject/pbm.png",
+        slug: "pbm",
+      },
+      {
+        id: 15,
+        title: "Pengetahuan Kuantitatif",
+        image: "/subject/pk.png",
+        slug: "pk",
+      },
+      {
+        id: 16,
+        title: "Penalaran Matematika",
+        image: "/subject/pm.png",
+        slug: "pm",
+      },
+      {
+        id: 17,
+        title: "Literasi Bahasa Inggris",
+        image: "/subject/lbe.png",
+        slug: "lbe",
+      },
+      {
+        id: 18,
+        title: "Literasi Bahasa Indonesia",
+        image: "/subject/lbi.png",
+        slug: "lbi",
+      },
+    ],
+  },
 ];
 
 // Helper functions to get specific categories
@@ -126,6 +173,10 @@ export const getSoshumSubjects = (): Subject[] => {
 export const getAllSubjects = (): Subject[] => {
   return SUBJECT_CATEGORIES.flatMap((category) => category.subjects);
 };
+
+export const getUTBKSubjects = (): Subject[] => {
+  return SUBJECT_CATEGORIES.find((cat) => cat.type === "utbk")?.subjects || [];
+}
 
 export const getSubjectBySlug = (slug: string): Subject | undefined => {
   return getAllSubjects().find((subject) => subject.slug === slug);

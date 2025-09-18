@@ -228,15 +228,12 @@ async function main() {
             id: subject.id,
             name: subject.title,
             type: category.type as any,
+            mode: category.type === "ubtk" ? "utbk" : "tka",
           },
         }),
       ),
     ),
   );
-
-  const UTBKSubjects = [
-    {}
-  ]
 
   // const materials = await Promise.all(
   //   subjects.flatMap((subject) =>
