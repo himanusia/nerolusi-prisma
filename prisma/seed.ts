@@ -233,6 +233,11 @@ async function main() {
       ),
     ),
   );
+
+  const UTBKSubjects = [
+    {}
+  ]
+
   // const materials = await Promise.all(
   //   subjects.flatMap((subject) =>
   //     Array.from({ length: 3 }).map((_, index) =>

@@ -20,6 +20,8 @@ model User {
   token              Int                  @default(0)
   createdAt          DateTime             @default(now())
   classid            Int?
+  school             String?
+  birthDate          DateTime?
   accounts           Account[]
   quizSession        QuizSession[]
   sessions           Session[]
@@ -27,6 +29,51 @@ model User {
   userAnswers        UserAnswer[]
   UserMateriProgress UserMateriProgress[]
   UserPackage        UserPackage[]
+  UserMajorChoice    UserMajorChoice[]
+}
+
+model UserMajorChoice {
+  id           String   @id @default(cuid())
+  userId       String
+  majorId      Int
+  choiceNumber Int
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  major        Major    @relation(fields: [majorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, majorId], name: "userId_majorId")
+}
+
+model University {
+  id    Int     @id @default(autoincrement())
+  name  String
+  Major Major[]
+}
+
+model Major {
+  id              Int               @id @default(autoincrement())
+  name            String
+  universityId    Int
+  passingGrade    Int?
+  university      University        @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  UserMajorChoice UserMajorChoice[]
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  startTime   DateTime?
+  endTime     DateTime?
+  url         String
+  createdAt   DateTime  @default(now())
+}
+
+model MainPageVideo {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
 }
 
 model Account {
@@ -77,8 +124,20 @@ model Subject {
   id        Int         @id @default(autoincrement())
   name      String
   type      SubjectType
+  mode      SubjectMode @default(tka)
   createdAt DateTime    @default(now())
   materials Material[]
+  Module    Module[]
+}
+
+model Module {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
+  subjectId   Int?
+  createdAt   DateTime @default(now())
+  subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 }
 
 model Material {
@@ -302,6 +361,11 @@ enum SubjectType {
   wajib
   saintek
   soshum
+}
+
+enum SubjectMode {
+  tka
+  utbk
 }
 
 enum SessionType {
