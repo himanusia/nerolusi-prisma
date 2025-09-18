@@ -216,7 +216,9 @@ export const adminRouter = createTRPCRouter({
   createSubtest: adminProcedure
     .input(
       z.object({
-        type: z.enum(Object.values(SubtestType) as [SubtestType, ...SubtestType[]]),
+        type: z.enum(
+          Object.values(SubtestType) as [SubtestType, ...SubtestType[]],
+        ),
         packageId: z.string(),
         duration: z.number(),
       }),
@@ -665,6 +667,60 @@ export const adminRouter = createTRPCRouter({
         });
 
         return subtest;
+      });
+    }),
+
+  createKegiatan: adminProcedure
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        startTime: z.date().optional(),
+        endTime: z.date().optional(),
+        url: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.event.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          url: input.url,
+        },
+      });
+    }),
+
+  deleteKegiatan: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.event.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  updateKegiatan: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string(),
+        description: z.string().optional(),
+        startTime: z.date().optional(),
+        endTime: z.date().optional(),
+        url: z.string(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.event.update({
+        where: { id: input.id },
+        data: {
+          title: input.title,
+          description: input.description,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          url: input.url,
+        },
       });
     }),
 });
