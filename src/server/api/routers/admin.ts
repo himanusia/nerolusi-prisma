@@ -414,6 +414,7 @@ export const adminRouter = createTRPCRouter({
   // === Material & Topic Management ===
   getSubjects: adminProcedure.query(async ({ ctx }) => {
     return ctx.db.subject.findMany({
+      where: { type: "utbk" },
       orderBy: { id: "asc" },
     });
   }),

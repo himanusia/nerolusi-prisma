@@ -7,6 +7,7 @@ import { fileRouter } from "./routers/file";
 import { quizRouter } from "./routers/quiz";
 import { adminRouter } from "./routers/admin";
 import { materiRouter } from "./routers/materi";
+import { modulRouter } from "./routers/modul";
 
 /**
  * This is the primary router for your server.
@@ -22,6 +23,7 @@ export const appRouter = createTRPCRouter({
   quiz: quizRouter,
   admin: adminRouter,
   materi: materiRouter,
+  modul: modulRouter,
 });
 
 // export type definition of API

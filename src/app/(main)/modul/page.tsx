@@ -3,48 +3,15 @@ import { HiMiniVideoCamera } from "react-icons/hi2";
 import { Button } from "~/app/_components/ui/button";
 import ModulCard from "./modul-card";
 import HeadJenisSubtest from "~/app/_components/head-jenis-subtest";
-import { redirect } from "next/navigation";
+import { getUTBKSubjects } from "~/app/_components/constants";
+import SubjectCard from "~/app/_components/subject-card";
 
-const modules = [
-  {
-    title: "Nerolusi",
-    src: "/modul/nerolusi.webp",
-  },
-  {
-    title: "KPU",
-    src: "/modul/kpu.webp",
-  },
-  {
-    title: "PBM",
-    src: "/modul/pbm.webp",
-  },
-  {
-    title: "PPU",
-    src: "/modul/ppu.png",
-  },
-  {
-    title: "PK",
-    src: "/modul/pk.webp",
-  },
-  {
-    title: "PM",
-    src: "/modul/pm.webp",
-  },
-  {
-    title: "LBING",
-    src: "/modul/lbing.webp",
-  },
-  {
-    title: "LBIND",
-    src: "/modul/lbind.webp",
-  },
-];
-
-const isTka = true;
+const isTka = false;
 
 export default function ModulPage() {
+  const modules = getUTBKSubjects();
   return (
-    redirect("/modul/materi"),
+    // redirect("/modul/materi"),
     <div className="flex flex-col gap-4">
       <HeadJenisSubtest title="Materi & Catatan" type="modul" isTka={isTka} />
       <div className="flex flex-col">
@@ -54,7 +21,13 @@ export default function ModulPage() {
         </p>
         <div className="mt-4 grid grid-cols-2 gap-4 min-[475px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
           {modules.map((modul, idx) => (
-            <ModulCard namaModul={modul.title} imageSrc={modul.src} key={idx} />
+            // <ModulCard namaModul={modul.slug.toUpperCase()} imageSrc={modul.image} key={idx} />
+            <SubjectCard
+              key={idx}
+              href={`/modul/${modul.id}`}
+              imageSrc={modul.image}
+              title={modul.slug.toUpperCase()}
+            />
           ))}
         </div>
       </div>
@@ -64,8 +37,13 @@ export default function ModulPage() {
           Baca kembali catatan tutor dari liveclass yang sudah kamu ikuti!
         </p>
         <div className="mt-4 grid grid-cols-2 gap-4 min-[475px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
-          {modules.slice(1).map((modul, idx) => (
-            <ModulCard namaModul={modul.title} imageSrc={modul.src} key={idx} />
+          {modules.map((modul, idx) => (
+            <SubjectCard
+              key={idx}
+              href={`/modul/${modul.id}`}
+              imageSrc={modul.image}
+              title={modul.slug.toUpperCase()}
+            />
           ))}
         </div>
       </div>
