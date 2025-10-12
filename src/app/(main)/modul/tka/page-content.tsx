@@ -8,8 +8,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/app/_components/ui/dialog";
-import { PDFReader } from "./pdf-reader";
+import { PDFReader } from "../pdf-reader";
 import { useState, useEffect } from "react";
+import { auth } from "~/server/auth";
+import { useSession } from "next-auth/react";
+import LoadingPage from "~/app/loading";
+import { useRouter } from "next/router";
+import NoPackagePage from "~/app/no-package";
 // interface PageContentProps {
 //   subtest: string;
 // }
@@ -19,6 +24,8 @@ export default function PageContent() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isMobileDialogOpen, setIsMobileDialogOpen] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  const { data: session, status } = useSession();
 
   // Handle screen size changes
   useEffect(() => {
@@ -48,20 +55,17 @@ export default function PageContent() {
       {
         id: 1,
         title: "Matematika Wajib",
-        pdfUrl:
-          "https://test2.nerolusi.com/modul_matwa.pdf",
+        pdfUrl: "https://test2.nerolusi.com/modul_matwa.pdf",
       },
       {
         id: 2,
         title: "Bahasa Indonesia",
-        pdfUrl:
-          "https://test2.nerolusi.com/modul_bindo.pdf",
+        pdfUrl: "https://test2.nerolusi.com/modul_bindo.pdf",
       },
       {
         id: 3,
         title: "Bahasa Inggris",
-        pdfUrl:
-          "https://test2.nerolusi.com/modul_bing.pdf",
+        pdfUrl: "https://test2.nerolusi.com/modul_bing.pdf",
       },
     ],
   };
@@ -82,6 +86,14 @@ export default function PageContent() {
     setIsLoading(true);
     setIsMobileDialogOpen(true);
   };
+
+  if (status === "loading") {
+    return <LoadingPage />;
+  }
+
+  if (!session?.user.enrolledTka) {
+    return <NoPackagePage />;
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden p-6">
@@ -163,7 +175,7 @@ export default function PageContent() {
         open={isMobileDialogOpen && isMobile}
         onOpenChange={setIsMobileDialogOpen}
       >
-        <DialogContent className="max-h-[95vh] max-w-[95vw] overflow-hidden bg-[#2B8057] p-0 rounded-xl">
+        <DialogContent className="max-h-[95vh] max-w-[95vw] overflow-hidden rounded-xl bg-[#2B8057] p-0">
           <DialogHeader className="px-0 py-2">
             <DialogTitle></DialogTitle>
           </DialogHeader>

@@ -8,12 +8,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/app/_components/ui/dialog";
-import { PDFReader } from "./pdf-reader";
+import { PDFReader } from "../../pdf-reader";
 import { useState, useEffect } from "react";
 import { api } from "~/trpc/react";
 import LoadingPage from "~/app/loading";
 import ErrorPage from "~/app/error";
 import { useParams } from "next/navigation";
+import NoPackagePage from "~/app/no-package";
+import { useSession } from "next-auth/react";
 
 export default function PageContent() {
   const [activeSession, setActiveSession] = useState<number | null>(null);
@@ -23,6 +25,7 @@ export default function PageContent() {
 
   const param = useParams();
   const subject = param?.subtest as string;
+  const { data: session, status } = useSession();
 
   // Handle screen size changes
   useEffect(() => {
@@ -63,43 +66,6 @@ export default function PageContent() {
     type: "bahan_materi",
   });
 
-  // const subjectData = {
-  //   title: `Daftar Catatan (${subject})`,
-  //   sessions: [
-  //     {
-  //       id: 1,
-  //       title: "Catatan LiveClass #1",
-  //       pdfUrl:
-  //         "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/25-Program-Dinamis-(2025)-Bagian1.pdf",
-  //     },
-  //     {
-  //       id: 2,
-  //       title: "Catatan LiveClass #2",
-  //       pdfUrl:
-  //         "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/26-Program-Dinamis-(2025)-Bagian2.pdf",
-  //     },
-  //     {
-  //       id: 3,
-  //       title: "Catatan LiveClass #3",
-  //       pdfUrl:
-  //         "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2019-2020/Teori-P-NP-dan-NPC-(Bagian%201).pdf",
-  //     },
-  //     {
-  //       id: 4,
-  //       title: "Catatan LiveClass #4",
-  //       pdfUrl:
-  //         "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2019-2020/Teori-P-NP-dan-NPC-(Bagian%202).pdf",
-  //     },
-  //     {
-  //       id: 5,
-  //       title: "Catatan LiveClass #5",
-  //       pdfUrl:
-  //         "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/01-Pengantar-Strategi-Algoritma-(2025).pdf",
-  //     },
-  //     { id: 6, title: "Catatan LiveClass #6", pdfUrl: "no" },
-  //   ],
-  // };
-
   const activeSessionData = modulesData?.find(
     (session) => session.id === activeSession,
   );
@@ -122,6 +88,14 @@ export default function PageContent() {
   }
   if (subjectError || modulesError) {
     return <ErrorPage />;
+  }
+
+  if (status === "loading") {
+    return <LoadingPage />;
+  }
+
+  if (!session?.user.enrolledUtbk) {
+    return <NoPackagePage />;
   }
 
   return (
