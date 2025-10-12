@@ -24,7 +24,7 @@ export default function ModulPage() {
             // <ModulCard namaModul={modul.slug.toUpperCase()} imageSrc={modul.image} key={idx} />
             <SubjectCard
               key={idx}
-              href={`/modul/${modul.id}`}
+              href={`/modul/materi/${modul.id}`}
               imageSrc={modul.image}
               title={modul.slug.toUpperCase()}
             />
@@ -40,7 +40,7 @@ export default function ModulPage() {
           {modules.map((modul, idx) => (
             <SubjectCard
               key={idx}
-              href={`/modul/${modul.id}`}
+              href={`/modul/catatan/${modul.id}`}
               imageSrc={modul.image}
               title={modul.slug.toUpperCase()}
             />

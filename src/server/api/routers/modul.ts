@@ -6,11 +6,15 @@ export const modulRouter = createTRPCRouter({
     .input(
       z.object({
         subjectId: z.number().nullable(),
+        type: z.enum(["bahan_materi", "catatan"]),
       }),
     )
     .query(async ({ ctx, input }) => {
       return await ctx.db.module.findMany({
-        where: input.subjectId ? { subjectId: input.subjectId } : {},
+        where: {
+          ...(input.subjectId ? { subjectId: input.subjectId } : {}),
+          type: input.type,
+        },
         include: {
           subject: true,
         },

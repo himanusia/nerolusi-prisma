@@ -469,11 +469,11 @@ export default function TryoutEditPage() {
                         <SelectValue placeholder="Select subtest type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {SUBTEST_TYPES.map((type) => (
+                        {/* {SUBTEST_TYPES.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
                             {type.label}
                           </SelectItem>
-                        ))}
+                        ))} */}
                         {getAllSubjects().map((subject) => (
                           <SelectItem
                             key={subject.slug.replace("-", "_")}

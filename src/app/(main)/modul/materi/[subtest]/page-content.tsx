@@ -60,6 +60,7 @@ export default function PageContent() {
     isError: modulesError,
   } = api.modul.getAllModules.useQuery({
     subjectId: parseInt(subject) ?? 0,
+    type: "bahan_materi",
   });
 
   // const subjectData = {

@@ -137,6 +137,7 @@ model Module {
   url         String
   subjectId   Int?
   createdAt   DateTime @default(now())
+  type        ModuleType @default(bahan_materi)
   subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 }
 
@@ -372,4 +373,9 @@ enum SubjectMode {
 enum SessionType {
   package
   subtest
+}
+
+enum ModuleType {
+  catatan
+  bahan_materi
 }

@@ -210,15 +210,23 @@ export default function KegiatanManagement() {
 
   const handleEdit = (item: any) => {
     setEditingKegiatan(item);
+
+    // Format datetime for datetime-local input (preserving local timezone)
+    const formatDateTimeLocal = (dateString: string) => {
+      const date = new Date(dateString);
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const hours = String(date.getHours()).padStart(2, "0");
+      const minutes = String(date.getMinutes()).padStart(2, "0");
+      return `${year}-${month}-${day}T${hours}:${minutes}`;
+    };
+
     setFormData({
       title: item.title || "",
       description: item.description || "",
-      startTime: item.startTime
-        ? new Date(item.startTime).toISOString().slice(0, 16)
-        : "",
-      endTime: item.endTime
-        ? new Date(item.endTime).toISOString().slice(0, 16)
-        : "",
+      startTime: item.startTime ? formatDateTimeLocal(item.startTime) : "",
+      endTime: item.endTime ? formatDateTimeLocal(item.endTime) : "",
       url: item.url || "",
     });
     setIsEditDialogOpen(true);
