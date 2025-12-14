@@ -79,7 +79,7 @@ const navigationItems = [
     title: "Home",
     href: "/",
     icon: <HiHome className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname === "/" || pathname.includes("tka") || pathname.includes("utbk"),
+    isActive: (pathname: string) => pathname === "/" || pathname.startsWith("/tka") || pathname.startsWith("/utbk"),
   },
   {
     title: "Tryout",
@@ -103,7 +103,7 @@ const navigationItems = [
     title: "Modul",
     href: "/modul",
     icon: <RiBook2Fill className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/modul/materi"),
+    isActive: (pathname: string) => pathname.startsWith("/modul"),
   },
   {
     title: "Bantuan",

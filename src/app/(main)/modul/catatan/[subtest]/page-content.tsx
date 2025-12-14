@@ -8,17 +8,24 @@ import {
   DialogHeader,
   DialogTitle,
 } from "~/app/_components/ui/dialog";
-import { PDFReader } from "./pdf-reader";
+import { PDFReader } from "../../pdf-reader";
 import { useState, useEffect } from "react";
-interface PageContentProps {
-  subtest: string;
-}
+import { api } from "~/trpc/react";
+import LoadingPage from "~/app/loading";
+import ErrorPage from "~/app/error";
+import { useParams } from "next/navigation";
+import { useSession } from "next-auth/react";
+import NoPackagePage from "~/app/no-package";
 
-export default function PageContent({ subtest }: PageContentProps) {
+export default function PageContent() {
   const [activeSession, setActiveSession] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isMobileDialogOpen, setIsMobileDialogOpen] = useState<boolean>(false);
   const [isMobile, setIsMobile] = useState<boolean>(false);
+
+  const param = useParams();
+  const subject = param?.subtest as string;
+  const { data: session, status } = useSession();
 
   // Handle screen size changes
   useEffect(() => {
@@ -42,44 +49,24 @@ export default function PageContent({ subtest }: PageContentProps) {
     return () => window.removeEventListener("resize", checkScreenSize);
   }, [isMobileDialogOpen]);
   // Mock data - replace with actual data fetching
-  const subtestData = {
-    title: `Daftar Catatan (${subtest})`,
-    sessions: [
-      {
-        id: 1,
-        title: "Catatan LiveClass #1",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/25-Program-Dinamis-(2025)-Bagian1.pdf",
-      },
-      {
-        id: 2,
-        title: "Catatan LiveClass #2",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/26-Program-Dinamis-(2025)-Bagian2.pdf",
-      },
-      {
-        id: 3,
-        title: "Catatan LiveClass #3",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2019-2020/Teori-P-NP-dan-NPC-(Bagian%201).pdf",
-      },
-      {
-        id: 4,
-        title: "Catatan LiveClass #4",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2019-2020/Teori-P-NP-dan-NPC-(Bagian%202).pdf",
-      },
-      {
-        id: 5,
-        title: "Catatan LiveClass #5",
-        pdfUrl:
-          "https://informatika.stei.itb.ac.id/~rinaldi.munir/Stmik/2024-2025/01-Pengantar-Strategi-Algoritma-(2025).pdf",
-      },
-      { id: 6, title: "Catatan LiveClass #6", pdfUrl: "no" },
-    ],
-  };
+  const {
+    data: subjectData,
+    isLoading: subjectLoading,
+    isError: subjectError,
+  } = api.modul.getSubjectById.useQuery({
+    id: parseInt(subject) ?? 0,
+  });
 
-  const activeSessionData = subtestData.sessions.find(
+  const {
+    data: modulesData,
+    isLoading: modulesLoading,
+    isError: modulesError,
+  } = api.modul.getAllModules.useQuery({
+    subjectId: parseInt(subject) ?? 0,
+    type: "catatan",
+  });
+
+  const activeSessionData = modulesData?.find(
     (session) => session.id === activeSession,
   );
 
@@ -95,6 +82,21 @@ export default function PageContent({ subtest }: PageContentProps) {
     setIsLoading(true);
     setIsMobileDialogOpen(true);
   };
+
+  if (subjectLoading || modulesLoading) {
+    return <LoadingPage />;
+  }
+  if (subjectError || modulesError) {
+    return <ErrorPage />;
+  }
+
+  if (status === "loading") {
+    return <LoadingPage />;
+  }
+
+  if (!session?.user.enrolledUtbk) {
+    return <NoPackagePage />;
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden p-6">
@@ -114,13 +116,13 @@ export default function PageContent({ subtest }: PageContentProps) {
             {/* Header */}
             <div className="flex-shrink-0 border-b border-[#ACAEBA] p-4">
               <h2 className="text-lg font-semibold text-gray-800">
-                {subtestData.title}
+                {subjectData?.name ?? ""}
               </h2>
             </div>
 
             {/* Session List */}
             <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto p-4 scrollbar-thin">
-              {subtestData.sessions.map((session) => (
+              {modulesData.map((session) => (
                 <Button
                   key={session.id}
                   variant={
@@ -160,8 +162,8 @@ export default function PageContent({ subtest }: PageContentProps) {
               )}
               <PDFReader
                 key={activeSession} // Force re-render when session changes
-                title={activeSessionData.title}
-                pdfUrl={activeSessionData.pdfUrl}
+                title={activeSessionData.title ?? ""}
+                pdfUrl={activeSessionData.url ?? ""}
                 className="transition-opacity duration-200"
                 setIsLoading={setIsLoading}
                 height="100%"
@@ -192,8 +194,8 @@ export default function PageContent({ subtest }: PageContentProps) {
             {activeSessionData && (
               <PDFReader
                 key={`mobile-${activeSession}`}
-                title={activeSessionData.title}
-                pdfUrl={activeSessionData.pdfUrl}
+                title={activeSessionData.title ?? ""}
+                pdfUrl={activeSessionData.url ?? ""}
                 className="transition-opacity duration-200"
                 setIsLoading={setIsLoading}
                 height="70vh"

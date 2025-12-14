@@ -13,16 +13,18 @@ async function main() {
   // await db.quizSession.deleteMany();
   // await db.answer.deleteMany();
   // await db.question.deleteMany();
-  // await db.topic.deleteMany();
+  await db.topic.deleteMany();
   // await db.material.deleteMany();
   // await db.subject.deleteMany();
   // await db.file.deleteMany();
   // await db.folder.deleteMany();
   // await db.subtest.deleteMany();
   // await db.package.deleteMany();
-  // await db.video.deleteMany();
+  await db.video.deleteMany();
   // await db.class.deleteMany();
   // await db.user.deleteMany();
+  await db.subject.deleteMany();
+
 
   console.log("Seeding data...");
 
@@ -228,11 +230,13 @@ async function main() {
             id: subject.id,
             name: subject.title,
             type: category.type as any,
+            mode: category.type === "ubtk" ? "utbk" : "tka",
           },
         }),
       ),
     ),
   );
+
   // const materials = await Promise.all(
   //   subjects.flatMap((subject) =>
   //     Array.from({ length: 3 }).map((_, index) =>
