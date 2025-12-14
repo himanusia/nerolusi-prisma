@@ -111,71 +111,40 @@ export const userRouter = createTRPCRouter({
       });
     }),
 
-  updateSekolah: userProcedure
+  updateProfile: userProcedure
     .input(
       z.object({
-        sekolah: z.string().min(1, "Nama sekolah tidak boleh kosong"),
+        name: z.string().min(1, "Nama tidak boleh kosong").optional(),
+        school: z.string().optional(),
+        birthDate: z.date().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
       return await ctx.db.user.update({
         where: { id: ctx.session.user.id },
-        data: { school: input.sekolah },
+        data: {
+          ...(input.name && { name: input.name }),
+          ...(input.school && { school: input.school }),
+          ...(input.birthDate && { birthDate: input.birthDate }),
+        },
       });
     }),
 
-  updateTanggalLahir: userProcedure
-    .input(
-      z.object({
-        tanggalLahir: z.date(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.user.update({
-        where: { id: ctx.session.user.id },
-        data: { birthDate: input.tanggalLahir },
-      });
-    }),
+  // Get user profile with major choices
+  getProfile: userProcedure.query(async ({ ctx }) => {
+    const user = await ctx.db.user.findUnique({
+      where: { id: ctx.session.user.id },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        image: true,
+        school: true,
+        birthDate: true,
+      },
+    });
 
-  updatePilihanJurusan: userProcedure
-    .input(
-      z.object({
-        pilihan1: z.number(),
-        pilihan2: z.number(),
-        pilihan3: z.number(),
-        pilihan4: z.number(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      return await ctx.db.$transaction(async (tx) => {
-        // First, clear existing jurusan choices
-        await tx.userMajorChoice.deleteMany({
-          where: { userId: ctx.session.user.id },
-        });
-
-        // Then, create new jurusan choices
-        const choices = [
-          { majorId: input.pilihan1, priority: 1 },
-          { majorId: input.pilihan2, priority: 2 },
-          { majorId: input.pilihan3, priority: 3 },
-          { majorId: input.pilihan4, priority: 4 },
-        ];
-        return await Promise.all(
-          choices.map((choice) =>
-            tx.userMajorChoice.create({
-              data: {
-                userId: ctx.session.user.id,
-                majorId: choice.majorId,
-                choiceNumber: choice.priority,
-              },
-            }),
-          ),
-        );
-      });
-    }),
-
-  getUserMajorChoices: userProcedure.query(async ({ ctx }) => {
-    return await ctx.db.userMajorChoice.findMany({
+    const majorChoices = await ctx.db.userMajorChoice.findMany({
       where: { userId: ctx.session.user.id },
       include: {
         major: {
@@ -188,32 +157,94 @@ export const userRouter = createTRPCRouter({
         choiceNumber: "asc",
       },
     });
+
+    return {
+      ...user,
+      majorChoices,
+    };
   }),
 
-  getAllMajors: userProcedure
+  // Update or create major choices
+  updateMajorChoices: userProcedure
     .input(
       z.object({
-        filter: z.string().optional(),
+        choices: z.array(
+          z.object({
+            choiceNumber: z.number().min(1).max(4),
+            majorId: z.number(),
+          }),
+        ),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return await ctx.db.$transaction(async (tx) => {
+        // Delete existing choices
+        await tx.userMajorChoice.deleteMany({
+          where: { userId: ctx.session.user.id },
+        });
+
+        // Create new choices
+        if (input.choices.length > 0) {
+          await tx.userMajorChoice.createMany({
+            data: input.choices.map((choice) => ({
+              userId: ctx.session.user.id,
+              majorId: choice.majorId,
+              choiceNumber: choice.choiceNumber,
+            })),
+          });
+        }
+
+        return true;
+      });
+    }),
+
+  // Get all universities
+  getAllUniversities: userProcedure
+    .input(
+      z.object({
+        search: z.string().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.university.findMany({
+        where: input.search
+          ? {
+              name: {
+                contains: input.search,
+                mode: "insensitive",
+              },
+            }
+          : undefined,
+        orderBy: {
+          name: "asc",
+        },
+      });
+    }),
+
+  // Get majors by university
+  getMajorsByUniversity: userProcedure
+    .input(
+      z.object({
+        universityId: z.number(),
+        search: z.string().optional(),
       }),
     )
     .query(async ({ ctx, input }) => {
       return await ctx.db.major.findMany({
+        where: {
+          universityId: input.universityId,
+          ...(input.search && {
+            name: {
+              contains: input.search,
+              mode: "insensitive",
+            },
+          }),
+        },
         include: {
           university: true,
         },
         orderBy: {
           name: "asc",
-          university: { name: "asc" },
-        },
-        where: {
-          OR: [
-            { name: { contains: input.filter, mode: "insensitive" } },
-            {
-              university: {
-                name: { contains: input.filter, mode: "insensitive" },
-              },
-            },
-          ],
         },
       });
     }),
