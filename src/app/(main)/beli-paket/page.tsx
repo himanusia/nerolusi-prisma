@@ -140,7 +140,7 @@ export default function BeliPaketPage() {
         <PackageCard
           title="Paket TKA"
           description="Tes Kemampuan Akademik untuk berbagai jurusan"
-          price="Rp49.000,00"
+          price="Rp650.000,00"
           features={[
             "Try Out TKA Saintek & Soshum",
             "Materi lengkap per mata pelajaran",
@@ -149,7 +149,7 @@ export default function BeliPaketPage() {
             "Video pembelajaran",
           ]}
           icon={<TbBook className="h-16 w-16 text-purple-600" />}
-          href={"https://bit.ly/Nerolusi-INTI-TKA2025"}
+          href={"https://docs.google.com/forms/d/e/1FAIpQLSdcZX6hHWQl92p15uphQQYXFXfe-bBexDRJouzROhhuv3EdDA/viewform"}
           disabled={false}
         />
       </div>
