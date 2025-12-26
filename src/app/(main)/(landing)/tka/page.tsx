@@ -83,6 +83,7 @@ export default function MainPage() {
       participants: 0,
       difficulty: "medium",
       tokenPrice: pkg.tokenPrice, // Include tokenPrice for purchase dialog
+      mode: pkg.mode ?? "tka",
     };
   };
 
