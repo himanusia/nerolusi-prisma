@@ -13,10 +13,9 @@ export default async function layout({
     redirect("/signin");
   }
 
-  const isTka = session.user.enrolledTka;
   return (
     <div className="size-full">
-      <Navbar isTka={isTka} />
+      <Navbar />
       <div className="container mx-auto p-4 max-w-7xl">{children}</div>
     </div>
   );

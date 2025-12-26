@@ -32,9 +32,10 @@ export function PDFReader({
   const getPdfViewerUrl = () => {
     if (!pdfUrl) return "";
 
-    const baseUrl = "https://docs.google.com/viewer?url=";
-    const encodedUrl = encodeURIComponent(pdfUrl);
-    return `${baseUrl}${encodedUrl}&embedded=true`;
+    // const baseUrl = "https://docs.google.com/viewer?url=";
+    // const encodedUrl = encodeURIComponent(pdfUrl);
+    // console.log(enco)
+    return pdfUrl;
   };
 
   // Handle PDF load

@@ -131,14 +131,14 @@ model Subject {
 }
 
 model Module {
-  id          Int      @id @default(autoincrement())
+  id          Int        @id @default(autoincrement())
   title       String
   description String?
   url         String
   subjectId   Int?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime   @default(now())
   type        ModuleType @default(bahan_materi)
-  subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subject     Subject?   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 }
 
 model Material {
@@ -169,6 +169,7 @@ model Package {
   id          String        @id @default(cuid())
   name        String
   type        PackageType
+  mode        SubjectMode?  @default(tka)
   classId     Int?
   TOstart     DateTime?
   TOend       DateTime?
@@ -251,13 +252,14 @@ model UserMateriProgress {
 }
 
 model Video {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
   description String?
   url         String
   duration    Int
-  createdAt   DateTime  @default(now())
-  type        VideoType @default(rekaman)
+  createdAt   DateTime    @default(now())
+  type        VideoType   @default(rekaman)
+  mode        SubjectMode @default(tka)
   topic       Topic?
 }
 
@@ -363,6 +365,7 @@ enum SubjectType {
   saintek
   soshum
   utbk
+  modul_nerolusi
 }
 
 enum SubjectMode {

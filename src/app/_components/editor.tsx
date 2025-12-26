@@ -268,6 +268,17 @@ export default function Editor({
         >
           <LuListOrdered className="size-4" />
         </Button>
+        <Button
+          className="h-9 w-9 rounded-none border-r"
+          type="button"
+          size="sm"
+          onClick={() => {
+            editor?.chain().focus().setMath().run();
+          }}
+          variant={editor?.isActive("math") ? "default" : "ghost"}
+        >
+          ∑
+        </Button>
       </div>
       
       {/* Editor Content */}

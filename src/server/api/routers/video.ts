@@ -7,9 +7,17 @@ import {
 } from "~/server/api/trpc";
 
 export const videoRouter = createTRPCRouter({
-  getAllRekamanVideos: subscriberProcedure.query(async ({ ctx }) => {
+  getAllRekamanTKAVideos: subscriberProcedure.query(async ({ ctx }) => {
     const videos = await ctx.db.video.findMany({
-      where: { type: "rekaman" },
+      where: { type: "rekaman", mode: "tka" },
+      orderBy: { createdAt: "desc" },
+    });
+    return videos;
+  }),
+
+  getAllRekamanUTBKVideos: subscriberProcedure.query(async ({ ctx }) => {
+    const videos = await ctx.db.video.findMany({
+      where: { type: "rekaman", mode: "utbk" },
       orderBy: { createdAt: "desc" },
     });
     return videos;

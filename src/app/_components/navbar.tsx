@@ -74,50 +74,11 @@ import { FaWhatsapp } from "react-icons/fa";
 //   },
 // ];
 
-const navigationItems = [
-  {
-    title: "Home",
-    href: "/",
-    icon: <HiHome className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname === "/" || pathname.startsWith("/tka") || pathname.startsWith("/utbk"),
-  },
-  {
-    title: "Tryout",
-    href: "/tryout",
-    icon: <RiPencilFill className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/tryout"),
-  },
-  // {
-  //   title: "Drill",
-  //   href: "/drill",
-  //   icon: <RiToolsFill className="h-5 w-5"/>,
-  //   isActive: (pathname: string) => pathname.startsWith("/drill"),
-  // },
-  {
-    title: "Video",
-    href: "/video",
-    icon: <HiMiniVideoCamera className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/video"),
-  },
-  {
-    title: "Modul",
-    href: "/modul",
-    icon: <RiBook2Fill className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/modul"),
-  },
-  {
-    title: "Bantuan",
-    href: "https://wa.me/6285591402079",
-    icon: <FaWhatsapp className="h-5 w-5"/>,
-    isActive: (pathname: string) => pathname.startsWith("/whatsapp"),
-  },
-];
+// interface NavbarProps {
+//   isTka: boolean;
+// }
 
-interface NavbarProps {
-  isTka: boolean;
-}
-
-export default function Navbar({ isTka }: NavbarProps) {
+export default function Navbar() {
   const session = useSession();
   const user = session.data?.user;
   const pathname = usePathname();
@@ -125,6 +86,8 @@ export default function Navbar({ isTka }: NavbarProps) {
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
+  
+  const isTka = pathname.includes("/tka/");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -132,8 +95,8 @@ export default function Navbar({ isTka }: NavbarProps) {
 
   const closeMobileMenu = () => {
     setIsMobileMenuOpen(false);
-  }
-  
+  };
+
   const toggleProfileDropdown = () => {
     setIsProfileDropdownOpen(!isProfileDropdownOpen);
   };
@@ -151,25 +114,75 @@ export default function Navbar({ isTka }: NavbarProps) {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node) && isMobileMenuOpen) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target as Node) &&
+        isMobileMenuOpen
+      ) {
         closeMobileMenu();
       }
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node) && isProfileDropdownOpen) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node) &&
+        isProfileDropdownOpen
+      ) {
         closeProfileDropdown();
       }
-  };
+    };
 
-  if (isMobileMenuOpen || isProfileDropdownOpen) {
-    document.addEventListener("mousedown", handleClickOutside);
-  }
+    if (isMobileMenuOpen || isProfileDropdownOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
 
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, [isMobileMenuOpen, isProfileDropdownOpen]);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [isMobileMenuOpen, isProfileDropdownOpen]);
+
+  const navigationItems = [
+    {
+      title: "Home",
+      href: "/",
+      icon: <HiHome className="h-5 w-5" />,
+      isActive: (pathname: string) =>
+        pathname === "/" ||
+        pathname.startsWith("/tka") ||
+        pathname.startsWith("/utbk"),
+    },
+    {
+      title: "Tryout",
+      href: "/tryout",
+      icon: <RiPencilFill className="h-5 w-5" />,
+      isActive: (pathname: string) => pathname.startsWith("/tryout"),
+    },
+    // {
+    //   title: "Drill",
+    //   href: "/drill",
+    //   icon: <RiToolsFill className="h-5 w-5"/>,
+    //   isActive: (pathname: string) => pathname.startsWith("/drill"),
+    // },
+    {
+      title: "Video",
+      href: `/video/${isTka ? "tka/materi" : "utbk"}`,
+      icon: <HiMiniVideoCamera className="h-5 w-5" />,
+      isActive: (pathname: string) => pathname.startsWith("/video"),
+    },
+    {
+      title: "Modul",
+      href: "/modul",
+      icon: <RiBook2Fill className="h-5 w-5" />,
+      isActive: (pathname: string) => pathname.startsWith("/modul"),
+    },
+    {
+      title: "Bantuan",
+      href: "https://wa.me/6285591402079",
+      icon: <FaWhatsapp className="h-5 w-5" />,
+      isActive: (pathname: string) => pathname.startsWith("/whatsapp"),
+    },
+  ];
 
   return (
-    <div className="sticky left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-b border-[1px] border-[#acaeba] bg-white px-12">
+    <div className="sticky left-0 top-0 z-50 flex h-16 w-full items-center justify-between border-[1px] border-b border-[#acaeba] bg-white px-12">
       <div className="flex items-center gap-5">
         <Link href={"/"}>
           <Image
@@ -253,45 +266,47 @@ export default function Navbar({ isTka }: NavbarProps) {
       </div>
 
       <div className="flex items-center gap-4">
-        <div className="hidden md:flex items-center gap-4">
+        <div className="hidden items-center gap-4 md:flex">
           {user ? (
             <div className="relative" ref={profileDropdownRef}>
               {/* <span className="text-sm text-black">{user.name}</span> */}
 
-              <button onClick={toggleProfileDropdown} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+              <button
+                onClick={toggleProfileDropdown}
+                className="flex items-center gap-3 transition-opacity hover:opacity-80"
+              >
                 <Avatar className="h-8 w-8">
                   <AvatarImage src={user.image || ""} />
                   <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
               </button>
-              
-              {isProfileDropdownOpen && (
-                <div className="absolute right-0 top-12 w-48 bg-white border rounded-lg shadow-lg z-50">
 
+              {isProfileDropdownOpen && (
+                <div className="absolute right-0 top-12 z-50 w-48 rounded-lg border bg-white shadow-lg">
                   <div className="py-2">
                     {!isTka && (
                       <Link
                         href="/profil"
                         onClick={closeProfileDropdown}
-                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                       >
                         <HiUser className="h-4 w-4" />
                         Profil
                       </Link>
                     )}
-                    
+
                     <Link
                       href="/beli-paket"
                       onClick={closeProfileDropdown}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-50"
                     >
                       <HiShoppingCart className="h-4 w-4" />
                       Beli Paket
                     </Link>
-                    <div className="border-t border-gray-100 my-2"></div>
+                    <div className="my-2 border-t border-gray-100"></div>
                     <button
                       onClick={handleLogout}
-                      className="flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                      className="flex w-full items-center gap-3 px-4 py-2 text-left text-sm text-red-600 transition-colors hover:bg-red-50"
                     >
                       <HiLogout className="h-4 w-4" />
                       Logout
@@ -331,97 +346,105 @@ export default function Navbar({ isTka }: NavbarProps) {
 
       {isMobileMenuOpen && (
         <>
-        <div onClick={closeMobileMenu} className="fixed inset-0 z-40 md:hidden"/>
-        <div className="absolute top-16 left-0 right-0 bg-white border-[1px] border-[#acaeba] shadow-lg md:hidden z-50" ref={mobileMenuRef}>
-          <div className="p-4">
-            {user ? (
-              <div className="flex items-center gap-3 mb-4 pb-4 border-b border-gray-200">
-                <Avatar className="h-12 w-12">
-                  <AvatarImage src={user.image || ""} />
-                  <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <span className="text-sm font-medium text-black">{user.name}</span>
-                  <p className="text-xs text-gray-500">{user.email}</p>
+          <div
+            onClick={closeMobileMenu}
+            className="fixed inset-0 z-40 md:hidden"
+          />
+          <div
+            className="absolute left-0 right-0 top-16 z-50 border-[1px] border-[#acaeba] bg-white shadow-lg md:hidden"
+            ref={mobileMenuRef}
+          >
+            <div className="p-4">
+              {user ? (
+                <div className="mb-4 flex items-center gap-3 border-b border-gray-200 pb-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user.image || ""} />
+                    <AvatarFallback>{user.name?.charAt(0)}</AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <span className="text-sm font-medium text-black">
+                      {user.name}
+                    </span>
+                    <p className="text-xs text-gray-500">{user.email}</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="mb-4 pb-4 border-b border-gray-200">
-                <Button
-                  variant={"ghost"}
-                  onClick={() => {
-                    signIn("google", {
-                      callbackUrl: "/",
-                    });
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="w-full border"
-                >
-                  <FaGoogle className="mr-2" />
-                  Sign In
-                </Button>
-              </div>
-            )}
+              ) : (
+                <div className="mb-4 border-b border-gray-200 pb-4">
+                  <Button
+                    variant={"ghost"}
+                    onClick={() => {
+                      signIn("google", {
+                        callbackUrl: "/",
+                      });
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full border"
+                  >
+                    <FaGoogle className="mr-2" />
+                    Sign In
+                  </Button>
+                </div>
+              )}
 
-            <div className="space-y-2">
-              {navigationItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={cn(
-                    "flex items-center gap-3 p-3 rounded-lg transition-colors",
-                    item.isActive(pathname)
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "text-gray-700 hover:bg-gray-50"
-                  )}
-                >
-                  {item.icon}
-                  <span className="font-medium">{item.title}</span>
-                </Link>
-              ))}
-            </div>
+              <div className="space-y-2">
+                {navigationItems.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg p-3 transition-colors",
+                      item.isActive(pathname)
+                        ? "border border-green-200 bg-green-50 text-green-700"
+                        : "text-gray-700 hover:bg-gray-50",
+                    )}
+                  >
+                    {item.icon}
+                    <span className="font-medium">{item.title}</span>
+                  </Link>
+                ))}
+              </div>
 
-            {user && (
+              {user && (
                 <>
-                  <div className="border-t border-gray-200 pt-4 mb-4">
+                  <div className="mb-4 border-t border-gray-200 pt-4">
                     <div className="space-y-2">
                       {!isTka && (
                         <Link
                           href="/profil"
                           onClick={() => setIsMobileMenuOpen(false)}
-                          className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="flex items-center gap-3 rounded-lg p-3 text-gray-700 transition-colors hover:bg-gray-50"
                         >
                           <HiUser className="h-5 w-5" />
                           <span className="font-medium">Profil</span>
                         </Link>
                       )}
-                      
+
                       <Link
                         href="/beli-paket"
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className="flex items-center gap-3 p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-3 rounded-lg p-3 text-gray-700 transition-colors hover:bg-gray-50"
                       >
                         <HiShoppingCart className="h-5 w-5" />
                         <span className="font-medium">Beli Paket</span>
                       </Link>
                     </div>
                   </div>
-                  
+
                   <button
                     onClick={() => {
                       handleLogout();
                       setIsMobileMenuOpen(false);
                     }}
-                    className="flex items-center gap-3 p-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors w-full text-left"
+                    className="flex w-full items-center gap-3 rounded-lg p-3 text-left text-red-600 transition-colors hover:bg-red-50"
                   >
                     <HiLogout className="h-5 w-5" />
                     <span className="font-medium">Logout</span>
                   </button>
                 </>
               )}
+            </div>
           </div>
-        </div>
         </>
       )}
     </div>

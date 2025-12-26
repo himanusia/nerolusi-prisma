@@ -1,5 +1,6 @@
 import { SubtestType } from "@prisma/client";
 import { z } from "zod";
+import { getAllSubjects } from "~/app/_components/constants";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 
 export const adminRouter = createTRPCRouter({
@@ -262,13 +263,14 @@ export const adminRouter = createTRPCRouter({
     return videos;
   }),
 
-  createTKAVideo: adminProcedure
+  createVideo: adminProcedure
     .input(
       z.object({
         title: z.string(),
         description: z.string(),
         videoUrl: z.string(),
         duration: z.number(),
+        mode: z.enum(["tka", "utbk"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -279,11 +281,12 @@ export const adminRouter = createTRPCRouter({
           type: "rekaman",
           url: input.videoUrl,
           duration: input.duration,
+          mode: input.mode,
         },
       });
     }),
 
-  updateTKAVideo: adminProcedure
+  updateVideo: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -291,6 +294,7 @@ export const adminRouter = createTRPCRouter({
         description: z.string(),
         videoUrl: z.string(),
         duration: z.number(),
+        mode: z.enum(["tka", "utbk"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -299,13 +303,15 @@ export const adminRouter = createTRPCRouter({
         data: {
           title: input.title,
           description: input.description,
+          type: "rekaman",
           url: input.videoUrl,
           duration: input.duration,
+          mode: input.mode,
         },
       });
     }),
 
-  deleteTKAVideo: adminProcedure
+  deleteVideo: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.video.delete({
@@ -417,6 +423,10 @@ export const adminRouter = createTRPCRouter({
       where: { type: "utbk" },
       orderBy: { id: "asc" },
     });
+  }),
+
+  getAllSubjects: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.subject.findMany({ orderBy: { id: "asc" } });
   }),
 
   getMaterialsBySubject: adminProcedure

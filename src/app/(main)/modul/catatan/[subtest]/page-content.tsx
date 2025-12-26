@@ -98,6 +98,14 @@ export default function PageContent() {
     return <NoPackagePage />;
   }
 
+  if (!subjectData || modulesData?.length === 0) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center p-6">
+        Belum ada catatan untuk subjek ini.
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-screen flex-col overflow-hidden p-6">
       <div
