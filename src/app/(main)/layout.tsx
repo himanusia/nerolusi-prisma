@@ -1,6 +1,7 @@
 import { auth } from "~/server/auth";
 import Navbar from "~/app/_components/navbar";
 import { redirect } from "next/navigation";
+import { ModeProvider } from "~/contexts/mode-context";
 
 export default async function layout({
   children,
@@ -14,9 +15,11 @@ export default async function layout({
   }
 
   return (
-    <div className="size-full">
-      <Navbar />
-      <div className="container mx-auto p-4 max-w-7xl">{children}</div>
-    </div>
+    <ModeProvider>
+      <div className="size-full">
+        <Navbar />
+        <div className="container mx-auto max-w-7xl p-4">{children}</div>
+      </div>
+    </ModeProvider>
   );
 }

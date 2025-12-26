@@ -34,7 +34,7 @@ export default function MainPage() {
     isLoading: tryoutLoading,
     isError: tryoutError,
     refetch,
-  } = api.package.getTryoutPackages.useQuery({});
+  } = api.package.getTryoutPackages.useQuery({isTka: true});
 
   const purchaseTryOutMutation = api.package.purchasePackage.useMutation();
 

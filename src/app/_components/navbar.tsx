@@ -24,6 +24,7 @@ import { HiHome, HiMiniVideoCamera } from "react-icons/hi2";
 import { RiPencilFill, RiToolsFill, RiBook2Fill } from "react-icons/ri";
 import { HiUser, HiShoppingCart, HiLogout } from "react-icons/hi";
 import { FaWhatsapp } from "react-icons/fa";
+import { useMode } from "~/contexts/mode-context";
 
 // const soal: { title: string; href: string }[] = [
 //   {
@@ -82,12 +83,11 @@ export default function Navbar() {
   const session = useSession();
   const user = session.data?.user;
   const pathname = usePathname();
+  const { mode, isTka, isUtbk } = useMode();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const profileDropdownRef = useRef<HTMLDivElement>(null);
-  
-  const isTka = pathname.includes("/tka/");
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -151,7 +151,7 @@ export default function Navbar() {
     },
     {
       title: "Tryout",
-      href: "/tryout",
+      href: `/tryout/${mode}`,
       icon: <RiPencilFill className="h-5 w-5" />,
       isActive: (pathname: string) => pathname.startsWith("/tryout"),
     },
@@ -169,7 +169,7 @@ export default function Navbar() {
     },
     {
       title: "Modul",
-      href: "/modul",
+      href: `/modul/${mode}`,
       icon: <RiBook2Fill className="h-5 w-5" />,
       isActive: (pathname: string) => pathname.startsWith("/modul"),
     },
