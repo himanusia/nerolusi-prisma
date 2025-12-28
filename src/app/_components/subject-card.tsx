@@ -11,9 +11,9 @@ const SubjectCard = ({ href, imageSrc, title }: SubjectCardProps) => {
   return (
     <Link
       href={href}
-      className="flex min-w-[80px] max-w-[80px] cursor-pointer flex-col items-center justify-center rounded-[10px] border border-[#2b8057] bg-white px-1 py-2 transition-all duration-200 hover:scale-105 hover:shadow-lg md:min-w-[150px] md:max-w-[150px] md:p-3"
+      className="flex w-full cursor-pointer flex-col items-center justify-center rounded-[10px] border border-[#2b8057] bg-white px-1 py-2 transition-all duration-200 hover:scale-105 hover:shadow-lg md:p-3"
     >
-      <div className="w-16 h-16 mb-2 flex items-center justify-center rounded-[9px] bg-[#2b8057] shadow-sm p-2">
+      <div className="mb-2 flex h-16 w-16 items-center justify-center rounded-[9px] bg-[#2b8057] p-2 shadow-sm">
         <Image
           src={imageSrc}
           alt={title}

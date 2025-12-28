@@ -23,7 +23,14 @@ const ModeContext = createContext<ModeContextType | undefined>(undefined);
 export function ModeProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [mode, setModeState] = useState<Mode>("utbk");
+
+  const getInitialMode = (): Mode => {
+    if (pathname.includes("/tka")) return "tka";
+    if (pathname.includes("/utbk")) return "utbk";
+    return "utbk";
+  };
+
+  const [mode, setModeState] = useState<Mode>(getInitialMode);
 
   // Detect mode from pathname
   useEffect(() => {
@@ -31,19 +38,11 @@ export function ModeProvider({ children }: { children: ReactNode }) {
       setModeState("tka");
     } else if (pathname.includes("/utbk")) {
       setModeState("utbk");
-    } else {
-      // Load from localStorage if no mode in path
-      const savedMode = localStorage.getItem("nerolusi-mode") as Mode | null;
-      if (savedMode) {
-        setModeState(savedMode);
-      }
     }
   }, [pathname]);
 
-  // Save to localStorage when mode changes
   const setMode = (newMode: Mode) => {
     setModeState(newMode);
-    localStorage.setItem("nerolusi-mode", newMode);
   };
 
   // Handle automatic redirects for pages that should have mode prefix

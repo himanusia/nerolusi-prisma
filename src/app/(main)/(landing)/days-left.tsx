@@ -2,8 +2,7 @@ export default function DaysLeft() {
   return (
     <div className="flex items-center rounded-lg border border-gray-300 p-2">
       <div className="flex items-center justify-center rounded-lg bg-[#2b8057] px-4 py-2 text-center text-xl font-extrabold text-white md:text-3xl">
-        {/* TODO: change to actual days left */}
-        300
+        {Math.max(0, Math.floor((new Date('2026-04-21').getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)))}
       </div>
       <div className="ml-3 flex flex-wrap items-center justify-start">
         <span className="sm:text-lg md:text-xl">

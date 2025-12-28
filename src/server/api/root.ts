@@ -9,6 +9,7 @@ import { adminRouter } from "./routers/admin";
 import { materiRouter } from "./routers/materi";
 import { modulRouter } from "./routers/modul";
 import { paymentRouter } from "./routers/payment";
+import { eventRouter } from "./routers/event";
 
 /**
  * This is the primary router for your server.
@@ -25,7 +26,8 @@ export const appRouter = createTRPCRouter({
   admin: adminRouter,
   materi: materiRouter,
   modul: modulRouter,
-  payment: paymentRouter
+  payment: paymentRouter,
+  event: eventRouter,
 });
 
 // export type definition of API
