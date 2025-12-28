@@ -40,11 +40,9 @@ export default function BeliPaketPage() {
   ) => {
     setSelectedPackage({ title: packageTitle, price });
     setShowPurchaseDialog(true);
-    // router.push("");
   };
 
   const handlePurchaseConfirm = () => {
-    // Handle actual purchase logic here
     setShowPurchaseDialog(false);
     setSelectedPackage(null);
 
@@ -84,7 +82,7 @@ export default function BeliPaketPage() {
         <PackageCard
           title="Paket UTBK"
           description="Persiapan lengkap untuk UTBK SNBT 2026"
-          price={"Coming Soon"}
+          price="Rp379.000,00"
           features={[
             "10+ Try Out UTBK terlengkap",
             "Pembahasan detail setiap soal",
@@ -94,7 +92,7 @@ export default function BeliPaketPage() {
           ]}
           icon={<TbTargetArrow className="h-16 w-16 text-blue-600" />}
           href={"/"}
-          onClick={() => handleBuyPackage("Paket UTBK", 0)}
+          onClick={() => handleBuyPackage("Paket UTBK", 379000)}
           disabled={isRedirecting}
         />
 

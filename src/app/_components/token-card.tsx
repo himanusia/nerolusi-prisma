@@ -4,37 +4,69 @@ import { Button } from "./ui/button";
 import { Plus, Minus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
+import { api } from "~/trpc/react";
+import { toast } from "sonner";
 
 interface TokenCardProps {
   tokenAmount: number;
 }
 
 export default function TokenCard({ tokenAmount }: TokenCardProps) {
-  const router = useRouter();
+  const { data: session } = useSession();
   const [showTokenDialog, setShowTokenDialog] = useState(false);
   const [selectedTokens, setSelectedTokens] = useState(10);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const tokenPackages = [
-    { amount: 10, price: 5000, bonus: 0 },
-    { amount: 25, price: 12000, bonus: 2 },
-    { amount: 50, price: 23000, bonus: 5 },
-    { amount: 100, price: 45000, bonus: 15 },
+    { amount: 1, price: 10000 },
+    { amount: 2, price: 20000 },
+    { amount: 5, price: 50000 },
+    { amount: 10, price: 100000 },
   ];
+
+  const createPayment = api.payment.createCheckout.useMutation({
+    onSuccess: (dokuUrl) => {
+      // Direct redirect to DOKU's hosted checkout page
+      window.location.href = dokuUrl;
+    },
+    onError: (error) => {
+      setIsRedirecting(false);
+      toast.error(`Gagal melakukan checkout: ${error.message}`);
+    },
+  });
 
   const handleTokenSelect = (amount: number) => {
     setSelectedTokens(amount);
   };
 
   const handleBuyTokens = () => {
-    // Handle actual token purchase logic here
-    console.log('Buying tokens:', selectedTokens);
     setShowTokenDialog(false);
-    // You might want to show a success message or update token count
+    setIsRedirecting(true);
+
+    const selectedPkg = tokenPackages.find(
+      (pkg) => pkg.amount === selectedTokens,
+    );
+    if (!selectedPkg) {
+      toast.error("Paket token tidak ditemukan");
+      setIsRedirecting(false);
+      return;
+    }
+
+    const idempotencyKey = crypto.randomUUID();
+
+    createPayment.mutate({
+      idempotencyKey,
+      type: "token",
+      userId: session?.user.id,
+      amount: selectedPkg.price,
+      tokens: selectedPkg.amount,
+    });
   };
   return (
     <>
-      <div className="flex rounded-lg border border-gray-500 bg-[#e9e6ef] items-center max-w-[150px]">
-        <div className="flex flex-1 flex-col items-center justify-center rounded-lg bg-white px-4 py-2 text-xs md:text-md ">
+      <div className="flex max-w-[150px] items-center rounded-lg border border-gray-500 bg-[#e9e6ef]">
+        <div className="md:text-md flex flex-1 flex-col items-center justify-center rounded-lg bg-white px-4 py-2 text-xs">
           {/* border-r border-gray-500 */}
           <h3 className="text-center">Token TryOut</h3>
           <div className="flex items-center justify-center">
@@ -44,59 +76,64 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
               className="mb-1 size-6"
             />
             <span className="ml-1 text-gray-700">:</span>
-            <span className="ml-2 text-gray-700 font-bold text-xl">{tokenAmount}</span>
+            <span className="ml-2 text-xl font-bold text-gray-700">
+              {tokenAmount}
+            </span>
           </div>
         </div>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           size="sm"
-          className="bg-transparent rounded-none hover:bg-transparent"
+          className="rounded-none bg-transparent hover:bg-transparent"
           onClick={() => setShowTokenDialog(true)}
+          disabled={isRedirecting}
         >
-          <Plus className="w-4 h-4 text-[#615e52] font-bold" />
+          <Plus className="h-4 w-4 font-bold text-[#615e52]" />
         </Button>
       </div>
 
       {/* Token Purchase Dialog */}
       {showTokenDialog && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6">
+            <div className="mb-6 flex items-center justify-between">
               <h3 className="text-xl font-bold text-gray-900">Beli Token</h3>
-              <button 
+              <button
                 onClick={() => setShowTokenDialog(false)}
-                className="w-8 h-8 bg-red-500 text-white font-bold rounded-[10px] flex items-center justify-center hover:bg-red-600 transition-colors"
+                className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-red-500 font-bold text-white transition-colors hover:bg-red-600"
               >
                 ✕
               </button>
             </div>
-            
+
             <div className="mb-6">
-              <p className="text-gray-600 mb-4">
+              <p className="mb-4 text-gray-600">
                 Pilih paket token yang sesuai dengan kebutuhan Anda
               </p>
-              
+
               {/* Token Packages */}
               <div className="space-y-3">
                 {tokenPackages.map((pkg) => (
                   <div
                     key={pkg.amount}
-                    className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                    className={`cursor-pointer rounded-lg border p-4 transition-all ${
                       selectedTokens === pkg.amount
-                        ? 'border-green-500 bg-green-50'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? "border-green-500 bg-green-50"
+                        : "border-gray-200 hover:border-gray-300"
                     }`}
                     onClick={() => handleTokenSelect(pkg.amount)}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
-                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
-                          selectedTokens === pkg.amount
-                            ? 'border-green-500 bg-green-500'
-                            : 'border-gray-300'
-                        }`}>
+                        <div
+                          className={`flex h-4 w-4 items-center justify-center rounded-full border-2 ${
+                            selectedTokens === pkg.amount
+                              ? "border-green-500 bg-green-500"
+                              : "border-gray-300"
+                          }`}
+                        >
                           {selectedTokens === pkg.amount && (
-                            <div className="w-2 h-2 bg-white rounded-full"></div>
+                            <div className="h-2 w-2 rounded-full bg-white"></div>
                           )}
                         </div>
                         <div>
@@ -104,31 +141,18 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
                             <img
                               src="/coinstack.png"
                               alt="Token"
-                              className="w-5 h-5"
+                              className="h-5 w-5"
                             />
-                            <span className="font-semibold text-lg">
-                              {pkg.amount + pkg.bonus} Token
+                            <span className="text-lg font-semibold">
+                              {pkg.amount} Token
                             </span>
-                            {pkg.bonus > 0 && (
-                              <span className="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full">
-                                +{pkg.bonus} Bonus
-                              </span>
-                            )}
                           </div>
-                          <div className="text-sm text-gray-600">
-                            {pkg.amount} Token {pkg.bonus > 0 && `+ ${pkg.bonus} Bonus`}
-                          </div>
-                        </div>
+                        </div>  
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-green-600">
-                          Rp {pkg.price.toLocaleString('id-ID')}
+                          Rp {pkg.price.toLocaleString("id-ID")}
                         </div>
-                        {pkg.amount > 10 && (
-                          <div className="text-xs text-gray-500">
-                            Rp {Math.round(pkg.price / (pkg.amount + pkg.bonus)).toLocaleString('id-ID')}/token
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -137,26 +161,40 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
             </div>
 
             {/* Selected Package Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h4 className="font-semibold mb-2">Ringkasan Pembelian</h4>
+            <div className="mb-6 rounded-lg bg-gray-50 p-4">
+              <h4 className="mb-2 font-semibold">Ringkasan Pembelian</h4>
               {(() => {
-                const selectedPkg = tokenPackages.find(pkg => pkg.amount === selectedTokens);
+                const selectedPkg = tokenPackages.find(
+                  (pkg) => pkg.amount === selectedTokens,
+                );
                 return selectedPkg ? (
                   <div className="space-y-2">
                     <div className="flex justify-between">
                       <span>Paket Token:</span>
-                      <span className="font-medium">{selectedPkg.amount + selectedPkg.bonus} Token</span>
+                      <span className="font-medium">
+                        {selectedPkg.amount} Token
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Harga:</span>
-                      <span className="font-medium">Rp {selectedPkg.price.toLocaleString('id-ID')}</span>
+                      <span className="font-medium">
+                        Rp {selectedPkg.price.toLocaleString("id-ID")}
+                      </span>
                     </div>
                     <hr className="my-2" />
                     <div className="flex justify-between font-semibold">
-                      <span>Total Token:</span>
+                      <span>Total Token Anda:</span>
                       <div className="flex items-center gap-2">
-                        <img src="/coinstack.png" alt="Token" className="w-4 h-4" />
-                        <span>{tokenAmount} + {selectedPkg.amount + selectedPkg.bonus} = {tokenAmount + selectedPkg.amount + selectedPkg.bonus}</span>
+                        <img
+                          src="/coinstack.png"
+                          alt="Token"
+                          className="h-4 w-4"
+                        />
+                        <span>
+                          {tokenAmount} +{" "}
+                          {selectedPkg.amount} ={" "}
+                          {tokenAmount + selectedPkg.amount}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -170,13 +208,15 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
                 variant="default"
                 onClick={handleBuyTokens}
                 className="flex-1"
+                disabled={isRedirecting}
               >
-                Beli Sekarang
+                {isRedirecting ? "Memproses..." : "Beli Sekarang"}
               </Button>
               <Button
                 onClick={() => setShowTokenDialog(false)}
                 variant="outline"
                 className="flex-1"
+                disabled={isRedirecting}
               >
                 Batal
               </Button>
