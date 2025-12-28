@@ -142,7 +142,7 @@ export default function Navbar() {
   const navigationItems = [
     {
       title: "Home",
-      href: "/",
+      href: `/${mode}`,
       icon: <HiHome className="h-5 w-5" />,
       isActive: (pathname: string) =>
         pathname === "/" ||

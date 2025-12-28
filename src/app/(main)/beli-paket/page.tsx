@@ -3,101 +3,60 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "~/app/_components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/app/_components/ui/card";
+
 import TokenCard from "~/app/_components/token-card";
 import { TbTargetArrow, TbBook, TbCoins } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-interface PackageCardProps {
-  title: string;
-  description: string;
-  price: string;
-  features: string[];
-  icon: React.ReactNode;
-  disabled: boolean;
-  href: string;
-}
-
-const PackageCard = ({
-  title,
-  description,
-  price,
-  features,
-  icon,
-  disabled,
-  href,
-}: PackageCardProps) => {
-  return (
-    <Card className="h-full border-gray-200 transition-shadow hover:shadow-lg">
-      <CardHeader className="pb-4 text-center">
-        <div className="mb-4 flex justify-center">{icon}</div>
-        <CardTitle className="text-xl font-bold text-gray-900">
-          {title}
-        </CardTitle>
-        <p className="text-sm text-gray-600">{description}</p>
-      </CardHeader>
-      <CardContent className="space-y-4 flex flex-col">
-        <div className="text-center">
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <span className="text-3xl font-bold text-orange-600">{price}</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h4 className="font-semibold text-gray-900">Fitur:</h4>
-          <ul className="space-y-1">
-            {features.map((feature, index) => (
-              <li
-                key={index}
-                className="flex items-start gap-2 text-sm text-gray-600"
-              >
-                <span className="mt-0.5 text-green-600">✓</span>
-                {feature}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <Link href={href} target="_blank">
-          <Button variant="default" className="w-full" disabled={disabled}>
-            Beli Paket
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
-  );
-};
+import { api } from "~/trpc/react";
+import { PackageCard } from "./package-card";
+import { toast } from "sonner";
+import LoadingPage from "~/app/loading";
 
 export default function BeliPaketPage() {
-  // const { data: session } = useSession();
+  const { data: session, status } = useSession();
   // const router = useRouter();
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<{
-    title: string;
+    title: "Paket TKA" | "Paket UTBK";
     price: number;
   } | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const userTokens = 0;
+  const createPayment = api.payment.createCheckout.useMutation({
+    onSuccess: (dokuUrl) => {
+      // Direct redirect to DOKU's hosted checkout page
+      window.location.href = dokuUrl;
+    },
+    onError: (error) => {
+      setIsRedirecting(false);
+      toast.error(`Gagal melakukan checkout: ${error.message}`);
+    },
+  });
 
-  // const handleBuyPackage = (packageTitle: string, price: number) => {
-  //   // setSelectedPackage({ title: packageTitle, price });
-  //   // setShowPurchaseDialog(true);
-  //   router.push("");
-  // };
+  const handleBuyPackage = (
+    packageTitle: "Paket TKA" | "Paket UTBK",
+    price: number,
+  ) => {
+    setSelectedPackage({ title: packageTitle, price });
+    setShowPurchaseDialog(true);
+  };
 
-  // const handlePurchaseConfirm = () => {
-  //   // Handle actual purchase logic here
-  //   console.log("Purchase confirmed for:", selectedPackage);
-  //   setShowPurchaseDialog(false);
-  //   setSelectedPackage(null);
-  //   // You might want to show a success message or redirect
-  // };
+  const handlePurchaseConfirm = () => {
+    setShowPurchaseDialog(false);
+    setSelectedPackage(null);
+
+    setIsRedirecting(true);
+    
+    const idempotencyKey = crypto.randomUUID();
+    const type = selectedPackage?.title === "Paket TKA" ? "tka" : "utbk";
+
+    createPayment.mutate({ idempotencyKey, type, userId: session?.user.id, amount: selectedPackage.price});
+  };
+
+  if (status === "loading") {
+    return <LoadingPage />;
+  }
 
   return (
     <div className="space-y-6">
@@ -123,7 +82,7 @@ export default function BeliPaketPage() {
         <PackageCard
           title="Paket UTBK"
           description="Persiapan lengkap untuk UTBK SNBT 2026"
-          price={"Coming Soon"}
+          price="Rp379.000,00"
           features={[
             "10+ Try Out UTBK terlengkap",
             "Pembahasan detail setiap soal",
@@ -133,7 +92,8 @@ export default function BeliPaketPage() {
           ]}
           icon={<TbTargetArrow className="h-16 w-16 text-blue-600" />}
           href={"/"}
-          disabled={true}
+          onClick={() => handleBuyPackage("Paket UTBK", 379000)}
+          disabled={isRedirecting}
         />
 
         {/* TKA Package */}
@@ -149,13 +109,14 @@ export default function BeliPaketPage() {
             "Video pembelajaran",
           ]}
           icon={<TbBook className="h-16 w-16 text-purple-600" />}
-          href={"https://docs.google.com/forms/d/e/1FAIpQLSdcZX6hHWQl92p15uphQQYXFXfe-bBexDRJouzROhhuv3EdDA/viewform"}
-          disabled={false}
+          href={"https://bit.ly/Nerolusi-INTI-TKA2025"}
+          disabled={isRedirecting}
+          onClick={() => handleBuyPackage("Paket TKA", 49000)}
         />
       </div>
 
       {/* Purchase Confirmation Dialog */}
-      {/* {showPurchaseDialog && selectedPackage && (
+      {showPurchaseDialog && selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="mx-4 w-full max-w-md rounded-xl bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
@@ -179,30 +140,12 @@ export default function BeliPaketPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">Harga:</span>
                   <div className="flex items-center gap-2">
-                    <TbCoins className="h-5 w-5 text-orange-600" />
                     <span className="font-bold text-orange-600">
                       {selectedPackage.price}
                     </span>
-                    <span className="text-gray-500">Token</span>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-gray-700">Token Anda:</span>
-                  <div className="flex items-center gap-2">
-                    <TbCoins className="h-5 w-5 text-orange-600" />
-                    <span className="font-bold">{userTokens}</span>
                   </div>
                 </div>
                 <hr className="my-2" />
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-700">Sisa Token:</span>
-                  <div className="flex items-center gap-2">
-                    <TbCoins className="h-5 w-5 text-orange-600" />
-                    <span className="font-bold text-green-600">
-                      {userTokens - selectedPackage.price}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -211,11 +154,8 @@ export default function BeliPaketPage() {
                 variant="default"
                 onClick={handlePurchaseConfirm}
                 className="flex-1"
-                disabled={userTokens < selectedPackage.price}
               >
-                {userTokens < selectedPackage.price
-                  ? "Token Tidak Cukup"
-                  : "Konfirmasi"}
+                Konfirmasi
               </Button>
               <Button
                 onClick={() => setShowPurchaseDialog(false)}
@@ -227,7 +167,7 @@ export default function BeliPaketPage() {
             </div>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

@@ -31,6 +31,6 @@ function ConditionalPage() {
   if (session.user.role === "admin") {
     return <AdminDashboard />;
   } else {
-    return <MainPage />;
+    redirect('/utbk');
   }
 }

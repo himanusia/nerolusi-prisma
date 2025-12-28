@@ -57,8 +57,8 @@ const adminMenuItems = [
   //   color: "border-purple-200 hover:border-purple-300"
   // },
   {
-    title: "TKA Videos",
-    description: "Manage TKA videos",
+    title: "Rekaman Management",
+    description: "Manage video recordings",
     href: "/admin/videos",
     icon: <RiVideoFill className="h-8 w-8 text-red-600" />,
     color: "border-red-200 hover:border-red-300",
