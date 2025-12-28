@@ -34,7 +34,7 @@ export default function MainPage() {
     isLoading: tryoutLoading,
     isError: tryoutError,
     refetch,
-  } = api.package.getTryoutPackages.useQuery({});
+  } = api.package.getTryoutPackages.useQuery({isTka: true});
 
   const purchaseTryOutMutation = api.package.purchasePackage.useMutation();
 
@@ -83,6 +83,7 @@ export default function MainPage() {
       participants: 0,
       difficulty: "medium",
       tokenPrice: pkg.tokenPrice, // Include tokenPrice for purchase dialog
+      mode: pkg.mode ?? "tka",
     };
   };
 

@@ -9,11 +9,12 @@ import { toast } from "sonner";
 
 interface TryoutListProps {
   classId?: number;
+  isTka: boolean;
 }
 
 type TryoutPackage = RouterOutputs["package"]["getTryoutPackages"][number];
 
-const TryoutList = ({ classId }: TryoutListProps) => {
+const TryoutList = ({ classId, isTka }: TryoutListProps) => {
   const router = useRouter();
 
   const {
@@ -21,7 +22,7 @@ const TryoutList = ({ classId }: TryoutListProps) => {
     isLoading,
     isError,
     refetch,
-  } = api.package.getTryoutPackages.useQuery({ classId });
+  } = api.package.getTryoutPackages.useQuery({ classId, isTka });
 
   const purchaseTryOutMutation = api.package.purchasePackage.useMutation();
 
@@ -70,6 +71,7 @@ const TryoutList = ({ classId }: TryoutListProps) => {
       participants: 0,
       difficulty: "medium",
       tokenPrice: pkg.tokenPrice, // Include tokenPrice for purchase dialog
+      mode: pkg.mode ?? "tka",
     };
   };
 

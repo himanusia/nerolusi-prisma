@@ -1,13 +1,24 @@
 "use client";
 import RekamanKelasCard from "~/app/_components/rekaman-kelas-card";
+import ErrorPage from "~/app/error";
 import { api } from "~/trpc/react";
 
-export default function DaftarRekaman() {
+interface DaftarRekamanProps {
+  mode: "tka" | "utbk";
+}
+
+export default function DaftarRekaman({ mode }: DaftarRekamanProps) {
+  const procedureName =
+    mode === "tka" ? "getAllRekamanTKAVideos" : "getAllRekamanUTBKVideos";
   const {
     data: videos,
     isLoading: videosLoading,
     isError: videosError,
-  } = api.video.getAllRekamanVideos.useQuery();
+  } = api.video[procedureName].useQuery();
+
+  if (videosError) {
+    return <ErrorPage />;
+  }
 
   if (videosLoading) {
     return (

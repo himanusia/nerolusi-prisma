@@ -105,6 +105,17 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
+    type: "modul_nerolusi",
+    subjects: [
+      {
+        id: 19,
+        title: "Modul Nerolusi 2026",
+        image: "/modul/nerolusi.webp",
+        slug: "nerolusi-2026",
+      },
+    ],
+  },
+  {
     type: "utbk",
     subjects: [
       {
@@ -176,7 +187,15 @@ export const getAllSubjects = (): Subject[] => {
 
 export const getUTBKSubjects = (): Subject[] => {
   return SUBJECT_CATEGORIES.find((cat) => cat.type === "utbk")?.subjects || [];
-}
+};
+
+export const getUTBKModulSubjects = (): Subject[] => {
+  return (
+    SUBJECT_CATEGORIES.filter(
+      (cat) => cat.type === "modul_nerolusi" || cat.type === "utbk",
+    ).flatMap((cat) => cat.subjects) || []
+  );
+};
 
 export const getSubjectBySlug = (slug: string): Subject | undefined => {
   return getAllSubjects().find((subject) => subject.slug === slug);

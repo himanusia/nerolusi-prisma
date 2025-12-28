@@ -23,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "~/app/_components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "~/app/_components/ui/tabs";
 import { api } from "~/trpc/react";
 import {
   RiAddFill,
@@ -33,11 +34,14 @@ import {
 } from "react-icons/ri";
 import { ModulForm, ModulFormData } from "./modul-form";
 
+type ModuleType = "bahan_materi" | "catatan";
+
 export default function ModulManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingModul, setEditingModul] = useState<any>(null);
   const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
+  const [filterType, setFilterType] = useState<ModuleType>("bahan_materi");
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ModulFormData>({
     title: "",
@@ -51,10 +55,11 @@ export default function ModulManagement() {
   // Get all modules with filter
   const { data: modules, isLoading } = api.modul.getAllModules.useQuery({
     subjectId: filterSubjectId,
+    type: filterType,
   });
 
   // Get all subjects for dropdown
-  const { data: subjects } = api.admin.getSubjects.useQuery();
+  const { data: subjects } = api.admin.getAllSubjects.useQuery();
 
   // Mutations
   const createModulMutation = api.modul.createModule.useMutation({
@@ -112,6 +117,7 @@ export default function ModulManagement() {
       description: formData.description.trim() || undefined,
       subjectId: formData.subjectId,
       url: formData.url,
+      type: filterType,
     });
   };
 
@@ -131,6 +137,7 @@ export default function ModulManagement() {
       title: formData.title,
       description: formData.description.trim() || undefined,
       subjectId: formData.subjectId,
+      type: editingModul.type,
       url: formData.url,
     });
   };
@@ -159,7 +166,7 @@ export default function ModulManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 min-h-screen">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -190,6 +197,17 @@ export default function ModulManagement() {
         </Dialog>
       </div>
 
+      {/* Type Tabs */}
+      <Tabs
+        value={filterType}
+        onValueChange={(value) => setFilterType(value as ModuleType)}
+      >
+        <TabsList className="grid w-full max-w-md grid-cols-2">
+          <TabsTrigger value="bahan_materi">Bahan Materi</TabsTrigger>
+          <TabsTrigger value="catatan">Catatan</TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Filter and Stats */}
       <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         <Card>
@@ -199,7 +217,10 @@ export default function ModulManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{modules?.length || 0}</div>
-            <p className="text-xs text-muted-foreground">Modul terdaftar</p>
+            <p className="text-xs text-muted-foreground">
+              {filterType === "bahan_materi" ? "Bahan materi" : "Catatan"}{" "}
+              terdaftar
+            </p>
           </CardContent>
         </Card>
 
@@ -224,7 +245,7 @@ export default function ModulManagement() {
                 <SelectItem value="all">Semua mata pelajaran</SelectItem>
                 {subjects?.map((subject) => (
                   <SelectItem key={subject.id} value={subject.id.toString()}>
-                    {subject.name} ({subject.type} - {subject.mode})
+                    {subject.name}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -261,8 +282,7 @@ export default function ModulManagement() {
                   {item.subject && (
                     <div className="mt-2">
                       <span className="inline-block rounded-full bg-blue-100 px-2 py-1 text-xs text-blue-800">
-                        {item.subject.name} ({item.subject.type} -{" "}
-                        {item.subject.mode})
+                        {item.subject.name}
                       </span>
                     </div>
                   )}
@@ -313,11 +333,13 @@ export default function ModulManagement() {
               <RiBookOpenFill className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <p className="text-gray-600">
                 {filterSubjectId
-                  ? "Tidak ada modul untuk mata pelajaran ini"
-                  : "Belum ada modul yang dibuat"}
+                  ? `Tidak ada ${filterType === "bahan_materi" ? "bahan materi" : "catatan"} untuk mata pelajaran ini`
+                  : `Belum ada ${filterType === "bahan_materi" ? "bahan materi" : "catatan"} yang dibuat`}
               </p>
               <p className="text-sm text-gray-500">
-                Klik "Tambah Modul" untuk membuat modul baru
+                Klik "Tambah Modul" untuk membuat{" "}
+                {filterType === "bahan_materi" ? "bahan materi" : "catatan"}{" "}
+                baru
               </p>
             </CardContent>
           </Card>

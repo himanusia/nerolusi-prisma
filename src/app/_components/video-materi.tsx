@@ -5,7 +5,7 @@ import SubjectCard from "./subject-card";
 export default function VideoMateri() {
   return (
     <div className="flex flex-col items-start justify-start space-y-8">
-      {SUBJECT_CATEGORIES.filter((category) => category.type !== "utbk").map(
+      {SUBJECT_CATEGORIES.filter((category) => category.type !== "utbk" && category.type !== "modul_nerolusi").map(
         (category) => (
           <div key={category.type} className="w-full">
             <Separator className="mb-4 h-1 bg-gray-200" />

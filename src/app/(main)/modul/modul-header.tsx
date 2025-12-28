@@ -31,10 +31,9 @@ export default function ModulHeader() {
         <HeadJenisSubtest title="Materi dan Catatan" type="modul" />
       </div>
 
-      <div className="mt-3 flex max-w-[175px] flex-col items-center rounded-[10px] border border-[#acaeba] bg-white p-1 md:mt-0">
+      {/* <div className="mt-3 flex max-w-[175px] flex-col items-center rounded-[10px] border border-[#acaeba] bg-white p-1 md:mt-0">
         <p className="text-xs text-black">Mode:</p>
         <div className="relative flex items-center rounded-[7px] border border-[#acaeba] bg-[#f2f2f2]">
-          {/* Sliding background indicator */}
           <div
             className={`absolute bottom-1 top-1 rounded-[7px] transition-all duration-300 ease-in-out ${
               isMateri
@@ -65,7 +64,7 @@ export default function ModulHeader() {
             TKA
           </button>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

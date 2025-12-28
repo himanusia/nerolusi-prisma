@@ -1,5 +1,6 @@
 import { SubtestType } from "@prisma/client";
 import { z } from "zod";
+import { getAllSubjects } from "~/app/_components/constants";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 
 export const adminRouter = createTRPCRouter({
@@ -97,11 +98,11 @@ export const adminRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // TKA Tryouts (using existing Package model with type filtering)
-  getTKATryouts: adminProcedure.query(async ({ ctx }) => {
+  // Tryouts (using existing Package model with type filtering)
+  getTryouts: adminProcedure.query(async ({ ctx }) => {
     const tryouts = await ctx.db.package.findMany({
       where: {
-        type: "tryout", // Assuming TKA tryouts use tryout type
+        type: "tryout",
       },
       include: {
         class: true,
@@ -116,6 +117,7 @@ export const adminRouter = createTRPCRouter({
     return tryouts.map((tryout) => ({
       id: tryout.id,
       name: tryout.name,
+      mode: tryout.mode,
       description: `TKA Tryout for ${tryout.class?.name || "All Classes"}`,
       startDate: tryout.TOstart || new Date(),
       endDate: tryout.TOend || new Date(),
@@ -129,7 +131,7 @@ export const adminRouter = createTRPCRouter({
     }));
   }),
 
-  createTKATryout: adminProcedure
+  createTryout: adminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -138,6 +140,7 @@ export const adminRouter = createTRPCRouter({
         endDate: z.string(),
         duration: z.number(),
         maxParticipants: z.number(),
+        mode: z.enum(["tka", "utbk"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -148,13 +151,14 @@ export const adminRouter = createTRPCRouter({
           type: "tryout",
           TOstart: new Date(input.startDate),
           TOend: new Date(input.endDate),
+          mode: input.mode,
         },
       });
 
       return tryout;
     }),
 
-  deleteTKATryout: adminProcedure
+  deleteTryout: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.package.delete({
@@ -262,13 +266,14 @@ export const adminRouter = createTRPCRouter({
     return videos;
   }),
 
-  createTKAVideo: adminProcedure
+  createVideo: adminProcedure
     .input(
       z.object({
         title: z.string(),
         description: z.string(),
         videoUrl: z.string(),
         duration: z.number(),
+        mode: z.enum(["tka", "utbk"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -279,11 +284,12 @@ export const adminRouter = createTRPCRouter({
           type: "rekaman",
           url: input.videoUrl,
           duration: input.duration,
+          mode: input.mode,
         },
       });
     }),
 
-  updateTKAVideo: adminProcedure
+  updateVideo: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -291,6 +297,7 @@ export const adminRouter = createTRPCRouter({
         description: z.string(),
         videoUrl: z.string(),
         duration: z.number(),
+        mode: z.enum(["tka", "utbk"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -299,13 +306,15 @@ export const adminRouter = createTRPCRouter({
         data: {
           title: input.title,
           description: input.description,
+          type: "rekaman",
           url: input.videoUrl,
           duration: input.duration,
+          mode: input.mode,
         },
       });
     }),
 
-  deleteTKAVideo: adminProcedure
+  deleteVideo: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.video.delete({
@@ -417,6 +426,10 @@ export const adminRouter = createTRPCRouter({
       where: { type: "utbk" },
       orderBy: { id: "asc" },
     });
+  }),
+
+  getAllSubjects: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.subject.findMany({ orderBy: { id: "asc" } });
   }),
 
   getMaterialsBySubject: adminProcedure

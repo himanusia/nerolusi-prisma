@@ -87,7 +87,7 @@ export const ModulForm = ({
           <SelectItem value="none">Pilih mata pelajaran</SelectItem>
           {subjects?.map((subject) => (
             <SelectItem key={subject.id} value={subject.id.toString()}>
-              {subject.name} ({subject.type} - {subject.mode})
+              {subject.name}
             </SelectItem>
           ))}
         </SelectContent>

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, userProcedure } from "../trpc";
+import { getUTBKSubjects } from "~/app/_components/constants";
 
 export const modulRouter = createTRPCRouter({
   getAllModules: userProcedure
@@ -31,6 +32,7 @@ export const modulRouter = createTRPCRouter({
         description: z.string().max(1000).nullish(),
         subjectId: z.number(),
         url: z.string().url(),
+        type: z.enum(["bahan_materi", "catatan"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -40,6 +42,7 @@ export const modulRouter = createTRPCRouter({
           description: input.description || null,
           subjectId: input.subjectId,
           url: input.url,
+          type: input.type,
         },
       });
     }),
@@ -52,6 +55,7 @@ export const modulRouter = createTRPCRouter({
         description: z.string().max(1000).nullish(),
         subjectId: z.number(),
         url: z.string().url(),
+        type: z.enum(["bahan_materi", "catatan"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -64,6 +68,7 @@ export const modulRouter = createTRPCRouter({
           description: input.description || null,
           subjectId: input.subjectId,
           url: input.url,
+          type: input.type,
         },
       });
     }),
@@ -94,4 +99,30 @@ export const modulRouter = createTRPCRouter({
         },
       });
     }),
+
+  getUTBKModulSubjects: userProcedure.query(async ({ ctx }) => {
+    return await ctx.db.subject.findMany({
+      where: {
+        type: "modul_nerolusi",
+        mode: "utbk",
+      },
+    });
+  }),
+
+  getUTBKCatatanSubjects: userProcedure.query(async ({ ctx }) => {
+    return await ctx.db.subject.findMany({
+      where: {
+        type: "utbk",
+        mode: "utbk",
+      },
+    });
+  }),
+
+  getTKASubjects: userProcedure.query(async ({ ctx }) => {
+    return await ctx.db.subject.findMany({
+      where: {
+        mode: "tka",
+      },
+    });
+  }),
 });
