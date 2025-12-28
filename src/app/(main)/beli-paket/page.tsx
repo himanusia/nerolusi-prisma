@@ -100,7 +100,7 @@ export default function BeliPaketPage() {
         <PackageCard
           title="Paket TKA"
           description="Tes Kemampuan Akademik untuk berbagai jurusan"
-          price="Rp49.000,00"
+          price="Rp650.000,00"
           features={[
             "Try Out TKA Saintek & Soshum",
             "Materi lengkap per mata pelajaran",
