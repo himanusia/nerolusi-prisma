@@ -30,6 +30,7 @@ model User {
   UserMateriProgress UserMateriProgress[]
   UserPackage        UserPackage[]
   UserMajorChoice    UserMajorChoice[]
+  payments           Payment[]
 }
 
 model UserMajorChoice {
@@ -312,6 +313,30 @@ model Announcement {
   content   String?
   url       String?
   createdAt DateTime @default(now())
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Int
+  status        PaymentStatus @default(PENDING)
+  userId        String
+  type          PaymentType
+  tokens        Int           @default(0)
+  invoiceNumber String        @unique
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentType {
+  tka
+  utbk
+  token
 }
 
 enum Role {

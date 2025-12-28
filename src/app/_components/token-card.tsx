@@ -47,14 +47,14 @@ export default function TokenCard({ tokenAmount }: TokenCardProps) {
             <span className="ml-2 text-gray-700 font-bold text-xl">{tokenAmount}</span>
           </div>
         </div>
-        {/* <Button 
+        <Button 
           variant="ghost" 
           size="sm"
           className="bg-transparent rounded-none hover:bg-transparent"
           onClick={() => setShowTokenDialog(true)}
         >
           <Plus className="w-4 h-4 text-[#615e52] font-bold" />
-        </Button> */}
+        </Button>
       </div>
 
       {/* Token Purchase Dialog */}
