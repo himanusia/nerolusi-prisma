@@ -6,17 +6,9 @@ import {
   ChartTooltipContent,
 } from "~/app/_components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-
-// Dummy data for the progress chart
-const chartData = [
-  { test: "Test 1", score: 420 },
-  { test: "Test 2", score: 380 },
-  { test: "Test 3", score: 520 },
-  { test: "Test 4", score: 490 },
-  { test: "Test 5", score: 490 },
-];
-
-// Score targets data
+import { api } from "~/trpc/react";
+import { format } from "date-fns";
+import Link from "next/link";
 
 const chartConfig = {
   score: {
@@ -26,10 +18,42 @@ const chartConfig = {
 };
 
 export default function ProgressChart() {
+  const { data: packages, isLoading } = api.quiz.getPastScores.useQuery({
+    limit: 10,
+  });
+
+  const chartData =
+    packages?.map((pkg, index) => ({
+      id: pkg.id,
+      test: pkg.name || `Test ${index + 1}`,
+      score: pkg.averageScore || 0,
+      date: pkg.endTime ? format(new Date(pkg.endTime), "MMM dd") : "",
+    })) || [];
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full w-full shrink-0 flex-col flex-wrap gap-6 rounded-lg bg-gradient-to-b from-[#2b8057] to-[#32b274] p-6 md:h-96 md:w-fit">
+        <div className="flex h-full w-full items-center justify-center rounded-lg bg-white p-6 md:w-fit">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!chartData.length) {
+    return (
+      <div className="flex h-full w-full shrink-0 flex-col flex-wrap gap-6 rounded-lg bg-gradient-to-b from-[#2b8057] to-[#32b274] p-6 md:h-96 md:w-fit">
+        <div className="flex h-full w-full items-center justify-center rounded-lg bg-white p-6 md:w-fit">
+          <p className="text-gray-500">Belum ada tryout yang diselesaikan</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex h-full w-full shrink-0 flex-col flex-wrap gap-6 rounded-lg bg-gradient-to-b from-[#2b8057] to-[#32b274] p-6 md:h-96 md:w-fit">
       {/* Chart Section */}
-      <div className="h-full w-full rounded-lg bg-white p-6 md:w-fit flex items-center justify-center">
+      <div className="flex h-full w-full items-center justify-center rounded-lg bg-white p-6 md:w-fit">
         <ChartContainer config={chartConfig} className="h-72 w-full">
           <LineChart
             data={chartData}
@@ -63,16 +87,19 @@ export default function ProgressChart() {
 
       {/* Score Targets Section */}
       <div className="flex size-full flex-col items-center overflow-hidden md:w-28 lg:w-32">
-        <h2 className="mb-2 lg:text-lg font-extrabold text-white">Skor TO mu!</h2>
-        <div className="flex size-full flex-row gap-3 overflow-x-scroll md:overflow-x-hidden rounded-lg bg-white p-4 scrollbar-thin scrollbar-track-transparent scrollbar-corner-transparent md:flex-col md:overflow-y-scroll">
+        <h2 className="mb-2 font-extrabold text-white lg:text-lg">
+          Skor TO mu!
+        </h2>
+        <div className="flex size-full flex-row gap-3 overflow-x-scroll rounded-lg bg-white p-4 scrollbar-thin scrollbar-track-transparent scrollbar-corner-transparent md:flex-col md:overflow-x-hidden md:overflow-y-scroll">
           {chartData.map((item, index) => (
-            <div
+            <Link
               key={index}
-              className="flex w-20 shrink-0 items-center justify-between rounded-lg border bg-gray-50 p-3"
+              href={`/tryout/${item.id}/scores`}
+              className="flex w-20 shrink-0 items-center justify-between rounded-lg border bg-gray-50 p-3 transition-colors hover:bg-gray-100"
             >
               <span className="text-xl font-bold">{item.score}</span>
               <span className="text-lg text-gray-500">{">"}</span>
-            </div>
+            </Link>
           ))}
         </div>
       </div>

@@ -56,6 +56,106 @@ export const quizRouter = createTRPCRouter({
       return session;
     }),
 
+  getPastScores: userProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Get all packages where the user has completed at least one subtest
+      const packages = await ctx.db.package.findMany({
+        where: {
+          type: "tryout",
+          mode: "utbk",
+          subtests: {
+            some: {
+              quizSession: {
+                some: {
+                  userId: ctx.session.user.id,
+                  endTime: { not: null },
+                  score: { not: null },
+                },
+              },
+            },
+          },
+        },
+        include: {
+          subtests: {
+            include: {
+              quizSession: {
+                where: {
+                  userId: ctx.session.user.id,
+                  endTime: { not: null },
+                  score: { not: null },
+                },
+                orderBy: {
+                  endTime: "desc",
+                },
+                take: 1,
+                select: {
+                  score: true,
+                  endTime: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: input.limit,
+      });
+
+      // Calculate average score for each package
+      const packagesWithScores = packages
+        .map((pkg) => {
+          const subtestsWithScores = pkg.subtests.filter(
+            (subtest) =>
+              subtest.quizSession.length > 0 &&
+              subtest.quizSession[0]?.score != null,
+          );
+
+          if (subtestsWithScores.length === 0) {
+            return null;
+          }
+
+          const totalScore = subtestsWithScores.reduce(
+            (sum, subtest) => sum + (subtest.quizSession[0]?.score ?? 0),
+            0,
+          );
+          const averageScore = totalScore / subtestsWithScores.length;
+
+          // Get the most recent completion date
+          const mostRecentEndTime = subtestsWithScores.reduce(
+            (latest, subtest) => {
+              const endTime = subtest.quizSession[0]?.endTime;
+              if (!endTime) return latest;
+              return !latest || new Date(endTime) > new Date(latest)
+                ? endTime
+                : latest;
+            },
+            null as Date | null,
+          );
+
+          return {
+            id: pkg.id,
+            name: pkg.name,
+            averageScore: Math.round(averageScore),
+            completedSubtests: subtestsWithScores.length,
+            totalSubtests: pkg.subtests.length,
+            endTime: mostRecentEndTime,
+          };
+        })
+        .filter((pkg) => pkg !== null)
+        .sort((a, b) => {
+          if (!a.endTime || !b.endTime) return 0;
+          return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+        });
+
+      return packagesWithScores;
+    }),
+
   getPackageWithSubtest: userProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
