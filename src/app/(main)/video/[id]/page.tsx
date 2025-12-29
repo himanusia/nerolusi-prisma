@@ -1,4 +1,5 @@
 "use client";
+import { useSession } from "next-auth/react";
 import { useParams } from "next/navigation";
 import { FaWhatsapp } from "react-icons/fa";
 import {
@@ -9,6 +10,7 @@ import {
 import { Button } from "~/app/_components/ui/button";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
+import NoPackagePage from "~/app/no-package";
 import { api } from "~/trpc/react";
 import { getYouTubeVideoId } from "~/utils/get-youtube-id";
 
@@ -22,6 +24,16 @@ export default function NontonPage() {
   } = api.video.getVideoById.useQuery({
     id: id as string,
   });
+
+  const session = useSession();
+  
+  if (session.status === "loading") {
+    return <LoadingPage />;
+  }
+
+  if (!session.data?.user?.enrolledTka) {
+    return <NoPackagePage />;
+  }
 
   if (isLoading) {
     return <LoadingPage />;

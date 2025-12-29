@@ -23,6 +23,15 @@ export const videoRouter = createTRPCRouter({
     return videos;
   }),
 
+  getRecentRekamanUTBKVideos: userProcedure.query(async ({ ctx }) => {
+    const videos = await ctx.db.video.findMany({
+      where: { type: "rekaman", mode: "utbk" },
+      orderBy: { createdAt: "desc" },
+      take: 4,
+    });
+    return videos;
+  }),
+
   getVideoById: subscriberProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {

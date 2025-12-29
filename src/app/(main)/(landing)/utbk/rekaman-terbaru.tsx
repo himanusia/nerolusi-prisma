@@ -11,7 +11,7 @@ export default function RekamanTerbaru() {
     data: videos,
     isLoading: videosLoading,
     isError: videosError,
-  } = api.video.getAllRekamanUTBKVideos.useQuery();
+  } = api.video.getRecentRekamanUTBKVideos.useQuery();
 
   if (videosLoading) {
     return (
@@ -24,7 +24,11 @@ export default function RekamanTerbaru() {
   }
 
   if (videosError || !videos) {
-    return <ErrorPage />;
+    return (
+      <div className="flex h-20 w-full flex-col items-center justify-center">
+        Gagal memuat rekaman terbaru.
+      </div>
+    );
   }
 
   return (
