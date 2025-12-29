@@ -117,6 +117,7 @@ export const userRouter = createTRPCRouter({
         name: z.string().min(1, "Nama tidak boleh kosong").optional(),
         school: z.string().optional(),
         birthDate: z.date().optional(),
+        birthPlace: z.string().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -126,6 +127,7 @@ export const userRouter = createTRPCRouter({
           ...(input.name && { name: input.name }),
           ...(input.school && { school: input.school }),
           ...(input.birthDate && { birthDate: input.birthDate }),
+          ...(input.birthPlace && { birthPlace: input.birthPlace }),
         },
       });
     }),
@@ -141,6 +143,7 @@ export const userRouter = createTRPCRouter({
         image: true,
         school: true,
         birthDate: true,
+        birthPlace: true,
       },
     });
 

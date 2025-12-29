@@ -31,10 +31,12 @@ export default function ProfilPage() {
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingSchool, setIsEditingSchool] = useState(false);
   const [isEditingBirthDate, setIsEditingBirthDate] = useState(false);
+  const [isEditingBirthPlace, setIsEditingBirthPlace] = useState(false);
 
   const [name, setName] = useState("");
   const [school, setSchool] = useState("");
   const [birthDate, setBirthDate] = useState("");
+  const [birthPlace, setBirthPlace] = useState("");
 
   // Major choices state
   const [majorChoices, setMajorChoices] = useState<
@@ -71,6 +73,7 @@ export default function ProfilPage() {
       setIsEditingName(false);
       setIsEditingSchool(false);
       setIsEditingBirthDate(false);
+      setIsEditingBirthPlace(false);
     },
     onError: (error) => {
       toast.error(error.message);
@@ -112,6 +115,7 @@ export default function ProfilPage() {
           ? new Date(profileData.birthDate).toISOString().split("T")[0]!
           : ""
       );
+      setBirthPlace(profileData.birthPlace || "");
 
       // Initialize major choices
       const existingChoices = profileData.majorChoices;
@@ -138,11 +142,12 @@ export default function ProfilPage() {
     }
   }, [profileData]);
 
-  const handleUpdateProfile = (field: "name" | "school" | "birthDate") => {
+  const handleUpdateProfile = (field: "name" | "school" | "birthDate" | "birthPlace") => {
     const data: any = {};
     if (field === "name") data.name = name;
     if (field === "school") data.school = school;
     if (field === "birthDate") data.birthDate = new Date(birthDate);
+    if (field === "birthPlace") data.birthPlace = birthPlace;
 
     updateProfile.mutate(data);
   };
@@ -394,6 +399,63 @@ export default function ProfilPage() {
                 {!isEditingBirthDate && (
                   <button
                     onClick={() => setIsEditingBirthDate(true)}
+                    className="px-6 py-6 hover:bg-gray-50 transition-colors"
+                  >
+                    <FiEdit2 className="h-6 w-6 text-gray-700" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Birth Place Card */}
+            <div className="rounded-2xl border-2 border-gray-300 bg-white overflow-hidden flex flex-row">
+              <div className="flex flex-col items-center justify-center w-full flex-1 border border-gray-300 rounded-xl">
+                <div className="bg-gray-500 px-6 py-3 w-full rounded-lg">
+                  <h3 className="text-center text-lg font-bold text-white">Tempat Lahir</h3>
+                </div>
+                <div className="flex-1 w-full">
+                  {isEditingBirthPlace ? (
+                    <div className="p-4">
+                      <Input
+                        value={birthPlace}
+                        onChange={(e) => setBirthPlace(e.target.value)}
+                        placeholder="Contoh: Jakarta"
+                        className="text-center text-xl border-2"
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          onClick={() => handleUpdateProfile("birthPlace")}
+                          disabled={updateProfile.isPending}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          Simpan
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            setIsEditingBirthPlace(false);
+                            setBirthPlace(profileData?.birthPlace || "");
+                          }}
+                          variant="outline"
+                          size="sm"
+                        >
+                          Batal
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="px-6 py-4 text-center text-xl text-gray-900">
+                      {profileData?.birthPlace || "-"}
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              <div className="flex items-center">
+                
+                {!isEditingBirthPlace && (
+                  <button
+                    onClick={() => setIsEditingBirthPlace(true)}
                     className="px-6 py-6 hover:bg-gray-50 transition-colors"
                   >
                     <FiEdit2 className="h-6 w-6 text-gray-700" />

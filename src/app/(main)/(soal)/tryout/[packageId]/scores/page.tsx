@@ -12,6 +12,7 @@ import {
   AvatarFallback,
   AvatarImage,
 } from "~/app/_components/ui/avatar";
+import { toast } from "sonner";
 
 export default function ScoresPage() {
   const { packageId } = useParams();
@@ -221,11 +222,35 @@ export default function ScoresPage() {
               <Button
                 variant="default"
                 className="w-full rounded-lg"
-                onClick={() => {
-                  alert("Fitur unduh sertifikat akan segera tersedia!");
+                onClick={async () => {
+                  if (!isPackageEndDatePassed) {
+                    toast.error("Sertifikat akan tersedia setelah tryout berakhir");
+                    return;
+                  }
+                  try {
+                    const response = await fetch(`/api/certificate/${packageId}`);
+                    if (!response.ok) {
+                      const error = await response.json();
+                      toast.error(error.error || "Gagal mengunduh sertifikat");
+                      return;
+                    }
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `Sertifikat_${session.user.name.replace(/\s+/g, '_')}_${packageData?.name.replace(/\s+/g, '_')}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    toast.success("Sertifikat berhasil diunduh");
+                  } catch (error) {
+                    toast.error("Gagal mengunduh sertifikat");
+                  }
                 }}
+                disabled={!isPackageEndDatePassed}
               >
-                📄 Unduh Sertifikat
+                Unduh Sertifikat
               </Button>
             </div>
           </div>
