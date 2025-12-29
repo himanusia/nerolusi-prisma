@@ -22,6 +22,7 @@ model User {
   classid            Int?
   school             String?
   birthDate          DateTime?
+  birthPlace         String?
   accounts           Account[]
   quizSession        QuizSession[]
   sessions           Session[]
