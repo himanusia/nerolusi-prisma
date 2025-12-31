@@ -94,7 +94,11 @@ export default function PageContent() {
     return <LoadingPage />;
   }
 
-  if (!session?.user.enrolledUtbk) {
+  if (subjectData.mode === "utbk" && !session?.user.enrolledUtbk) {
+    return <NoPackagePage />;
+  }
+
+  if (subjectData.mode === "tka" && !session?.user.enrolledTka) {
     return <NoPackagePage />;
   }
 

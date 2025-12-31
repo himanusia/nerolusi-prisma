@@ -72,7 +72,7 @@ export default function ScoresPage() {
         new Date(s.quizSession[0].endTime ?? "") <= new Date(),
     ).length || 0;
   const allSubtestsCompleted = completedCount === sortedSubtests?.length;
-  
+
   const isTka = session?.user?.enrolledTka ?? false;
 
   const getSubtestName = (type: string) => {
@@ -92,7 +92,17 @@ export default function ScoresPage() {
       case "pm":
         return { short: "PM", full: "Penalaran Matematika" };
       default:
-        return { short: String(type).replace("_", " ").split(" ").map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()).join(" "), full: "" };
+        return {
+          short: String(type)
+            .replace("_", " ")
+            .split(" ")
+            .map(
+              (word) =>
+                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase(),
+            )
+            .join(" "),
+          full: "",
+        };
     }
   };
 
@@ -105,11 +115,15 @@ export default function ScoresPage() {
     return { fill: "bg-[#ffa898]", bg: "bg-[#ffd5d5]" };
   };
 
-  return isError ? (
-    <ErrorPage />
-  ) : isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isError) {
+    return <ErrorPage />;
+  }
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="min-h-screen bg-white">
       {/* Header*/}
       <div className="mt-4 rounded-lg border border-[#acaeba] bg-gradient-to-t from-[#32b274] to-[#2b8057] p-4 text-white md:mt-6 md:p-6">
@@ -197,8 +211,7 @@ export default function ScoresPage() {
               </h3>
               <p className="text-md font-bold text-black">
                 {/* TODO: change to get from user data */}
-                {/* {session?.user?.school ? session.user.school : "-"} */}
-                -
+                {/* {session?.user?.school ? session.user.school : "-"} */}-
               </p>
             </div>
 
@@ -224,11 +237,15 @@ export default function ScoresPage() {
                 className="w-full rounded-lg"
                 onClick={async () => {
                   if (!isPackageEndDatePassed) {
-                    toast.error("Sertifikat akan tersedia setelah tryout berakhir");
+                    toast.error(
+                      "Sertifikat akan tersedia setelah tryout berakhir",
+                    );
                     return;
                   }
                   try {
-                    const response = await fetch(`/api/certificate/${packageId}`);
+                    const response = await fetch(
+                      `/api/certificate/${packageId}`,
+                    );
                     if (!response.ok) {
                       const error = await response.json();
                       toast.error(error.error || "Gagal mengunduh sertifikat");
@@ -236,9 +253,9 @@ export default function ScoresPage() {
                     }
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
+                    const a = document.createElement("a");
                     a.href = url;
-                    a.download = `Sertifikat_${session.user.name.replace(/\s+/g, '_')}_${packageData?.name.replace(/\s+/g, '_')}.pdf`;
+                    a.download = `Sertifikat_${session.user.name.replace(/\s+/g, "_")}_${packageData?.name.replace(/\s+/g, "_")}.pdf`;
                     document.body.appendChild(a);
                     a.click();
                     window.URL.revokeObjectURL(url);

@@ -31,7 +31,7 @@ export const quizRouter = createTRPCRouter({
   getQuizSessionResult: userProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const session = ctx.db.quizSession.findUnique({
+      const session = await ctx.db.quizSession.findUnique({
         where: {
           id: input.sessionId,
         },
@@ -53,6 +53,11 @@ export const quizRouter = createTRPCRouter({
           },
         },
       });
+
+      if (session.userId !== ctx.session.user?.id && ctx.session.user?.role !== "admin") {
+        throw new Error("Access denied");
+      }
+
       return session;
     }),
 
@@ -159,6 +164,17 @@ export const quizRouter = createTRPCRouter({
   getPackageWithSubtest: userProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      
+      const userPackage = await ctx.db.userPackage.findFirst({
+        where: {
+          userId: ctx.session.user?.id,
+          packageId: input.id,
+        },
+      });
+      if (!userPackage) {
+        throw new Error("Access denied");
+      }
+
       const packageData = await ctx.db.package.findUnique({
         where: {
           id: input.id,
@@ -367,7 +383,7 @@ export const quizRouter = createTRPCRouter({
         (session.userId !== ctx.session.user?.id &&
           ctx.session.user?.role !== "admin")
       ) {
-        return null;
+        throw new Error("Access denied");
       }
 
       return session;

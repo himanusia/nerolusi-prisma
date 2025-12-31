@@ -142,11 +142,15 @@ export default function TryOutPage() {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, [refetchPackageData]);
 
-  return isError ? (
-    <ErrorPage />
-  ) : isLoading ? (
-    <LoadingPage />
-  ) : (
+  if (isError) {
+    return <ErrorPage />;
+  }
+
+  if (isLoading) {
+    return <LoadingPage />;
+  }
+
+  return (
     <div className="flex min-h-screen bg-white">
       {/* Left Panel */}
       <div className="w-full border-[1px] border-[#acaeba] px-10 py-5 md:w-1/3">
