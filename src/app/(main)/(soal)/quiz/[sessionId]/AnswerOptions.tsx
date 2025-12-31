@@ -142,7 +142,7 @@ export function AnswerOptions({
                   : `question-${question.id}`
               }
               value={answer.id}
-              className="sr-only"
+              className="absolute h-0 w-0 opacity-0"
               checked={isSelected}
               onChange={() =>
                 isMultipleAnswer

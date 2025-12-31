@@ -352,8 +352,7 @@ export const adminRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // TKA Drills (using existing Package model with drill type)
-  getTKADrills: adminProcedure.query(async ({ ctx }) => {
+  getDrills: adminProcedure.query(async ({ ctx }) => {
     const drills = await ctx.db.subtest.findMany({
       where: {
         type: "materi",
@@ -377,13 +376,8 @@ export const adminRouter = createTRPCRouter({
       id: drill.id,
       title: drill.topics?.name ?? "",
       subject: drill.topics?.material?.subject.name ?? "",
-      difficulty: "medium", // Default - you may want to add difficulty field
-      timeLimit: drill.duration, // 10 minutes default
+      timeLimit: drill.duration,
       questionCount: drill.questions.length,
-      isActive: true,
-      attempts: 0, // Would need to count from quiz sessions
-      averageScore: 0, // Would need to calculate from quiz sessions
-      completionRate: 0, // Would need to calculate from quiz sessions
     }));
   }),
 

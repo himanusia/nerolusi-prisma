@@ -19,6 +19,7 @@ import {
   RiBookOpenFill,
 } from "react-icons/ri";
 import { api } from "~/trpc/react";
+import { Calendar, HelpCircle } from "lucide-react";
 
 const adminMenuItems = [
   {
@@ -35,13 +36,13 @@ const adminMenuItems = [
     icon: <RiCoinsLine className="h-8 w-8 text-yellow-600" />,
     color: "border-yellow-200 hover:border-yellow-300",
   },
-  {
-    title: "TKA Management",
-    description: "Manage TKA",
-    href: "/admin-tka",
-    icon: <RiFileList3Fill className="h-8 w-8 text-green-600" />,
-    color: "border-green-200 hover:border-green-300",
-  },
+  // {
+  //   title: "TKA Management",
+  //   description: "Manage TKA",
+  //   href: "/admin-tka",
+  //   icon: <RiFileList3Fill className="h-8 w-8 text-green-600" />,
+  //   color: "border-green-200 hover:border-green-300",
+  // },
   {
     title: "Try Out Management",
     description: "Manage tryout packages and content",
@@ -77,6 +78,20 @@ const adminMenuItems = [
     icon: <RiBookOpenFill className="h-8 w-8 text-teal-600" />,
     color: "border-teal-200 hover:border-teal-300",
   },
+  {
+    title: "Materi Management",
+    description: "Manage material and topics",
+    href: "/admin/materi",
+    icon: <Calendar className="h-8 w-8 text-indigo-600" />,
+    color: "border-indigo-200 hover:border-indigo-300"
+  },
+  {
+    title: "Drill Questions (Latsol)",
+    description: "Manage TKA practice questions and answers",
+    href: "/admin/drills",
+    icon: <HelpCircle className="h-8 w-8 text-teal-600" />,
+    color: "border-teal-200 hover:border-teal-300"
+  }
   // {
   //   title: "Activity Schedule",
   //   description: "Manage upcoming events and activities",

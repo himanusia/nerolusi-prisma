@@ -1,30 +1,5 @@
-"use client"
-import { useSession } from "next-auth/react";
-import DaftarRekaman from "~/app/_components/daftar-rekaman";
-import LoadingPage from "~/app/loading";
-import NoPackagePage from "~/app/no-package";
+import { redirect } from "next/navigation";
 
 export default function RekamanPage() {
-  const session = useSession();
-
-  if (session.status === "loading") {
-    return <LoadingPage />;
-  }
-
-  if (!session.data?.user?.enrolledUtbk) {
-    return <NoPackagePage />;
-  }
-
-  return (
-    <div className="flex flex-col gap-4">
-      {/* <HeadJenisSubtest title="Rekaman Live Class" type="rekaman" /> */}
-      <div className="flex flex-col">
-        <h2 className="text-2xl font-bold text-green-600">Daftar Rekaman</h2>
-        <p className="text-gray-700">
-          Tonton ulang videonya agar kamu lebih paham!
-        </p>
-      </div>
-      <DaftarRekaman mode="utbk" />
-    </div>
-  );
+  redirect("/video/utbk/materi");
 }

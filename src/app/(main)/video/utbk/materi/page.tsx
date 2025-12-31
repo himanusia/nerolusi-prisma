@@ -3,7 +3,7 @@ import VideoMateri from "~/app/_components/video-materi";
 export default function MateriPage() {
   return (
     <div className="w-full">
-      <VideoMateri isTka={true} />
+      <VideoMateri isTka={false} />
     </div>
   );
 }
