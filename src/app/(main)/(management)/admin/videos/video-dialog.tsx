@@ -28,11 +28,13 @@ interface VideoDialogProps {
     videoUrl: string;
     duration: number;
     mode: "tka" | "utbk";
+    classId?: number | null;
   };
   onFormDataChange: (data: any) => void;
   onSubmit: () => void;
   isPending: boolean;
   activeMode: "tka" | "utbk";
+  classes?: any[];
 }
 
 export function VideoDialog({
@@ -44,6 +46,7 @@ export function VideoDialog({
   onSubmit,
   isPending,
   activeMode,
+  classes,
 }: VideoDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
@@ -103,6 +106,30 @@ export function VideoDialog({
               }
               placeholder="Enter YouTube URL or video ID"
             />
+          </div>
+          <div>
+            <Label>Kelas</Label>
+            <Select
+              value={formData.classId?.toString() || ""}
+              onValueChange={(value) =>
+                onFormDataChange({
+                  ...formData,
+                  classId: value ? parseInt(value) : null,
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Pilih kelas (opsional)" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Semua kelas</SelectItem>
+                {classes?.map((cls) => (
+                  <SelectItem key={cls.id} value={cls.id.toString()}>
+                    {cls.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

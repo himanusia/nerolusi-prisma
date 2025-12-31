@@ -30,6 +30,13 @@ const adminMenuItems = [
     color: "border-blue-200 hover:border-blue-300",
   },
   {
+    title: "Class Management",
+    description: "Manage classes and class-specific content",
+    href: "/admin/classes",
+    icon: <RiFileList3Fill className="h-8 w-8 text-orange-600" />,
+    color: "border-orange-200 hover:border-orange-300",
+  },
+  {
     title: "Koin Management",
     description: "View and modify user coin balances",
     href: "/admin/coins",
@@ -83,15 +90,15 @@ const adminMenuItems = [
     description: "Manage material and topics",
     href: "/admin/materi",
     icon: <Calendar className="h-8 w-8 text-indigo-600" />,
-    color: "border-indigo-200 hover:border-indigo-300"
+    color: "border-indigo-200 hover:border-indigo-300",
   },
   {
     title: "Drill Questions (Latsol)",
     description: "Manage TKA practice questions and answers",
     href: "/admin/drills",
     icon: <HelpCircle className="h-8 w-8 text-teal-600" />,
-    color: "border-teal-200 hover:border-teal-300"
-  }
+    color: "border-teal-200 hover:border-teal-300",
+  },
   // {
   //   title: "Activity Schedule",
   //   description: "Manage upcoming events and activities",

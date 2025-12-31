@@ -6,14 +6,14 @@ export const modulRouter = createTRPCRouter({
   getAllModules: userProcedure
     .input(
       z.object({
-        subjectId: z.number().nullable(),
+        subjectId: z.number(),
         type: z.enum(["bahan_materi", "catatan"]),
       }),
     )
     .query(async ({ ctx, input }) => {
       const subject = await ctx.db.subject.findUnique({
         where: {
-          id: input.subjectId ?? undefined,
+          id: input.subjectId,
         },
       });
 
@@ -21,18 +21,49 @@ export const modulRouter = createTRPCRouter({
         throw new Error("Subject not found");
       }
 
-      if (subject.mode === "utbk" && input.type === "catatan" && !ctx.session.user.classid) {
+      if (
+        subject.mode === "utbk" &&
+        input.type === "catatan" &&
+        !ctx.session.user.classid
+      ) {
         throw new Error("User not enrolled in any class");
       }
 
       return await ctx.db.module.findMany({
         where: {
           ...(input.subjectId ? { subjectId: input.subjectId } : {}),
-          ...(input.type === "catatan" ? { classId: ctx.session.user.classid } : {}),
+          ...(input.type === "catatan"
+            ? { classId: ctx.session.user.classid }
+            : {}),
           type: input.type,
         },
         include: {
           subject: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+
+  getModulesWithFilter: userProcedure
+    .input(
+      z.object({
+        subjectId: z.number().nullable(),
+        type: z.enum(["bahan_materi", "catatan"]),
+        classId: z.number().optional(),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      return await ctx.db.module.findMany({
+        where: {
+          ...(input.subjectId ? { subjectId: input.subjectId } : {}),
+          ...(input.classId ? { classId: input.classId } : {}),
+          type: input.type,
+        },
+        include: {
+          subject: true,
+          class: true,
         },
         orderBy: {
           createdAt: "desc",
@@ -48,6 +79,7 @@ export const modulRouter = createTRPCRouter({
         subjectId: z.number(),
         url: z.string().url(),
         type: z.enum(["bahan_materi", "catatan"]),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -58,6 +90,7 @@ export const modulRouter = createTRPCRouter({
           subjectId: input.subjectId,
           url: input.url,
           type: input.type,
+          classId: input.classId,
         },
       });
     }),
@@ -71,6 +104,7 @@ export const modulRouter = createTRPCRouter({
         subjectId: z.number(),
         url: z.string().url(),
         type: z.enum(["bahan_materi", "catatan"]),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -84,6 +118,7 @@ export const modulRouter = createTRPCRouter({
           subjectId: input.subjectId,
           url: input.url,
           type: input.type,
+          classId: input.classId,
         },
       });
     }),

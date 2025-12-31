@@ -32,8 +32,13 @@ export const videoRouter = createTRPCRouter({
   }),
 
   getRecentRekamanUTBKVideos: userProcedure.query(async ({ ctx }) => {
+
+    if (!ctx.session.user.classid) {
+      return [];
+    }
+
     const videos = await ctx.db.video.findMany({
-      where: { type: "rekaman", mode: "utbk" },
+      where: { type: "rekaman", mode: "utbk", classId: ctx.session.user.classid },
       orderBy: { createdAt: "desc" },
       take: 4,
     });

@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -8,7 +10,6 @@ import {
   CardTitle,
 } from "~/app/_components/ui/card";
 import { Button } from "~/app/_components/ui/button";
-
 import {
   Select,
   SelectContent,
@@ -31,39 +32,44 @@ import {
   RiDeleteBinFill,
   RiBookOpenFill,
   RiFilterFill,
+  RiArrowLeftLine,
 } from "react-icons/ri";
-import { ModulForm, ModulFormData } from "./modul-form";
+import { ModulForm, ModulFormData } from "../../../modul/modul-form";
 
 type ModuleType = "bahan_materi" | "catatan";
 
-export default function ModulManagement() {
+export default function ClassModulManagement() {
+  const params = useParams();
+  const classId = parseInt(params.classId as string);
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingModul, setEditingModul] = useState<any>(null);
   const [filterSubjectId, setFilterSubjectId] = useState<number | null>(null);
-  const [filterType, setFilterType] = useState<ModuleType>("bahan_materi");
+  const [filterType, setFilterType] = useState<ModuleType>("catatan");
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<ModulFormData>({
     title: "",
     description: "",
     subjectId: null,
     url: "",
-    classId: null,
+    classId: classId,
   });
 
   const utils = api.useUtils();
+
+  const { data: classData, isLoading: classLoading } =
+    api.admin.getClassById.useQuery({ id: classId });
 
   // Get all modules with filter
   const { data: modules, isLoading } = api.modul.getModulesWithFilter.useQuery({
     subjectId: filterSubjectId,
     type: filterType,
+    classId: classId,
   });
 
   // Get all subjects for dropdown
   const { data: subjects } = api.admin.getAllSubjects.useQuery();
-
-  // Get all classes for dropdown
-  const { data: classes } = api.admin.getClasses.useQuery();
 
   // Mutations
   const createModulMutation = api.modul.createModule.useMutation({
@@ -103,7 +109,7 @@ export default function ModulManagement() {
       description: "",
       subjectId: null,
       url: "",
-      classId: null,
+      classId: classId,
     });
     setError(null);
   };
@@ -123,7 +129,7 @@ export default function ModulManagement() {
       subjectId: formData.subjectId,
       url: formData.url,
       type: filterType,
-      classId: formData.classId ? formData.classId : null,
+      classId: classId,
     });
   };
 
@@ -145,7 +151,7 @@ export default function ModulManagement() {
       subjectId: formData.subjectId,
       type: editingModul.type,
       url: formData.url,
-      classId: formData.classId ? formData.classId : null,
+      classId: classId,
     });
   };
 
@@ -156,7 +162,7 @@ export default function ModulManagement() {
       description: item.description || "",
       subjectId: item.subjectId || null,
       url: item.url || "",
-      classId: item.classId || null,
+      classId: classId,
     });
     setIsEditDialogOpen(true);
   };
@@ -167,9 +173,17 @@ export default function ModulManagement() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || classLoading) {
     return (
       <div className="flex h-64 items-center justify-center">Loading...</div>
+    );
+  }
+
+  if (!classData) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        Kelas tidak ditemukan
+      </div>
     );
   }
 
@@ -177,9 +191,21 @@ export default function ModulManagement() {
     <div className="min-h-screen space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manajemen Modul</h1>
-          <p className="text-gray-600">Kelola modul pembelajaran</p>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/classes">
+            <Button variant="outline" size="sm">
+              <RiArrowLeftLine className="mr-2 h-4 w-4" />
+              Kembali
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Catatan - {classData.name}
+            </h1>
+            <p className="text-gray-600">
+              Kelola modul pembelajaran untuk kelas {classData.name}
+            </p>
+          </div>
         </div>
 
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -199,7 +225,7 @@ export default function ModulManagement() {
               onSubmit={handleCreateSubmit}
               isLoading={createModulMutation.isPending}
               subjects={subjects}
-              classes={classes}
+              classes={[classData]}
               error={error}
             />
           </DialogContent>
@@ -343,7 +369,7 @@ export default function ModulManagement() {
               <p className="text-gray-600">
                 {filterSubjectId
                   ? `Tidak ada ${filterType === "bahan_materi" ? "bahan materi" : "catatan"} untuk mata pelajaran ini`
-                  : `Belum ada ${filterType === "bahan_materi" ? "bahan materi" : "catatan"} yang dibuat`}
+                  : `Belum ada ${filterType === "bahan_materi" ? "bahan materi" : "catatan"} yang dibuat untuk kelas ini`}
               </p>
               <p className="text-sm text-gray-500">
                 Klik "Tambah Modul" untuk membuat{" "}
@@ -368,7 +394,7 @@ export default function ModulManagement() {
             isLoading={updateModulMutation.isPending}
             isEdit={true}
             subjects={subjects}
-            classes={classes}
+            classes={[classData]}
             error={error}
           />
         </DialogContent>

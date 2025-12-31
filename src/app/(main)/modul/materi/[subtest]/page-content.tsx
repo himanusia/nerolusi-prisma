@@ -118,7 +118,7 @@ export default function PageContent() {
         {/* Left Sidebar - Session List */}
         <div className="flex min-h-0 flex-col lg:col-span-1">
           {/* Back Button */}
-          <Link href="/modul" className="mb-6 flex-shrink-0">
+          <Link href="/" className="mb-6 flex-shrink-0">
             <Button variant="outline">
               <ChevronLeft className="h-4 w-4" />
               <span>Kembali</span>

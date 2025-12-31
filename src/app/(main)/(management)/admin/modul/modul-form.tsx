@@ -14,6 +14,7 @@ export interface ModulFormData {
   description: string;
   subjectId: number | null;
   url: string;
+  classId: number | null;
 }
 
 export const ModulForm = ({
@@ -23,6 +24,7 @@ export const ModulForm = ({
   isLoading,
   isEdit = false,
   subjects,
+  classes,
   error,
 }: {
   formData: ModulFormData;
@@ -31,6 +33,7 @@ export const ModulForm = ({
   isLoading: boolean;
   isEdit?: boolean;
   subjects?: any[];
+  classes?: any[];
   error?: string | null;
 }) => (
   <form onSubmit={onSubmit} className="space-y-4">
@@ -88,6 +91,28 @@ export const ModulForm = ({
           {subjects?.map((subject) => (
             <SelectItem key={subject.id} value={subject.id.toString()}>
               {subject.name}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </div>
+
+    <div>
+      <Label htmlFor="classId">Kelas</Label>
+      <Select
+        value={formData.classId?.toString() || ""}
+        onValueChange={(value) =>
+          setFormData({ ...formData, classId: value ? parseInt(value) : null })
+        }
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Pilih kelas (opsional)" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="0">Semua kelas</SelectItem>
+          {classes?.map((cls) => (
+            <SelectItem key={cls.id} value={cls.id.toString()}>
+              {cls.name}
             </SelectItem>
           ))}
         </SelectContent>

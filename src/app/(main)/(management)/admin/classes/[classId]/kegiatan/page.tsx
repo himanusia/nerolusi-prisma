@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -30,6 +32,7 @@ import {
   RiEditFill,
   RiDeleteBinFill,
   RiCalendarEventFill,
+  RiArrowLeftLine,
 } from "react-icons/ri";
 
 interface KegiatanFormData {
@@ -38,7 +41,7 @@ interface KegiatanFormData {
   startTime: string;
   endTime: string;
   url: string;
-  classId: number | null;
+  classId: number;
 }
 
 const KegiatanForm = ({
@@ -47,14 +50,12 @@ const KegiatanForm = ({
   onSubmit,
   isLoading,
   error,
-  classes,
 }: {
   formData: KegiatanFormData;
   setFormData: (data: KegiatanFormData) => void;
   onSubmit: (e: React.FormEvent) => void;
   isLoading: boolean;
   error?: string | null;
-  classes?: any[];
 }) => (
   <form onSubmit={onSubmit} className="space-y-4">
     {error && (
@@ -109,28 +110,6 @@ const KegiatanForm = ({
     </div>
 
     <div>
-      <Label htmlFor="classId">Kelas</Label>
-      <Select
-        value={formData.classId?.toString() || ""}
-        onValueChange={(value) =>
-          setFormData({ ...formData, classId: value ? parseInt(value) : null })
-        }
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Pilih kelas (opsional)" />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="0">Semua kelas</SelectItem>
-          {classes?.map((cls) => (
-            <SelectItem key={cls.id} value={cls.id.toString()}>
-              {cls.name}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
-
-    <div>
       <Label htmlFor="url">URL</Label>
       <Input
         id="url"
@@ -150,7 +129,10 @@ const KegiatanForm = ({
   </form>
 );
 
-export default function KegiatanManagement() {
+export default function ClassKegiatanManagement() {
+  const params = useParams();
+  const classId = parseInt(params.classId as string);
+
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingKegiatan, setEditingKegiatan] = useState<any>(null);
@@ -161,21 +143,23 @@ export default function KegiatanManagement() {
     startTime: "",
     endTime: "",
     url: "",
-    classId: null,
+    classId: classId,
   });
 
   const utils = api.useUtils();
 
-  // Get all kegiatan
-  const { data: kegiatan, isLoading } = api.user.getAllKegiatan.useQuery();
+  const { data: classData, isLoading: classLoading } =
+    api.admin.getClassById.useQuery({ id: classId });
 
-  // Get all classes for dropdown
-  const { data: classes } = api.admin.getClasses.useQuery();
+  // Get all kegiatan for this class
+  const { data: kegiatan, isLoading } = api.admin.getKegiatanByClass.useQuery({
+    classId,
+  });
 
   // Mutations
   const createKegiatanMutation = api.admin.createKegiatan.useMutation({
     onSuccess: () => {
-      utils.user.getAllKegiatan.invalidate();
+      utils.admin.getKegiatanByClass.invalidate();
       setIsCreateDialogOpen(false);
       resetForm();
       setError(null);
@@ -187,7 +171,7 @@ export default function KegiatanManagement() {
 
   const updateKegiatanMutation = api.admin.updateKegiatan.useMutation({
     onSuccess: () => {
-      utils.user.getAllKegiatan.invalidate();
+      utils.admin.getKegiatanByClass.invalidate();
       setIsEditDialogOpen(false);
       resetForm();
       setEditingKegiatan(null);
@@ -200,7 +184,7 @@ export default function KegiatanManagement() {
 
   const deleteKegiatanMutation = api.admin.deleteKegiatan.useMutation({
     onSuccess: () => {
-      utils.user.getAllKegiatan.invalidate();
+      utils.admin.getKegiatanByClass.invalidate();
     },
   });
 
@@ -211,7 +195,7 @@ export default function KegiatanManagement() {
       startTime: "",
       endTime: "",
       url: "",
-      classId: null,
+      classId: classId,
     });
     setError(null);
   };
@@ -226,8 +210,7 @@ export default function KegiatanManagement() {
       startTime: formData.startTime ? new Date(formData.startTime) : undefined,
       endTime: formData.endTime ? new Date(formData.endTime) : undefined,
       url: formData.url,
-      classId:
-        formData.classId && formData.classId > 0 ? formData.classId : undefined,
+      classId: classId,
     });
   };
 
@@ -244,8 +227,7 @@ export default function KegiatanManagement() {
       startTime: formData.startTime ? new Date(formData.startTime) : undefined,
       endTime: formData.endTime ? new Date(formData.endTime) : undefined,
       url: formData.url,
-      classId:
-        formData.classId && formData.classId > 0 ? formData.classId : undefined,
+      classId: classId,
     });
   };
 
@@ -269,7 +251,7 @@ export default function KegiatanManagement() {
       startTime: item.startTime ? formatDateTimeLocal(item.startTime) : "",
       endTime: item.endTime ? formatDateTimeLocal(item.endTime) : "",
       url: item.url || "",
-      classId: item.classId || null,
+      classId: classId,
     });
     setIsEditDialogOpen(true);
   };
@@ -280,9 +262,17 @@ export default function KegiatanManagement() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || classLoading) {
     return (
       <div className="flex h-64 items-center justify-center">Loading...</div>
+    );
+  }
+
+  if (!classData) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        Kelas tidak ditemukan
+      </div>
     );
   }
 
@@ -290,11 +280,21 @@ export default function KegiatanManagement() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Manajemen Kegiatan
-          </h1>
-          <p className="text-gray-600">Kelola kegiatan dan event</p>
+        <div className="flex items-center gap-4">
+          <Link href="/admin/classes">
+            <Button variant="outline" size="sm">
+              <RiArrowLeftLine className="mr-2 h-4 w-4" />
+              Kembali
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">
+              Kegiatan - {classData.name}
+            </h1>
+            <p className="text-gray-600">
+              Kelola kegiatan dan event untuk kelas {classData.name}
+            </p>
+          </div>
         </div>
 
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -314,7 +314,6 @@ export default function KegiatanManagement() {
               onSubmit={handleCreateSubmit}
               isLoading={createKegiatanMutation.isPending}
               error={error}
-              classes={classes}
             />
           </DialogContent>
         </Dialog>
@@ -328,7 +327,9 @@ export default function KegiatanManagement() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{kegiatan?.length || 0}</div>
-          <p className="text-xs text-muted-foreground">Kegiatan terdaftar</p>
+          <p className="text-xs text-muted-foreground">
+            Kegiatan terdaftar untuk kelas {classData.name}
+          </p>
         </CardContent>
       </Card>
 
@@ -398,7 +399,9 @@ export default function KegiatanManagement() {
           <Card>
             <CardContent className="py-8 text-center">
               <RiCalendarEventFill className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <p className="text-gray-600">Belum ada kegiatan yang dibuat</p>
+              <p className="text-gray-600">
+                Belum ada kegiatan yang dibuat untuk kelas ini
+              </p>
               <p className="text-sm text-gray-500">
                 Klik "Tambah Kegiatan" untuk membuat kegiatan baru
               </p>
@@ -419,7 +422,6 @@ export default function KegiatanManagement() {
             onSubmit={handleEditSubmit}
             isLoading={updateKegiatanMutation.isPending}
             error={error}
-            classes={classes}
           />
         </DialogContent>
       </Dialog>
