@@ -29,6 +29,7 @@ interface QuestionCardProps {
   selectedAnswer: number[] | string | undefined;
   isQuizEnded: boolean;
   isUserRole: boolean;
+  isSaving: boolean;
   onAnswerChange: (questionId: number, answerValue: string | number[]) => void;
   onAnswerToggle: (questionId: number, answerId: number) => void;
   onSingleAnswerSelect: (questionId: number, answerId: number) => void;
@@ -42,6 +43,7 @@ export function QuestionCard({
   selectedAnswer,
   isQuizEnded,
   isUserRole,
+  isSaving,
   onAnswerChange,
   onAnswerToggle,
   onSingleAnswerSelect,
@@ -106,19 +108,19 @@ export function QuestionCard({
             <Button
               variant="outline"
               onClick={() => onNavigate("prev")}
-              disabled={currentIndex === 0}
+              disabled={currentIndex === 0 || isSaving}
               className="flex items-center gap-2"
             >
               <ChevronLeft className="h-4 w-4" />
-              Sebelumnya
+              {isSaving ? "Menyimpan..." : "Sebelumnya"}
             </Button>
 
             <Button
               onClick={() => onNavigate("next")}
-              disabled={currentIndex === totalQuestions - 1}
+              disabled={currentIndex === totalQuestions - 1 || isSaving}
               className="flex items-center gap-2 bg-[#2b8057] text-white hover:bg-[#1f5a40]"
             >
-              Selanjutnya
+              {isSaving ? "Menyimpan..." : "Selanjutnya"}
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

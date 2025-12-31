@@ -14,6 +14,7 @@ interface QuestionNavigationProps {
   isQuizEnded: boolean;
   isUserRole: boolean;
   isSubmitting: boolean;
+  isSaving: boolean;
   sessionId: string;
   onQuestionSelect: (index: number) => void;
   onSubmit: () => void;
@@ -26,6 +27,7 @@ export function QuestionNavigation({
   isQuizEnded,
   isUserRole,
   isSubmitting,
+  isSaving,
   sessionId,
   onQuestionSelect,
   onSubmit,
@@ -50,6 +52,7 @@ export function QuestionNavigation({
                     : "hover:border-[#2b8057]"
               }`}
               onClick={() => onQuestionSelect(index)}
+              disabled={isSaving}
             >
               {index + 1}
             </Button>
@@ -60,11 +63,15 @@ export function QuestionNavigation({
         {!isQuizEnded && isUserRole ? (
           <Button
             onClick={onSubmit}
-            disabled={isSubmitting}
+            disabled={isSubmitting || isSaving}
             className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
           >
             <Flag className="h-4 w-4" />
-            {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
+            {isSaving
+              ? "Menyimpan..."
+              : isSubmitting
+                ? "Mengirim..."
+                : "Selesai & Kirim"}
           </Button>
         ) : (
           <Link href={`/quiz/${sessionId}/score`}>

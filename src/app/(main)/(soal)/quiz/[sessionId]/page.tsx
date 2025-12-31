@@ -10,6 +10,7 @@ import LoadingPage from "~/app/loading";
 import { QuizHeader } from "./QuizHeader";
 import { QuestionCard } from "./QuestionCard";
 import { QuestionNavigation } from "./QuestionNavigation";
+import { SubmitConfirmationDialog } from "./SubmitConfirmationDialog";
 
 export default function QuizPage() {
   const { sessionId } = useParams(); // drill = subject, subtest = videoId
@@ -24,6 +25,10 @@ export default function QuizPage() {
     Map<number, number[] | string>
   >(new Map());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [savingQuestions, setSavingQuestions] = useState<Set<number>>(
+    new Set(),
+  );
 
   const saveAnswerMutation = api.quiz.saveAnswer.useMutation();
   const submitMutation = api.quiz.submitQuiz.useMutation();
@@ -123,6 +128,9 @@ export default function QuizPage() {
     questionId: number,
     answerValue: string | number | number[],
   ) => {
+    // Add to saving set
+    setSavingQuestions((prev) => new Set(prev).add(questionId));
+
     try {
       await saveAnswerMutation.mutateAsync({
         quizSessionId: sessionIdString,
@@ -138,6 +146,13 @@ export default function QuizPage() {
     } catch (error) {
       console.error("Failed to save answer:", error);
       toast.error("Failed to save answer. Please try again.");
+    } finally {
+      // Remove from saving set
+      setSavingQuestions((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(questionId);
+        return newSet;
+      });
     }
   };
 
@@ -179,8 +194,19 @@ export default function QuizPage() {
     handleAnswerChange(questionId, [answerId]);
   };
 
+  // Show submit confirmation dialog
+  const handleSubmitClick = () => {
+    // Don't allow submit if there are unsaved answers
+    if (savingQuestions.size > 0) {
+      toast.info("Mohon tunggu, sedang menyimpan jawaban...");
+      return;
+    }
+    setShowSubmitDialog(true);
+  };
+
   // Submit all answers
   const handleSubmit = async () => {
+    setShowSubmitDialog(false);
     setIsSubmitting(true);
     try {
       for (const [questionId, answerChoice] of selectedAnswers.entries()) {
@@ -245,6 +271,7 @@ export default function QuizPage() {
                 new Date(sessionDetails?.endTime ?? new Date()) < new Date()
               }
               isUserRole={session.data?.user?.role === "user"}
+              isSaving={savingQuestions.size > 0}
               onAnswerChange={handleAnswerChange}
               onAnswerToggle={handleAnswerToggle}
               onSingleAnswerSelect={handleSingleAnswerSelect}
@@ -278,13 +305,24 @@ export default function QuizPage() {
               }
               isUserRole={session.data?.user.role === "user"}
               isSubmitting={isSubmitting}
+              isSaving={savingQuestions.size > 0}
               sessionId={sessionIdString}
               onQuestionSelect={setCurrentQuestionIndex}
-              onSubmit={handleSubmit}
+              onSubmit={handleSubmitClick}
             />
           )}
         </div>
       </div>
+
+      {/* Submit Confirmation Dialog */}
+      <SubmitConfirmationDialog
+        open={showSubmitDialog}
+        onOpenChange={setShowSubmitDialog}
+        totalQuestions={questions?.length ?? 0}
+        answeredCount={selectedAnswers.size}
+        onConfirm={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }
