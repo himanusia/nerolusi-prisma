@@ -740,15 +740,6 @@ export const adminRouter = createTRPCRouter({
       });
     }),
 
-  // Class Management
-  getClasses: adminProcedure.query(async ({ ctx }) => {
-    return ctx.db.class.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
-  }),
-
   getClassById: adminProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
