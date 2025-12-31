@@ -15,8 +15,8 @@ import { MaterialSection, Video } from "~/server/api/routers/materi";
 import LoadingPage from "~/app/loading";
 import ErrorPage from "~/app/error";
 import NoPackagePage from "~/app/no-package";
-import Image from "next/image";
 import Link from "next/link";
+import { useMode } from "~/contexts/mode-context";
 
 export default function SubjectMateriPage() {
   const params = useParams();
@@ -28,6 +28,8 @@ export default function SubjectMateriPage() {
   const [updatingTopicIds, setUpdatingTopicIds] = useState<Set<number>>(
     new Set(),
   );
+
+  const { mode } = useMode();
 
   const {
     data: materialData,
@@ -221,16 +223,20 @@ export default function SubjectMateriPage() {
     return <LoadingPage />;
   }
 
-  if (!session.data?.user?.enrolledTka) {
-    return <NoPackagePage />;
-  }
-
   if (isMaterialLoading) {
     return <LoadingPage />;
   }
 
   if (isMaterialError) {
     return <ErrorPage />;
+  }
+
+  if (mode === "tka" && !session.data?.user?.enrolledTka) {
+    return <NoPackagePage />;
+  }
+
+  if (mode === "utbk" && !session.data?.user?.enrolledUtbk) {
+    return <NoPackagePage />;
   }
 
   return (
@@ -267,11 +273,6 @@ export default function SubjectMateriPage() {
                   Materi {section.index} -{" "}
                   {section.title.replace(`Materi ${section.index} - `, "")}
                 </h3>
-                {section.subtitle && (
-                  <p className="mt-1 text-xs text-black md:text-sm">
-                    {section.subtitle}
-                  </p>
-                )}
               </div>
 
               <div className="flex items-center gap-6">

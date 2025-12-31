@@ -16,6 +16,7 @@ import ErrorPage from "~/app/error";
 import { useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import NoPackagePage from "~/app/no-package";
+import NoClassPage from "~/app/no-class";
 
 export default function PageContent() {
   const [activeSession, setActiveSession] = useState<number | null>(null);
@@ -94,8 +95,13 @@ export default function PageContent() {
     return <LoadingPage />;
   }
 
-  if (subjectData.mode === "utbk" && !session?.user.enrolledUtbk) {
-    return <NoPackagePage />;
+  if (subjectData.mode === "utbk") {
+    if (!session?.user.enrolledUtbk) {
+      return <NoPackagePage />;
+    }
+    if (!session.user.classid) {
+      return <NoClassPage />;
+    }
   }
 
   if (subjectData.mode === "tka" && !session?.user.enrolledTka) {
@@ -118,7 +124,7 @@ export default function PageContent() {
         {/* Left Sidebar - Session List */}
         <div className="flex min-h-0 flex-col lg:col-span-1">
           {/* Back Button */}
-          <Link href="/modul" className="mb-6 flex-shrink-0">
+          <Link href="/" className="mb-6 flex-shrink-0">
             <Button variant="outline">
               <ChevronLeft className="h-4 w-4" />
               <span>Kembali</span>

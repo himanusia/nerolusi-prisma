@@ -16,16 +16,29 @@ export const videoRouter = createTRPCRouter({
   }),
 
   getAllRekamanUTBKVideos: subscriberProcedure.query(async ({ ctx }) => {
+    if (!ctx.session.user.classid) {
+      throw new Error("User not enrolled in any class");
+    }
+
     const videos = await ctx.db.video.findMany({
-      where: { type: "rekaman", mode: "utbk" },
+      where: {
+        type: "rekaman",
+        mode: "utbk",
+        classId: ctx.session.user.classid,
+      },
       orderBy: { createdAt: "desc" },
     });
     return videos;
   }),
 
   getRecentRekamanUTBKVideos: userProcedure.query(async ({ ctx }) => {
+
+    if (!ctx.session.user.classid) {
+      return [];
+    }
+
     const videos = await ctx.db.video.findMany({
-      where: { type: "rekaman", mode: "utbk" },
+      where: { type: "rekaman", mode: "utbk", classId: ctx.session.user.classid },
       orderBy: { createdAt: "desc" },
       take: 4,
     });

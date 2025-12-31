@@ -274,6 +274,7 @@ export const adminRouter = createTRPCRouter({
         videoUrl: z.string(),
         duration: z.number(),
         mode: z.enum(["tka", "utbk"]),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -285,6 +286,7 @@ export const adminRouter = createTRPCRouter({
           url: input.videoUrl,
           duration: input.duration,
           mode: input.mode,
+          classId: input.classId,
         },
       });
     }),
@@ -298,6 +300,7 @@ export const adminRouter = createTRPCRouter({
         videoUrl: z.string(),
         duration: z.number(),
         mode: z.enum(["tka", "utbk"]),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -310,6 +313,7 @@ export const adminRouter = createTRPCRouter({
           url: input.videoUrl,
           duration: input.duration,
           mode: input.mode,
+          classId: input.classId,
         },
       });
     }),
@@ -686,6 +690,7 @@ export const adminRouter = createTRPCRouter({
         startTime: z.date().optional(),
         endTime: z.date().optional(),
         url: z.string(),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -696,6 +701,7 @@ export const adminRouter = createTRPCRouter({
           startTime: input.startTime,
           endTime: input.endTime,
           url: input.url,
+          classId: input.classId,
         },
       });
     }),
@@ -717,6 +723,7 @@ export const adminRouter = createTRPCRouter({
         startTime: z.date().optional(),
         endTime: z.date().optional(),
         url: z.string(),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -728,6 +735,101 @@ export const adminRouter = createTRPCRouter({
           startTime: input.startTime,
           endTime: input.endTime,
           url: input.url,
+          classId: input.classId,
+        },
+      });
+    }),
+
+  getClassById: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.class.findUnique({
+        where: { id: input.id },
+      });
+    }),
+
+  createClass: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.class.create({
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+
+  updateClass: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.class.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+
+  deleteClass: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.class.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  // Get users by class
+  getUsersByClass: adminProcedure
+    .input(z.object({ classId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.user.findMany({
+        where: {
+          classid: input.classId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+
+  // Get videos by class
+  getVideosByClass: adminProcedure
+    .input(z.object({ classId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.video.findMany({
+        where: {
+          classId: input.classId,
+        },
+        include: {
+          class: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+
+  // Get kegiatan by class
+  getKegiatanByClass: adminProcedure
+    .input(z.object({ classId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.event.findMany({
+        where: {
+          classId: input.classId,
+        },
+        include: {
+          class: true,
+        },
+        orderBy: {
+          createdAt: "desc",
         },
       });
     }),
