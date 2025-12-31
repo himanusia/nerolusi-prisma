@@ -1,13 +1,18 @@
-import { SUBJECT_CATEGORIES } from "./constants";
+import { getSlugBySubjectName, SUBJECT_CATEGORIES } from "./constants";
 import { Separator } from "~/app/_components/ui/separator";
 import SubjectCard from "./subject-card";
 
-export default function VideoMateri() {
+interface VideoMateriProps {
+  isTka: boolean;
+}
+
+export default function VideoMateri({ isTka }: VideoMateriProps) {
   return (
     <div className="flex flex-col items-start justify-start space-y-8">
       {SUBJECT_CATEGORIES.filter(
         (category) =>
-          category.type !== "utbk" && category.type !== "modul_nerolusi",
+          (isTka ? category.type !== "utbk" : category.type === "utbk") &&
+          category.type !== "modul_nerolusi",
       ).map((category) => (
         <div key={category.type} className="w-full">
           <Separator className="mb-4 h-1 bg-gray-200" />
@@ -24,14 +29,19 @@ export default function VideoMateri() {
 
           {/* Subject Cards */}
           <div className="grid grid-cols-2 gap-4 min-[475px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 xl:grid-cols-8">
-            {category.subjects.map((subject) => (
-              <SubjectCard
-                key={subject.id}
-                href={`/video/materi/${subject.slug}`}
-                imageSrc={subject.image}
-                title={subject.title}
-              />
-            ))}
+            {category.subjects.map((subject) => {
+              const subjectTitle = isTka
+                ? subject.title
+                : getSlugBySubjectName(subject.title).toUpperCase();
+              return (
+                <SubjectCard
+                  key={subject.id}
+                  href={`/video/materi/${subject.slug}`}
+                  imageSrc={subject.image}
+                  title={subjectTitle}
+                />
+              );
+            })}
           </div>
         </div>
       ))}

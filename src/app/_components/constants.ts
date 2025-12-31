@@ -204,3 +204,20 @@ export const getSubjectBySlug = (slug: string): Subject | undefined => {
 export const getSubjectByName = (name: string): Subject | undefined => {
   return getAllSubjects().find((subject) => subject.title === name);
 };
+
+export const getSlugBySubjectName = (name: string): string | undefined => {
+  return getAllSubjects().find((subject) => subject.title === name)?.slug;
+}
+
+export const getSubjectType = (name: string): string | undefined => {
+  return (
+    SUBJECT_CATEGORIES.find((category) => subjectsInCategoryHasName(category, name))?.type
+  );
+};
+
+const subjectsInCategoryHasName = (
+  category: SubjectCategory,
+  name: string,
+): boolean => {
+  return category.subjects.some((subject) => subject.title === name);
+};
