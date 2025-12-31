@@ -1,32 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "~/app/_components/ui/button";
-import { Card, CardContent } from "~/app/_components/ui/card";
-import { Badge } from "~/app/_components/ui/badge";
 import { api } from "~/trpc/react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Input } from "~/app/_components/ui/input";
-import Image from "next/image";
 import { useSession } from "next-auth/react";
 import ErrorPage from "~/app/error";
 import LoadingPage from "~/app/loading";
-import Editor from "~/app/_components/editor";
-import { Separator } from "~/app/_components/ui/separator";
-import {
-  Clock,
-  CheckCircle,
-  ChevronLeft,
-  ChevronRight,
-  Flag,
-} from "lucide-react";
-import Link from "next/link";
-import { getYouTubeVideoId } from "~/utils/get-youtube-id";
+import { QuizHeader } from "./QuizHeader";
+import { QuestionCard } from "./QuestionCard";
+import { QuestionNavigation } from "./QuestionNavigation";
+import { SubmitConfirmationDialog } from "./SubmitConfirmationDialog";
 
 export default function QuizPage() {
   const { sessionId } = useParams(); // drill = subject, subtest = videoId
-  const searchParams = useSearchParams();
   const router = useRouter();
   const session = useSession();
   const sessionIdString = Array.isArray(sessionId) ? sessionId[0] : sessionId;
@@ -38,6 +25,10 @@ export default function QuizPage() {
     Map<number, number[] | string>
   >(new Map());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [savingQuestions, setSavingQuestions] = useState<Set<number>>(
+    new Set(),
+  );
 
   const saveAnswerMutation = api.quiz.saveAnswer.useMutation();
   const submitMutation = api.quiz.submitQuiz.useMutation();
@@ -132,21 +123,14 @@ export default function QuizPage() {
     return () => clearInterval(timer);
   }, [endTime]);
 
-  // Format time for display
-  const formatTime = (milliseconds: number) => {
-    const seconds = Math.floor(milliseconds / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes.toString().padStart(2, "0")}:${remainingSeconds
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
   // Save answer to the backend
   const saveAnswer = async (
     questionId: number,
     answerValue: string | number | number[],
   ) => {
+    // Add to saving set
+    setSavingQuestions((prev) => new Set(prev).add(questionId));
+
     try {
       await saveAnswerMutation.mutateAsync({
         quizSessionId: sessionIdString,
@@ -162,6 +146,13 @@ export default function QuizPage() {
     } catch (error) {
       console.error("Failed to save answer:", error);
       toast.error("Failed to save answer. Please try again.");
+    } finally {
+      // Remove from saving set
+      setSavingQuestions((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(questionId);
+        return newSet;
+      });
     }
   };
 
@@ -203,8 +194,19 @@ export default function QuizPage() {
     handleAnswerChange(questionId, [answerId]);
   };
 
+  // Show submit confirmation dialog
+  const handleSubmitClick = () => {
+    // Don't allow submit if there are unsaved answers
+    if (savingQuestions.size > 0) {
+      toast.info("Mohon tunggu, sedang menyimpan jawaban...");
+      return;
+    }
+    setShowSubmitDialog(true);
+  };
+
   // Submit all answers
   const handleSubmit = async () => {
+    setShowSubmitDialog(false);
     setIsSubmitting(true);
     try {
       for (const [questionId, answerChoice] of selectedAnswers.entries()) {
@@ -245,570 +247,82 @@ export default function QuizPage() {
   ) : (
     <div className="mx-auto max-w-7xl space-y-6 p-4">
       {/* Header with Timer and Progress */}
-      <Card className="border-[#2b8057] bg-gradient-to-r from-green-50 to-white">
-        <CardContent className="p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <h1 className="mb-2 text-2xl font-bold text-[#2b8057]">
-                {(() => {
-                  switch (sessionDetails?.subtest.type) {
-                    case "pu":
-                      return "Kemampuan Penalaran Umum";
-                    case "ppu":
-                      return "Pengetahuan dan Pemahaman Umum";
-                    case "pbm":
-                      return "Kemampuan Memahami Bacaan dan Menulis";
-                    case "pk":
-                      return "Pengetahuan Kuantitatif";
-                    case "pm":
-                      return "Penalaran Matematika";
-                    case "lbe":
-                      return "Literasi Bahasa Inggris";
-                    case "lbi":
-                      return "Literasi Bahasa Indonesia";
-                    case "matematika_wajib":
-                      return "Matematika Wajib";
-                    case "bahasa_indonesia":
-                      return "Bahasa Indonesia";
-                    case "bahasa_inggris":
-                      return "Bahasa Inggris";
-                    case "matematika_lanjut":
-                      return "Matematika Lanjut";
-                    case "fisika":
-                      return "Fisika";
-                    case "kimia":
-                      return "Kimia";
-                    case "biologi":
-                      return "Biologi";
-                    case "ekonomi":
-                      return "Ekonomi";
-                    case "geografi":
-                      return "Geografi";
-                    case "sejarah":
-                      return "Sejarah";
-                    case "ppkn":
-                      return "PPKn";
-                    case "projek_kreatif_kewirausahaan":
-                      return "Projek Kreatif Kewirausahaan";
-                    default:
-                      return "";
-                  }
-                })()}
-              </h1>
-              <p className="text-gray-600">
-                Soal {currentQuestionIndex + 1} dari {questions?.length || 0}
-              </p>
-            </div>
-
-            {/* Timer */}
-            {timeLeft > 0 && new Date(sessionDetails?.endTime) > new Date() && (
-              <div className="flex items-center gap-4">
-                <div className="flex items-center gap-2 rounded-lg border bg-white px-4 py-2">
-                  <Clock className="h-5 w-5 text-[#2b8057]" />
-                  <span className="font-mono text-lg font-bold text-[#2b8057]">
-                    {formatTime(timeLeft)}
-                  </span>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Simple Progress Bar */}
-          <div className="mt-4">
-            <div className="mb-2 flex items-center justify-between">
-              <span className="text-sm text-gray-600">Progress</span>
-              <span className="text-sm font-medium text-[#2b8057]">
-                {selectedAnswers.size}/{questions?.length || 0} dijawab
-              </span>
-            </div>
-            <div className="h-2 w-full rounded-full bg-gray-200">
-              <div
-                className="h-2 rounded-full bg-[#2b8057] transition-all duration-300"
-                style={{
-                  width: `${(selectedAnswers.size / (questions?.length || 1)) * 100}%`,
-                }}
-              />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <QuizHeader
+        subtestType={sessionDetails?.subtest.type ?? ""}
+        currentQuestionIndex={currentQuestionIndex}
+        totalQuestions={questions?.length ?? 0}
+        timeLeft={timeLeft}
+        endTime={sessionDetails?.endTime ?? new Date()}
+        answeredCount={selectedAnswers.size}
+      />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main Question Area */}
         <div className="lg:col-span-3">
-          <Card>
-            <CardContent className="p-6">
-              {questions && questions[currentQuestionIndex] && (
-                <div className="space-y-6">
-                  {/* Question Header */}
-                  <div className="flex items-center justify-between">
-                    <Badge
-                      variant="outline"
-                      className="border-[#2b8057] text-[#2b8057]"
-                    >
-                      Soal {currentQuestionIndex + 1}
-                    </Badge>
-                    {/* {(session.data?.user.role === "teacher" ||
-                      session.data?.user.role === "admin") &&
-                      drill === "soal" &&
-                      new Date(sessionDetails?.endTime) < new Date() && (
-                        <Badge variant="secondary">
-                          Skor:{" "}
-                          {questions[currentQuestionIndex].type === "essay"
-                            ? selectedAnswers
-                                .get(questions[currentQuestionIndex].id)
-                                ?.toString()
-                                .trim() ===
-                              questions[
-                                currentQuestionIndex
-                              ].answers[0].content.trim()
-                              ? questions[currentQuestionIndex].score
-                              : 0
-                            : (() => {
-                                const userAnswer = selectedAnswers.get(
-                                  questions[currentQuestionIndex].id,
-                                );
-                                const selectedAnswerIds = Array.isArray(
-                                  userAnswer,
-                                )
-                                  ? userAnswer
-                                  : typeof userAnswer === "number"
-                                    ? [userAnswer]
-                                    : [];
-                                const correctAnswerIds = questions[
-                                  currentQuestionIndex
-                                ].answers
-                                  .filter((answer) => answer.isCorrect)
-                                  .map((answer) => answer.id);
-
-                                // Check if user selected exactly the correct answers
-                                const isCorrect =
-                                  selectedAnswerIds.length ===
-                                    correctAnswerIds.length &&
-                                  selectedAnswerIds.every((id) =>
-                                    correctAnswerIds.includes(id),
-                                  );
-
-                                return isCorrect
-                                  ? questions[currentQuestionIndex].score
-                                  : 0;
-                              })()}
-                        </Badge>
-                      )} */}
-                  </div>
-
-                  {/* Question Content */}
-                  <div className="rounded-lg bg-gray-50 p-4">
-                    <Editor
-                      key={questions[currentQuestionIndex].id}
-                      content={questions[currentQuestionIndex].content}
-                      className="border-none"
-                    />
-                    {/* <div className="whitespace-pre-line text-base">
-                      {questions[currentQuestionIndex].content}
-                    </div> */}
-                    {questions[currentQuestionIndex].imageUrl && (
-                      <Image
-                        src={questions[currentQuestionIndex].imageUrl}
-                        alt="Question Image"
-                        width={400}
-                        height={300}
-                        className="mt-4 max-h-[50vh] w-auto rounded-lg"
-                      />
-                    )}
-                  </div>
-
-                  {/* Answer Options */}
-                  <div className="space-y-3">
-                    {questions[currentQuestionIndex].type === "essay" ? (
-                      <div className="space-y-4">
-                        <div>
-                          <label className="mb-2 block text-sm font-medium text-gray-700">
-                            Jawaban Anda:
-                          </label>
-                          <textarea
-                            rows={4}
-                            className="w-full rounded-lg border p-3 text-sm"
-                            placeholder="Tulis jawaban Anda di sini..."
-                            value={
-                              typeof selectedAnswers.get(
-                                questions[currentQuestionIndex].id,
-                              ) === "string"
-                                ? (selectedAnswers.get(
-                                    questions[currentQuestionIndex].id,
-                                  ) as string)
-                                : ""
-                            }
-                            onChange={(e) =>
-                              handleAnswerChange(
-                                questions[currentQuestionIndex].id,
-                                e.target.value,
-                              )
-                            }
-                            disabled={
-                              new Date(sessionDetails.endTime) < new Date() &&
-                              session.data?.user?.role === "user"
-                            }
-                          />
-                        </div>
-
-                        {/* Show correct answer after quiz ends */}
-                        {new Date(sessionDetails?.endTime) < new Date() &&
-                          questions[currentQuestionIndex].answers[0] && (
-                            <>
-                              {/* User's Answer */}
-                              {(() => {
-                                const userAnswer = selectedAnswers.get(
-                                  questions[currentQuestionIndex].id,
-                                );
-                                const userAnswerText =
-                                  typeof userAnswer === "string"
-                                    ? userAnswer
-                                    : "";
-                                const correctAnswer =
-                                  questions[currentQuestionIndex].answers[0]
-                                    .content;
-                                const isCorrect =
-                                  userAnswerText.trim().toLowerCase() ===
-                                  correctAnswer.trim().toLowerCase();
-
-                                return (
-                                  <div
-                                    className={`rounded-lg border p-4 ${
-                                      isCorrect
-                                        ? "border-green-200 bg-green-50"
-                                        : "border-red-200 bg-red-50"
-                                    }`}
-                                  >
-                                    <label
-                                      className={`mb-2 block text-sm font-medium ${
-                                        isCorrect
-                                          ? "text-green-800"
-                                          : "text-red-800"
-                                      }`}
-                                    >
-                                      Jawaban Anda:{" "}
-                                      {isCorrect ? "(Benar)" : "(Salah)"}
-                                    </label>
-                                    <div className="rounded-lg bg-white p-3 text-gray-900 text-sm">
-                                      {userAnswerText || "Tidak dijawab"}
-                                    </div>
-                                  </div>
-                                );
-                              })()}
-
-                              {/* Correct Answer */}
-                              <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-                                <label className="mb-2 block text-sm font-medium text-green-800">
-                                  Jawaban Benar:
-                                </label>
-                                <div className="rounded-lg bg-white p-3 text-gray-900">
-                                  <Editor
-                                    key={questions[currentQuestionIndex].id}
-                                    content={
-                                      questions[currentQuestionIndex].answers[0]
-                                        .content
-                                    }
-                                    className="border-none"
-                                  />
-                                </div>
-                              </div>
-                            </>
-                          )}
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        {(() => {
-                          // Determine if this question allows multiple answers
-                          const isMultipleAnswer =
-                            questions[currentQuestionIndex].type ===
-                            "mulAnswer";
-
-                          const userAnswer = selectedAnswers.get(
-                            questions[currentQuestionIndex].id,
-                          );
-                          return questions[currentQuestionIndex].answers.map(
-                            (answer) => {
-                              const isSelected = Array.isArray(userAnswer)
-                                ? userAnswer.includes(answer.id)
-                                : typeof userAnswer === "number" &&
-                                  userAnswer === answer.id;
-                              const isCorrect =
-                                new Date(sessionDetails.endTime) < new Date() &&
-                                answer.isCorrect;
-                              const isWrong =
-                                (new Date(sessionDetails.endTime) <
-                                  new Date() &&
-                                  isSelected &&
-                                  !answer.isCorrect) ||
-                                (!isSelected && answer.isCorrect);
-
-                              return (
-                                <label
-                                  key={answer.id}
-                                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-4 transition-colors ${
-                                    isCorrect
-                                      ? isSelected
-                                        ? "border-green-200 bg-green-50"
-                                        : isWrong
-                                          ? "border-red-200 bg-red-50"
-                                          : "border-gray-200 bg-gray-50"
-                                      : isSelected
-                                        ? isWrong
-                                          ? "border-red-200 bg-red-50"
-                                          : "border-gray-200 hover:bg-gray-50"
-                                        : "border-gray-200 hover:bg-gray-50"
-                                  } ${
-                                    !(
-                                      new Date(sessionDetails.endTime) <
-                                        new Date() &&
-                                      session.data?.user?.role === "user"
-                                    )
-                                      ? "hover:border-[#2b8057]"
-                                      : ""
-                                  }`}
-                                >
-                                  <Input
-                                    type={
-                                      isMultipleAnswer ? "checkbox" : "radio"
-                                    }
-                                    disabled={
-                                      new Date(sessionDetails.endTime) <
-                                        new Date() &&
-                                      session.data?.user?.role === "user"
-                                    }
-                                    name={
-                                      isMultipleAnswer
-                                        ? `question-${questions[currentQuestionIndex].id}-answer-${answer.id}`
-                                        : `question-${questions[currentQuestionIndex].id}`
-                                    }
-                                    value={answer.id}
-                                    className="sr-only"
-                                    checked={isSelected}
-                                    onChange={() =>
-                                      isMultipleAnswer
-                                        ? handleAnswerToggle(
-                                            questions[currentQuestionIndex].id,
-                                            answer.id,
-                                          )
-                                        : handleSingleAnswerSelect(
-                                            questions[currentQuestionIndex].id,
-                                            answer.id,
-                                          )
-                                    }
-                                  />
-                                  <div
-                                    className={`mt-0.5 flex h-6 w-6 flex-shrink-0 items-center justify-center ${
-                                      isMultipleAnswer
-                                        ? "rounded"
-                                        : "rounded-full"
-                                    } border-2 ${
-                                      isSelected
-                                        ? isCorrect
-                                          ? "border-green-500 bg-green-500"
-                                          : isWrong
-                                            ? "border-red-500 bg-red-500"
-                                            : "border-[#2b8057] bg-[#2b8057]"
-                                        : "border-gray-300 bg-white"
-                                    }`}
-                                  >
-                                    {isSelected &&
-                                      (isMultipleAnswer ? (
-                                        <CheckCircle
-                                          className={`h-4 w-4 ${
-                                            isCorrect || isWrong
-                                              ? "text-white"
-                                              : "text-white"
-                                          }`}
-                                        />
-                                      ) : (
-                                        <div
-                                          className={`h-2 w-2 rounded-full ${
-                                            isCorrect || isWrong
-                                              ? "bg-white"
-                                              : "bg-white"
-                                          }`}
-                                        />
-                                      ))}
-                                  </div>
-                                  <div className="flex-1">
-                                    <div className="mb-1 flex items-center gap-2">
-                                      <span className={`font-medium`}>
-                                        {String.fromCharCode(65 + answer.index)}
-                                        .
-                                      </span>
-                                      {isCorrect && (
-                                        <CheckCircle className="h-4 w-4 text-green-600" />
-                                      )}
-                                    </div>
-                                    <div className="flex rounded-lg border border-gray-200 px-3 py-4">
-                                      {answer.content}
-                                    </div>
-                                    {/* <Editor content={answer.content} /> */}
-                                  </div>
-                                </label>
-                              );
-                            },
-                          );
-                        })()}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Explanation (shown after session ends) */}
-                  {new Date(sessionDetails?.endTime) < new Date() &&
-                    questions[currentQuestionIndex].explanation && (
-                      <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
-                        <h4 className="mb-2 font-semibold text-blue-900">
-                          Penjelasan:
-                        </h4>
-                        <Editor
-                          key={questions[currentQuestionIndex].id}
-                          content={questions[currentQuestionIndex].explanation}
-                        />
-                        {/* <div className="whitespace-pre-line">
-                          {questions[currentQuestionIndex].explanation}
-                        </div> */}
-                      </div>
-                    )}
-                  {new Date(sessionDetails?.endTime) < new Date() &&
-                    questions[currentQuestionIndex].videoExplanation &&
-                    (() => {
-                      const videoUrl =
-                        questions[currentQuestionIndex].videoExplanation;
-                      const youtubeId = getYouTubeVideoId(videoUrl);
-                      if (!youtubeId) {
-                        return (
-                          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                            <h4 className="mb-2 font-semibold text-blue-900">
-                              Video Penjelasan:
-                            </h4>
-                            <div className="flex items-center justify-center">
-                              <div className="text-center">
-                                <div className="mb-4 text-6xl">⚠️</div>
-                                <h2 className="mb-2 text-2xl font-bold text-gray-800">
-                                  Invalid Video URL
-                                </h2>
-                                <p className="text-gray-600">
-                                  This doesn't appear to be a valid YouTube
-                                  video.
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      }
-                      return (
-                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                          <h4 className="mb-2 font-semibold text-blue-900">
-                            Video Penjelasan:
-                          </h4>
-                          <div className="relative w-full">
-                            <div className="aspect-video overflow-hidden rounded-lg">
-                              <iframe
-                                className="h-full w-full"
-                                src={`https://www.youtube.com/embed/${youtubeId}?autoplay=0&rel=0&modestbranding=1`}
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                allowFullScreen
-                              ></iframe>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })()}
-
-                  {/* Navigation Buttons */}
-                  <div className="flex flex-col md:flex-row items-center justify-between pt-4 space-y-2 md:space-y-0">
-                    <Button
-                      variant="outline"
-                      onClick={() =>
-                        setCurrentQuestionIndex(
-                          Math.max(0, currentQuestionIndex - 1),
-                        )
-                      }
-                      disabled={currentQuestionIndex === 0}
-                      className="flex items-center gap-2"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                      Sebelumnya
-                    </Button>
-
-                    <Button
-                      onClick={() =>
-                        setCurrentQuestionIndex(
-                          Math.min(
-                            (questions?.length || 1) - 1,
-                            currentQuestionIndex + 1,
-                          ),
-                        )
-                      }
-                      disabled={
-                        currentQuestionIndex === (questions?.length || 1) - 1
-                      }
-                      className="flex items-center gap-2 bg-[#2b8057] text-white hover:bg-[#1f5a40]"
-                    >
-                      Selanjutnya
-                      <ChevronRight className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+          {questions && questions[currentQuestionIndex] && (
+            <QuestionCard
+              question={questions[currentQuestionIndex]}
+              currentIndex={currentQuestionIndex}
+              totalQuestions={questions.length}
+              selectedAnswer={selectedAnswers.get(
+                questions[currentQuestionIndex].id,
               )}
-            </CardContent>
-          </Card>
+              isQuizEnded={
+                new Date(sessionDetails?.endTime ?? new Date()) < new Date()
+              }
+              isUserRole={session.data?.user?.role === "user"}
+              isSaving={savingQuestions.size > 0}
+              onAnswerChange={handleAnswerChange}
+              onAnswerToggle={handleAnswerToggle}
+              onSingleAnswerSelect={handleSingleAnswerSelect}
+              onNavigate={(direction) => {
+                if (direction === "prev") {
+                  setCurrentQuestionIndex(
+                    Math.max(0, currentQuestionIndex - 1),
+                  );
+                } else {
+                  setCurrentQuestionIndex(
+                    Math.min(
+                      (questions?.length || 1) - 1,
+                      currentQuestionIndex + 1,
+                    ),
+                  );
+                }
+              }}
+            />
+          )}
         </div>
 
         {/* Sidebar - Question Navigation */}
         <div className="lg:col-span-1">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="mb-4 font-semibold text-gray-900">
-                Navigasi Soal
-              </h3>
-
-              {/* Question Grid */}
-              <div className="mb-6 grid grid-cols-5 gap-2 lg:grid-cols-4">
-                {questions?.map((_, index) => (
-                  <Button
-                    key={index}
-                    variant="outline"
-                    size="sm"
-                    className={`aspect-square text-xs ${
-                      index === currentQuestionIndex
-                        ? "border-[#2b8057] bg-[#2b8057] text-white"
-                        : selectedAnswers.has(questions[index].id)
-                          ? "border-green-300 bg-green-100 text-green-800"
-                          : "hover:border-[#2b8057]"
-                    }`}
-                    onClick={() => setCurrentQuestionIndex(index)}
-                  >
-                    {index + 1}
-                  </Button>
-                ))}
-              </div>
-
-              {/* Submit Button */}
-              {new Date(sessionDetails?.endTime) >= new Date() &&
-              session.data?.user.role === "user" ? (
-                <Button
-                  onClick={handleSubmit}
-                  disabled={isSubmitting}
-                  className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
-                >
-                  <Flag className="h-4 w-4" />
-                  {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
-                </Button>
-              ) : (
-                <Link href={`/quiz/${sessionIdString}/score`}>
-                  <Button className="flex w-full gap-2">
-                    <Flag className="h-4 w-4" />
-                    Lihat Hasil
-                  </Button>
-                </Link>
-              )}
-            </CardContent>
-          </Card>
+          {questions && (
+            <QuestionNavigation
+              questions={questions}
+              currentQuestionIndex={currentQuestionIndex}
+              answeredQuestions={new Set(selectedAnswers.keys())}
+              isQuizEnded={
+                new Date(sessionDetails?.endTime ?? new Date()) < new Date()
+              }
+              isUserRole={session.data?.user.role === "user"}
+              isSubmitting={isSubmitting}
+              isSaving={savingQuestions.size > 0}
+              sessionId={sessionIdString}
+              onQuestionSelect={setCurrentQuestionIndex}
+              onSubmit={handleSubmitClick}
+            />
+          )}
         </div>
       </div>
+
+      {/* Submit Confirmation Dialog */}
+      <SubmitConfirmationDialog
+        open={showSubmitDialog}
+        onOpenChange={setShowSubmitDialog}
+        totalQuestions={questions?.length ?? 0}
+        answeredCount={selectedAnswers.size}
+        onConfirm={handleSubmit}
+        isSubmitting={isSubmitting}
+      />
     </div>
   );
 }

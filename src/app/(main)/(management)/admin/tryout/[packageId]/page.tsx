@@ -407,7 +407,7 @@ export default function TryoutEditPage() {
                 onChange={(e) =>
                   setPackageForm({
                     ...packageForm,
-                    tokenPrice: parseInt(e.target.value) || 0,
+                    tokenPrice: parseInt(e.target.value) || 1,
                   })
                 }
                 placeholder="Enter token price"

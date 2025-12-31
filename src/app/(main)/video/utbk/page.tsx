@@ -11,7 +11,7 @@ export default function RekamanPage() {
     return <LoadingPage />;
   }
 
-  if (!session.data?.user?.enrolledTka) {
+  if (!session.data?.user?.enrolledUtbk) {
     return <NoPackagePage />;
   }
 
