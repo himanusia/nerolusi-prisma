@@ -2,6 +2,7 @@
 import { useSession } from "next-auth/react";
 import DaftarRekaman from "~/app/_components/daftar-rekaman";
 import LoadingPage from "~/app/loading";
+import NoClassPage from "~/app/no-class";
 import NoPackagePage from "~/app/no-package";
 
 export default function RekamanPage() {
@@ -15,9 +16,12 @@ export default function RekamanPage() {
     return <NoPackagePage />;
   }
 
+  if (!session.data.user.classid) {
+    return <NoClassPage />;
+  }
+
   return (
     <div className="flex flex-col gap-4">
-      {/* <HeadJenisSubtest title="Rekaman Live Class" type="rekaman" /> */}
       <div className="flex flex-col">
         <h2 className="text-2xl font-bold text-green-600">Daftar Rekaman</h2>
         <p className="text-gray-700">

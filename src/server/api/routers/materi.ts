@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, tkaProcedure } from "../trpc";
+import { is } from "date-fns/locale";
 
 export interface Video {
   id: string;
@@ -18,7 +19,6 @@ export interface MaterialSection {
   id: number;
   index: number;
   title: string;
-  subtitle?: string;
   videoCount: number;
   totalDuration: string;
   videos: Video[];
@@ -87,11 +87,10 @@ export const materiRouter = createTRPCRouter({
             id: material.id,
             index: material.index,
             title: material.name,
-            subtitle: undefined,
             videoCount: videos.length,
             totalDuration,
             videos: videos.sort((a, b) => a.index - b.index),
-            isExpanded: false, // Default to collapsed
+            isExpanded: false,
           };
         })
         .sort((a, b) => a.index - b.index);

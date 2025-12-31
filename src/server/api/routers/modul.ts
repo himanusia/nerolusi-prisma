@@ -11,9 +11,24 @@ export const modulRouter = createTRPCRouter({
       }),
     )
     .query(async ({ ctx, input }) => {
+      const subject = await ctx.db.subject.findUnique({
+        where: {
+          id: input.subjectId ?? undefined,
+        },
+      });
+
+      if (!subject) {
+        throw new Error("Subject not found");
+      }
+
+      if (subject.mode === "utbk" && input.type === "catatan" && !ctx.session.user.classid) {
+        throw new Error("User not enrolled in any class");
+      }
+
       return await ctx.db.module.findMany({
         where: {
           ...(input.subjectId ? { subjectId: input.subjectId } : {}),
+          ...(input.type === "catatan" ? { classId: ctx.session.user.classid } : {}),
           type: input.type,
         },
         include: {

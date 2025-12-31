@@ -68,6 +68,8 @@ model Event {
   startTime   DateTime?
   endTime     DateTime?
   url         String
+  classId     Int?
+  class       Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())
 }
 
@@ -119,6 +121,9 @@ model Class {
   name      String
   createdAt DateTime  @default(now())
   packages  Package[]
+  modules   Module[]
+  videos    Video[]
+  events    Event[]
   users     User[]
 }
 
@@ -138,8 +143,10 @@ model Module {
   description String?
   url         String
   subjectId   Int?
+  classId     Int?
   createdAt   DateTime   @default(now())
   type        ModuleType @default(bahan_materi)
+  class       Class?     @relation(fields: [classId], references: [id], onDelete: Cascade)
   subject     Subject?   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 }
 
@@ -260,8 +267,10 @@ model Video {
   url         String
   duration    Int
   createdAt   DateTime    @default(now())
+  classId     Int?
   type        VideoType   @default(rekaman)
   mode        SubjectMode @default(tka)
+  class       Class?      @relation(fields: [classId], references: [id], onDelete: Cascade)
   topic       Topic?
 }
 

@@ -16,6 +16,10 @@ export const eventRouter = createTRPCRouter({
         .optional(),
     )
     .query(async ({ ctx, input }) => {
+      if (!ctx.session.user.classid) {
+        return [];
+      }
+
       const now = new Date();
       const whereClause = input?.upcoming
         ? {
@@ -23,6 +27,7 @@ export const eventRouter = createTRPCRouter({
               { endTime: { gte: now } },
               { endTime: null }, // Include events without end time
             ],
+            classId: ctx.session.user.classid
           }
         : {};
 
