@@ -245,7 +245,7 @@ export default function QuizPage() {
   ) : isLoading || isQuestionsLoading ? (
     <LoadingPage />
   ) : (
-    <div className="mx-auto max-w-7xl space-y-6 p-4">
+    <div className="space-y-6">
       {/* Header with Timer and Progress */}
       <QuizHeader
         subtestType={sessionDetails?.subtest.type ?? ""}
