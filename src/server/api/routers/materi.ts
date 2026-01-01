@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, tkaProcedure } from "../trpc";
+import { createTRPCRouter, subscriberProcedure, tkaProcedure, userProcedure } from "../trpc";
 import { is } from "date-fns/locale";
 
 export interface Video {
@@ -26,7 +26,7 @@ export interface MaterialSection {
 }
 
 export const materiRouter = createTRPCRouter({
-  getSubjectsMaterial: tkaProcedure
+  getSubjectsMaterial: subscriberProcedure
     .input(
       z.object({
         subjectName: z.string(),
@@ -47,6 +47,21 @@ export const materiRouter = createTRPCRouter({
           },
         },
       });
+
+      const subject = await ctx.db.subject.findMany({
+        where: {
+          name: input.subjectName,
+        },
+      });
+      if (subject.length === 0) {
+        throw new Error("Subject not found");
+      }
+
+      const mode = subject[0].mode; // 'tka' or 'utbk'
+
+      if ((mode === "tka" && !ctx.session?.user?.enrolledTka) || (mode === "utbk" && !ctx.session?.user?.enrolledUtbk)) {
+        throw new Error("Unauthorized");
+      }
 
       const userTopicProgress = await ctx.db.userMateriProgress.findMany({
         where: {
@@ -98,7 +113,7 @@ export const materiRouter = createTRPCRouter({
       return materialSections;
     }),
 
-  updateUserMaterialProgressAndSubmit: tkaProcedure
+  updateUserMaterialProgressAndSubmit: subscriberProcedure
     .input(
       z.object({
         sessionId: z.string(),
@@ -237,7 +252,7 @@ export const materiRouter = createTRPCRouter({
       });
     }),
 
-  updateUserMaterialProgress: tkaProcedure
+  updateUserMaterialProgress: subscriberProcedure
     .input(
       z.object({
         topicId: z.number(),
