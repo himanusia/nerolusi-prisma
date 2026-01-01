@@ -58,8 +58,13 @@ export const videoRouter = createTRPCRouter({
         throw new Error("Video not found");
       }
 
-      if (video.type === "materi" && !ctx.session.user.enrolledTka) {
-        throw new Error("You must be enrolled in TKA to access this video.");
+      if (video.type === "materi") {
+        if (video.mode === "tka"  && !ctx.session.user.enrolledTka){
+          throw new Error("You must be enrolled in TKA to access this video.");
+        }
+        if (video.mode === "utbk" && !ctx.session.user.enrolledUtbk){
+          throw new Error("You must be enrolled in UTBK to access this video.");
+        }
       }
 
       return video;
