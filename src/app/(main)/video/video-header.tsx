@@ -55,7 +55,7 @@ export default function VideoHeader() {
         <HeadJenisSubtest title="Video Materi Lengkap" type="rekaman" />
       </div>
       {showToggle && (
-        <div className="mt-3 flex max-w-[175px] flex-col items-center rounded-[10px] border border-[#acaeba] bg-white p-1 md:mt-0">
+        <div className="mt-3 flex max-w-[190px] flex-col items-center rounded-[10px] border border-[#acaeba] bg-white p-1 md:mt-0">
           <p className="text-xs text-black">Mode:</p>
           <div className="relative flex items-center rounded-[7px] border border-[#acaeba] bg-[#f2f2f2]">
             {/* Sliding background indicator */}
@@ -66,8 +66,8 @@ export default function VideoHeader() {
                   : "bg-[radial-gradient(circle,#bbdefb,#64b7fb)]"
               }`}
               style={{
-                width: isMateri ? "70px" : "75px",
-                transform: isMateri ? "translateX(90px)" : "translateX(5px)",
+                width: isMateri ? "75px" : "90px",
+                transform: isMateri ? "translateX(105px)" : "translateX(5px)",
               }}
             />
             <button
@@ -78,7 +78,7 @@ export default function VideoHeader() {
                   : "text-[#b4b4b4] hover:text-gray-800"
               }`}
             >
-              Umum
+              Rekaman
             </button>
             <button
               onClick={() => handleModeChange(true)}
