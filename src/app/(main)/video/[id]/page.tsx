@@ -31,16 +31,20 @@ export default function NontonPage() {
     return <LoadingPage />;
   }
 
-  if (!session.data?.user?.enrolledTka) {
-    return <NoPackagePage />;
-  }
-
   if (isLoading) {
     return <LoadingPage />;
   }
-
+  
   if (isError || !video) {
     return <ErrorPage />;
+  }
+  
+  if (video.mode === "tka" && !session.data?.user?.enrolledTka) {
+    return <NoPackagePage />;
+  }
+
+  if (video.mode === "utbk" && !session.data?.user?.enrolledUtbk) {
+    return <NoPackagePage />;
   }
 
   const youtubeId = getYouTubeVideoId(video.url);
