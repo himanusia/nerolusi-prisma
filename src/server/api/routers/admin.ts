@@ -559,6 +559,15 @@ export const adminRouter = createTRPCRouter({
         );
       }
 
+      const material = await ctx.db.material.findUnique({
+        where: { id: input.materialId },
+        include: { subject: true },
+      });
+
+      if (!material) {
+        throw new Error("Material not found");
+      }
+
       // Create video and subtest first, then create topic
       return ctx.db.$transaction(async (tx) => {
         // Create the video
@@ -568,6 +577,7 @@ export const adminRouter = createTRPCRouter({
             url: input.videoUrl,
             duration: input.videoDuration,
             type: "materi",
+            mode: material.subject.mode,
           },
         });
 
