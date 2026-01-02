@@ -11,7 +11,7 @@ export default function VideoMateri({ isTka }: VideoMateriProps) {
     <div className="flex flex-col items-start justify-start space-y-8">
       {SUBJECT_CATEGORIES.filter(
         (category) =>
-          (isTka ? category.type !== "utbk" : category.type === "utbk") &&
+          (isTka ? category.mode === "tka" : category.mode === "utbk") &&
           category.type !== "modul_nerolusi",
       ).map((category) => (
         <div key={category.type} className="w-full">
@@ -20,7 +20,7 @@ export default function VideoMateri({ isTka }: VideoMateriProps) {
           <div className="flex flex-row gap-1 text-left text-sm font-bold md:gap-2 md:text-xl">
             <p>Video Materi</p>
             <p className="italic text-[#d78e0c]">
-              from ZERO to Nero {category.type.toUpperCase()}
+              from ZERO to Nero {category.type_name.toUpperCase()}
             </p>
           </div>
           <p className="mb-4 text-sm text-gray-600 md:text-lg">

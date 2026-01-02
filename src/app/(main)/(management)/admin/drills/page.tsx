@@ -201,7 +201,7 @@ export default function TKADrillsPage() {
           <CardContent className="py-12 text-center">
             <div className="text-gray-500">
               <Zap className="mx-auto mb-4 h-12 w-12 opacity-50" />
-              <h3 className="mb-2 text-lg font-medium">No TKA drills found</h3>
+              <h3 className="mb-2 text-lg font-medium">No drills found</h3>
               <p>Create your first drill to get started.</p>
             </div>
           </CardContent>
