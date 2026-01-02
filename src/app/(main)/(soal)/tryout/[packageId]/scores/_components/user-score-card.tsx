@@ -56,6 +56,7 @@ export function UserScoreCard({
             variant="default"
             className="w-full"
             onClick={onViewPembahasan}
+            disabled={!isPackageEndDatePassed}
           >
             Pembahasan
           </Button>

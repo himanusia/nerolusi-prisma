@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts, PDFPage } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import fs from 'fs';
 import path from 'path';
 
@@ -79,39 +79,57 @@ export async function generateCertificate(data: CertificateData): Promise<Uint8A
   // watermark logo
   try {
     const watermarkPath = path.join(process.cwd(), 'public', 'logo_black.png');
-    const watermarkImageBytes = fs.readFileSync(watermarkPath);
-    const watermarkImage = await pdfDoc.embedPng(watermarkImageBytes);
-    
-    const watermarkDims = watermarkImage.scale(0.6);
-    
-    page.drawImage(watermarkImage, {
-      x: (842 - watermarkDims.width) / 2,
-      y: (595 - watermarkDims.height) / 2,
-      width: watermarkDims.width,
-      height: watermarkDims.height,
-      opacity: 0.05,
-    });
+    if (fs.existsSync(watermarkPath)) {
+      const watermarkImageBytes = fs.readFileSync(watermarkPath);
+      const watermarkImage = await pdfDoc.embedPng(watermarkImageBytes);
+      
+      const watermarkDims = watermarkImage.scale(0.6);
+      
+      page.drawImage(watermarkImage, {
+        x: (842 - watermarkDims.width) / 2,
+        y: (595 - watermarkDims.height) / 2,
+        width: watermarkDims.width,
+        height: watermarkDims.height,
+        opacity: 0.05,
+      });
+    } else {
+      console.warn('Watermark image not found at:', watermarkPath);
+    }
   } catch (error) {
     console.error('Error loading watermark:', error);
+    console.error('Current working directory:', process.cwd());
   }
   
   const headerHeight = 80;
   
   try {
     const logoPath = path.join(process.cwd(), 'public', 'logo2.png');
-    const logoImageBytes = fs.readFileSync(logoPath);
-    const logoImage = await pdfDoc.embedPng(logoImageBytes);
-    
-    const logoDims = logoImage.scale(0.5);
-    
-    page.drawImage(logoImage, {
-      x: (842 - logoDims.width) / 2,
-      y: 580 - headerHeight + (headerHeight - logoDims.height) / 2,
-      width: logoDims.width,
-      height: logoDims.height,
-    });
+    if (fs.existsSync(logoPath)) {
+      const logoImageBytes = fs.readFileSync(logoPath);
+      const logoImage = await pdfDoc.embedPng(logoImageBytes);
+      
+      const logoDims = logoImage.scale(0.5);
+      
+      page.drawImage(logoImage, {
+        x: (842 - logoDims.width) / 2,
+        y: 580 - headerHeight + (headerHeight - logoDims.height) / 2,
+        width: logoDims.width,
+        height: logoDims.height,
+      });
+    } else {
+      console.warn('Logo image not found at:', logoPath);
+      // Fallback to text logo
+      page.drawText('NEROLUSI', {
+        x: (842 - boldFont.widthOfTextAtSize('NEROLUSI', 28)) / 2,
+        y: 595 - 45,
+        size: 28,
+        font: boldFont,
+        color: darkTextColor,
+      });
+    }
   } catch (error) {
     console.error('Error loading logo:', error);
+    console.error('Current working directory:', process.cwd());
     page.drawText('NEROLUSI', {
       x: (842 - boldFont.widthOfTextAtSize('NEROLUSI', 28)) / 2,
       y: 595 - 45,
