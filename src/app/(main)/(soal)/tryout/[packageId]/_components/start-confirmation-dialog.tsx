@@ -31,7 +31,7 @@ export function StartConfirmationDialog({
       <DialogContent className="max-w-[400px] sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-gray-800">
-            ⚠️ Perhatian!
+            Perhatian!
           </DialogTitle>
         </DialogHeader>
 

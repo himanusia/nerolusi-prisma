@@ -63,7 +63,7 @@ export function QuestionNavigation({
         {!isQuizEnded && isUserRole ? (
           <Button
             onClick={onSubmit}
-            disabled={isSubmitting || isSaving}
+            disabled={isSubmitting || isSaving || isQuizEnded}
             className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
           >
             <Flag className="h-4 w-4" />
@@ -71,11 +71,11 @@ export function QuestionNavigation({
               ? "Menyimpan..."
               : isSubmitting
                 ? "Mengirim..."
-                : "Selesai & Kirim"}
+                : "Selesai"}
           </Button>
         ) : (
           <Link href={`/quiz/${sessionId}/score`}>
-            <Button className="flex w-full gap-2">
+            <Button className="flex w-full gap-2" disabled={!isQuizEnded}>
               <Flag className="h-4 w-4" />
               Lihat Hasil
             </Button>

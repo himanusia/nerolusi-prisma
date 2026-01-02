@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api } from "~/trpc/react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
 import ErrorPage from "~/app/error";
@@ -275,6 +275,7 @@ export default function QuizPage() {
               onAnswerChange={handleAnswerChange}
               onAnswerToggle={handleAnswerToggle}
               onSingleAnswerSelect={handleSingleAnswerSelect}
+              onSubmit={handleSubmitClick}
               onNavigate={(direction) => {
                 if (direction === "prev") {
                   setCurrentQuestionIndex(

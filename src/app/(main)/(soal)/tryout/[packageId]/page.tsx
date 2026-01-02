@@ -65,27 +65,6 @@ export default function TryOutPage() {
   const isPackageEndDatePassed =
     new Date(packageData?.TOend || new Date()) < new Date();
 
-  // Redirect if all completed and not expired
-  React.useEffect(() => {
-    if (
-      packageData &&
-      allSubtestsCompleted &&
-      sortedSubtests.length > 0 &&
-      !isPackageEndDatePassed
-    ) {
-      toast.info(
-        "Semua subtest telah diselesaikan. Pembahasan akan tersedia setelah tryout berakhir.",
-      );
-      router.push(`/tryout/${packageId}/scores`);
-    }
-  }, [
-    packageData,
-    allSubtestsCompleted,
-    sortedSubtests,
-    isPackageEndDatePassed,
-    router,
-    packageId,
-  ]);
 
   // Refetch on visibility change
   useEffect(() => {
