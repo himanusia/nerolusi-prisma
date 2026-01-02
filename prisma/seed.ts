@@ -20,7 +20,7 @@ async function main() {
   // await db.folder.deleteMany();
   // await db.subtest.deleteMany();
   // await db.package.deleteMany();
-  await db.video.deleteMany();
+  // await db.video.deleteMany();
   // await db.class.deleteMany();
   // await db.user.deleteMany();
   await db.subject.deleteMany();
@@ -77,6 +77,8 @@ async function main() {
   //       type: "tryout",
   //       TOstart,
   //       TOend,
+  //       mode: "utbk",
+  //       tokenPrice: 1
   //       // classId: classItem.id,
   //     },
   //   });
@@ -101,37 +103,37 @@ async function main() {
   //       },
   //     });
 
-  //     // Generate Answers for Question
-  //     // Generate Answers for Question based on type
-  //     if (question.type === "essay") {
-  //       await db.answer.create({
-  //         data: {
-  //           index: 0,
-  //           content: faker.word.words({ count: { min: 5, max: 20 } }),
-  //           questionId: question.id,
-  //           isCorrect: true,
-  //         },
-  //       });
-  //     } else if (question.type === "mulChoice") {
-  //       // Multiple choice: exactly one correct answer
-  //       const answers = await Promise.all(
-  //         Array.from({ length: 5 }).map((_, index) =>
-  //           db.answer.create({
-  //             data: {
-  //               index: index,
-  //               content: faker.word.words({ count: { min: 1, max: 20 } }),
-  //               questionId: question.id,
-  //               isCorrect: index === 0, // Only first answer is correct
-  //             },
-  //           }),
-  //         ),
-  //       );
-  //     } else if (question.type === "mulAnswer") {
-  //       // Multiple answer: 1 to 5 answers can be correct
-  //       const numCorrect = faker.number.int({ min: 1, max: 5 });
-  //       const correctIndices = faker.helpers
-  //         .shuffle([0, 1, 2, 3, 4])
-  //         .slice(0, numCorrect) as (0 | 1 | 2 | 3 | 4)[];
+      // // Generate Answers for Question
+      // // Generate Answers for Question based on type
+      // if (question.type === "essay") {
+      //   await db.answer.create({
+      //     data: {
+      //       index: 0,
+      //       content: faker.word.words({ count: { min: 5, max: 20 } }),
+      //       questionId: question.id,
+      //       isCorrect: true,
+      //     },
+      //   });
+      // } else if (question.type === "mulChoice") {
+      //   // Multiple choice: exactly one correct answer
+      //   const answers = await Promise.all(
+      //     Array.from({ length: 5 }).map((_, index) =>
+      //       db.answer.create({
+      //         data: {
+      //           index: index,
+      //           content: faker.word.words({ count: { min: 1, max: 20 } }),
+      //           questionId: question.id,
+      //           isCorrect: index === 0, // Only first answer is correct
+      //         },
+      //       }),
+      //     ),
+      //   );
+      // } else if (question.type === "mulAnswer") {
+      //   // Multiple answer: 1 to 5 answers can be correct
+      //   const numCorrect = faker.number.int({ min: 1, max: 5 });
+      //   const correctIndices = faker.helpers
+      //     .shuffle([0, 1, 2, 3, 4])
+      //     .slice(0, numCorrect) as (0 | 1 | 2 | 3 | 4)[];
 
   //       const answers = await Promise.all(
   //         Array.from({ length: 5 }).map((_, index) =>
@@ -178,6 +180,7 @@ async function main() {
       description: "Video Materi #1",
       url: "https://youtu.be/HofUDfwfUY8",
       type: "rekaman",
+      mode: "utbk",
       createdAt: new Date().toISOString(),
     },
     {
@@ -185,6 +188,7 @@ async function main() {
       description: "Video Materi #2",
       url: "https://youtu.be/9JbAp__yGhU",
       type: "rekaman",
+      mode: "utbk",
       createdAt: new Date().toISOString(),
     },
   ];
@@ -206,17 +210,17 @@ async function main() {
     return;
   }
 
-  await db.video.createMany({
-    data: videosData.map((video) => ({
-      title: video.title,
-      description: video.description,
-      url: video.url,
-      type: video.type as VideoType,
-      duration: 600,
-    })),
-    skipDuplicates: true,
-  });
-  console.log(`Successfully created ${videosData.length} videos.`);
+  // await db.video.createMany({
+  //   data: videosData.map((video) => ({
+  //     title: video.title,
+  //     description: video.description,
+  //     url: video.url,
+  //     type: video.type as VideoType,
+  //     duration: 600,
+  //   })),
+  //   skipDuplicates: true,
+  // });
+  // console.log(`Successfully created ${videosData.length} videos.`);
 
   // const videos = await db.video.findMany();
 
@@ -229,10 +233,7 @@ async function main() {
             id: subject.id,
             name: subject.title,
             type: category.type as any,
-            mode:
-              category.type === "utbk" || category.type === "modul_nerolusi"
-                ? "utbk"
-                : "tka",
+            mode: category.mode,
           },
         }),
       ),

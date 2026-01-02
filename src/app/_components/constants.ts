@@ -7,12 +7,16 @@ export interface Subject {
 
 export interface SubjectCategory {
   type: string;
+  mode: "utbk" | "tka";
+  type_name: string;
   subjects: Subject[];
 }
 
 export const SUBJECT_CATEGORIES: SubjectCategory[] = [
   {
+    mode: "tka",
     type: "wajib",
+    type_name: "Wajib",
     subjects: [
       {
         id: 1,
@@ -35,7 +39,9 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
+    mode: "tka",
     type: "saintek",
+    type_name: "Saintek",
     subjects: [
       {
         id: 4,
@@ -64,7 +70,9 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
+    mode: "tka",
     type: "soshum",
+    type_name: "Soshum",
     subjects: [
       {
         id: 8,
@@ -105,7 +113,9 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
+    mode: "tka",
     type: "modul_nerolusi",
+    type_name: "Modul Nerolusi",
     subjects: [
       {
         id: 19,
@@ -116,7 +126,9 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
-    type: "utbk",
+    mode: "utbk",
+    type: "tps",
+    type_name: "Tes Potensi Skolastik (TPS)",
     subjects: [
       {
         id: 12,
@@ -131,12 +143,6 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
         slug: "kpu",
       },
       {
-        id: 14,
-        title: "Kemampuan Memahami Bacaan dan Menulis",
-        image: "/modul/pbm.webp",
-        slug: "pbm",
-      },
-      {
         id: 15,
         title: "Pengetahuan Kuantitatif",
         image: "/modul/pk.webp",
@@ -147,6 +153,19 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
         title: "Penalaran Matematika",
         image: "/modul/pm.webp",
         slug: "pm",
+      }
+    ],
+  },
+  {
+    mode: "utbk",
+    type: "tl",
+    type_name: "Tes Literasi (TL)",
+    subjects: [
+      {
+        id: 14,
+        title: "Kemampuan Memahami Bacaan dan Menulis",
+        image: "/modul/pbm.webp",
+        slug: "pbm",
       },
       {
         id: 17,
