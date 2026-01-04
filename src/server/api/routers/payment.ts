@@ -53,7 +53,7 @@ export const paymentRouter = createTRPCRouter({
         order: {
           amount: input.amount,
           invoice_number: payment.invoiceNumber,
-          callback_url: `${env.FRONTEND_URL}/payments/verify?invoice=${payment.invoiceNumber}`,
+          callback_url: `${env.NEXT_BASE_URL}/payments/verify?invoice=${payment.invoiceNumber}`,
         },
         payment: { payment_due_date: 60 },
       };
