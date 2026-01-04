@@ -53,7 +53,7 @@ export const paymentRouter = createTRPCRouter({
         order: {
           amount: input.amount,
           invoice_number: payment.invoiceNumber,
-          callback_url: `${env.AUTH_URL}/payments/verify?invoice=${payment.invoiceNumber}`,
+          callback_url: `${env.FRONTEND_URL}/payments/verify?invoice=${payment.invoiceNumber}`,
         },
         payment: { payment_due_date: 60 },
       };
@@ -97,7 +97,7 @@ export const paymentRouter = createTRPCRouter({
 
       if (!response.ok) {
         throw new Error(
-          `DOKU API Error: ${data.error_message || "Unknown error"}`,
+          `Internal Server Error: DOKU API Error`,
         );
       }
 
