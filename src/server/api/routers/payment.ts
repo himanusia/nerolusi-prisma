@@ -80,6 +80,11 @@ export const paymentRouter = createTRPCRouter({
         .update(signatureString)
         .digest("base64");
 
+      console.log("--- DEBUG SIGNATURE ---");
+      console.log("Secret Key Length:", env.DOKU_SECRET_KEY?.length); // Check if length matches what you expect (detects hidden spaces)
+      console.log("Signature String Plain:", JSON.stringify(signatureString)); // JSON.stringify reveals \n characters
+      console.log("Generated Signature:", signature);
+      console.log("-----------------------");
       // Hit DOKU API
       const response = await fetch(`${env.DOKU_API_URL}/checkout/v1/payment`, {
         method: "POST",
@@ -103,7 +108,11 @@ export const paymentRouter = createTRPCRouter({
         );
       }
 
-      if (!data.response || !data.response.payment || !data.response.payment.url) {
+      if (
+        !data.response ||
+        !data.response.payment ||
+        !data.response.payment.url
+      ) {
         throw new Error("Invalid response from DOKU API: missing payment URL");
       }
 
