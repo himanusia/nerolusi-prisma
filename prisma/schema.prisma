@@ -400,6 +400,8 @@ enum SubjectType {
   saintek
   soshum
   utbk
+  tps
+  tl
   modul_nerolusi
 }
 

@@ -165,7 +165,7 @@ export default function MainPage() {
     <div className="flex size-full flex-col gap-4">
       {/* <Separator className="h-1 bg-gray-200" /> */}
       <InformasiUtama />
-      <VideoMateri />
+      <VideoMateri isTka={true} />
       <Separator className="h-1 bg-gray-200" />
       <TryOutTersedia
         tryOuts={tkaTryOuts}

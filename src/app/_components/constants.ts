@@ -113,7 +113,7 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
-    mode: "tka",
+    mode: "utbk",
     type: "modul_nerolusi",
     type_name: "Modul Nerolusi",
     subjects: [
@@ -205,13 +205,17 @@ export const getAllSubjects = (): Subject[] => {
 };
 
 export const getUTBKSubjects = (): Subject[] => {
-  return SUBJECT_CATEGORIES.find((cat) => cat.type === "utbk")?.subjects || [];
+  return (
+    SUBJECT_CATEGORIES.filter(
+      (cat) => cat.mode === "utbk" && cat.type !== "modul_nerolusi",
+    ).flatMap((cat) => cat.subjects) || []
+  )
 };
 
 export const getUTBKModulSubjects = (): Subject[] => {
   return (
     SUBJECT_CATEGORIES.filter(
-      (cat) => cat.type === "modul_nerolusi" || cat.type === "utbk",
+      (cat) => cat.mode === "utbk",
     ).flatMap((cat) => cat.subjects) || []
   );
 };
