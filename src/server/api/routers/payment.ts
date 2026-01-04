@@ -94,6 +94,19 @@ export const paymentRouter = createTRPCRouter({
       });
 
       const data = await response.json();
+
+      console.log("DOKU Response:", data);
+
+      if (!response.ok) {
+        throw new Error(
+          `DOKU API Error: ${data.error_message || "Unknown error"}`,
+        );
+      }
+
+      if (!data.response || !data.response.payment || !data.response.payment.url) {
+        throw new Error("Invalid response from DOKU API: missing payment URL");
+      }
+
       return data.response.payment.url; // This is the DOKU hosted page URL
     }),
 
