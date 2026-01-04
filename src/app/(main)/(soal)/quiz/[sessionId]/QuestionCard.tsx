@@ -34,6 +34,7 @@ interface QuestionCardProps {
   onAnswerToggle: (questionId: number, answerId: number) => void;
   onSingleAnswerSelect: (questionId: number, answerId: number) => void;
   onNavigate: (direction: "prev" | "next") => void;
+  onSubmit: () => void;
 }
 
 export function QuestionCard({
@@ -48,6 +49,7 @@ export function QuestionCard({
   onAnswerToggle,
   onSingleAnswerSelect,
   onNavigate,
+  onSubmit,
 }: QuestionCardProps) {
   return (
     <Card>
@@ -115,14 +117,24 @@ export function QuestionCard({
               {isSaving ? "Menyimpan..." : "Sebelumnya"}
             </Button>
 
-            <Button
-              onClick={() => onNavigate("next")}
-              disabled={currentIndex === totalQuestions - 1 || isSaving}
-              className="flex items-center gap-2 bg-[#2b8057] text-white hover:bg-[#1f5a40]"
-            >
-              {isSaving ? "Menyimpan..." : "Selanjutnya"}
-              <ChevronRight className="h-4 w-4" />
-            </Button>
+            {currentIndex === totalQuestions - 1 ? (
+              <Button
+                onClick={onSubmit}
+                disabled={isSaving || isQuizEnded}
+                className="flex items-center gap-2 bg-red-600 text-white hover:bg-red-700"
+              >
+                {isSaving ? "Menyimpan..." : "Selesai"}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => onNavigate("next")}
+                disabled={isSaving}
+                className="flex items-center gap-2 bg-[#2b8057] text-white hover:bg-[#1f5a40]"
+              >
+                {isSaving ? "Menyimpan..." : "Selanjutnya"}
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </CardContent>

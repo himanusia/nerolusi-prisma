@@ -34,12 +34,12 @@ export function SubmitConfirmationDialog({
       <DialogContent className="max-w-[400px] sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle className="text-center text-2xl font-bold text-gray-800">
-            Konfirmasi Pengumpulan
+            Yakin ingin mengakhiri?
           </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4 py-4">
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+          {/* <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
             <h3 className="mb-3 font-bold text-blue-900">Status Jawaban:</h3>
 
             <div className="space-y-2">
@@ -72,26 +72,13 @@ export function SubmitConfirmationDialog({
                 </div>
               )}
             </div>
-          </div>
+          </div> */}
 
           {allAnswered ? (
-            <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-              <div className="flex items-start gap-2">
-                <span className="text-xl text-green-600">✓</span>
-                <div className="flex-1">
-                  <p className="mb-1 font-bold text-green-900">
-                    Semua soal sudah terjawab!
-                  </p>
-                  <p className="text-sm text-green-800">
-                    Anda dapat mengumpulkan jawaban sekarang.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <></>
           ) : (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
               <div className="flex items-start gap-2">
-                <span className="text-xl text-amber-600">⚠️</span>
                 <div className="flex-1">
                   <p className="mb-1 font-bold text-amber-900">Perhatian!</p>
                   <p className="text-sm text-amber-800">

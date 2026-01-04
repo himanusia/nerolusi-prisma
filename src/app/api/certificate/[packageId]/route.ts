@@ -4,6 +4,7 @@ import { db } from '~/server/db';
 import { generateCertificate } from '~/lib/certificate-generator';
 
 export async function GET(
+  request: Request,
   { params }: { params: Promise<{ packageId: string }> }
 ) {
   try {
@@ -17,7 +18,8 @@ export async function GET(
       );
     }
 
-    const { packageId } = await params;
+    const resolvedParams = await params;
+    const { packageId } = resolvedParams;
     const userId = session.user.id;
 
     // Fetch package data with subtests and quiz sessions
