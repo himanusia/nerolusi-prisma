@@ -12,6 +12,7 @@ import { api } from "~/trpc/react";
 import { PackageCard } from "./package-card";
 import { toast } from "sonner";
 import LoadingPage from "~/app/loading";
+import ErrorPage from "~/app/error";
 
 export default function BeliPaketPage() {
   const { data: session, status } = useSession();
@@ -22,6 +23,12 @@ export default function BeliPaketPage() {
     price: number;
   } | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const {
+    data: pricingData,
+    isLoading: isPricingLoading,
+    isError: isPricingError,
+  } = api.payment.getPrice.useQuery();
 
   const createPayment = api.payment.createCheckout.useMutation({
     onSuccess: (dokuUrl) => {
@@ -47,17 +54,25 @@ export default function BeliPaketPage() {
     setSelectedPackage(null);
 
     setIsRedirecting(true);
-    
+
     const idempotencyKey = crypto.randomUUID();
     const type = selectedPackage?.title === "Paket TKA" ? "tka" : "utbk";
 
-    createPayment.mutate({ idempotencyKey, type, userId: session?.user.id, amount: selectedPackage.price});
+    createPayment.mutate({
+      idempotencyKey,
+      type,
+      userId: session?.user.id,
+      amount: selectedPackage.price,
+    });
   };
 
-  if (status === "loading") {
+  if (status === "loading" || isPricingLoading) {
     return <LoadingPage />;
   }
 
+  if (isPricingError) {
+    return <ErrorPage />;
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -77,12 +92,12 @@ export default function BeliPaketPage() {
       {/* <TokenCard tokenAmount={userTokens} /> */}
 
       {/* Package Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         {/* UTBK Package */}
         <PackageCard
           title="Paket UTBK"
           description="Persiapan lengkap untuk UTBK SNBT 2026"
-          price="Rp379.000,00"
+          price={`Rp${pricingData.utbkPrice.toLocaleString("id-ID")},00`}
           features={[
             "10+ Try Out UTBK terlengkap",
             "Pembahasan detail setiap soal",
@@ -91,8 +106,8 @@ export default function BeliPaketPage() {
             "Video pembahasan materi",
           ]}
           icon={<TbTargetArrow className="h-16 w-16 text-blue-600" />}
-          href={"/"}
-          onClick={() => handleBuyPackage("Paket UTBK", 379000)}
+          // href={"/"}
+          onClick={() => handleBuyPackage("Paket UTBK", pricingData.utbkPrice)}
           disabled={isRedirecting}
         />
 
@@ -100,7 +115,7 @@ export default function BeliPaketPage() {
         <PackageCard
           title="Paket TKA"
           description="Tes Kemampuan Akademik untuk berbagai jurusan"
-          price="Rp650.000,00"
+          price={`Rp${pricingData.tkaPrice.toLocaleString("id-ID")},00`}
           features={[
             "Try Out TKA Saintek & Soshum",
             "Materi lengkap per mata pelajaran",
@@ -109,10 +124,12 @@ export default function BeliPaketPage() {
             "Video pembelajaran",
           ]}
           icon={<TbBook className="h-16 w-16 text-purple-600" />}
-          href={"https://bit.ly/Nerolusi-INTI-TKA2025"}
+          // href={"https://bit.ly/Nerolusi-INTI-TKA2025"}
           disabled={isRedirecting}
-          onClick={() => handleBuyPackage("Paket TKA", 49000)}
+          onClick={() => handleBuyPackage("Paket TKA", pricingData.tkaPrice)}
         />
+
+        <TokenCard tokenAmount={session.user.token ?? 0} isMini={false} />
       </div>
 
       {/* Purchase Confirmation Dialog */}

@@ -13,7 +13,6 @@ interface PackageCardProps {
   features: string[];
   icon: React.ReactNode;
   disabled: boolean;
-  href: string;
   onClick?: () => void;
 }
 
@@ -24,7 +23,6 @@ export const PackageCard = ({
   features,
   icon,
   disabled,
-  href,
   onClick,
 }: PackageCardProps) => {
   return (

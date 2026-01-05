@@ -96,9 +96,7 @@ export const paymentRouter = createTRPCRouter({
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          `Internal Server Error: DOKU API Error`,
-        );
+        throw new Error(`Internal Server Error: DOKU API Error`);
       }
 
       if (
@@ -126,5 +124,18 @@ export const paymentRouter = createTRPCRouter({
         throw new Error("Order not found");
       }
       return payment;
+    }),
+
+  getPrice: userProcedure
+    .query(async ({ ctx }) => {
+      const pricing = await ctx.db.price.findFirst();
+      if (!pricing) {
+        throw new Error("Pricing not found");
+      }
+      return {
+        tokenPrice: pricing.tokenPrice,
+        tkaPrice: pricing.paketTkaPrice,
+        utbkPrice: pricing.paketUtbkPrice,
+      };
     }),
 });

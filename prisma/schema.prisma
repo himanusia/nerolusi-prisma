@@ -337,6 +337,13 @@ model Payment {
   user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
+model Price {
+  id             Int @id @default(autoincrement())
+  paketUtbkPrice Int
+  paketTkaPrice  Int
+  tokenPrice     Int
+}
+
 enum PaymentStatus {
   PENDING
   SUCCESS

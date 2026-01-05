@@ -33,7 +33,7 @@ export default function TryoutListPage() {
           <h1 className="text-3xl font-bold text-[#2b8057]">Try Out</h1>
         </div>
       </div>
-      <TokenCard tokenAmount={userTokens} />
+      <TokenCard tokenAmount={userTokens} isMini />
 
       <TryoutList isTka={true} />
     </div>
