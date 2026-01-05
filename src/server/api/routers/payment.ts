@@ -53,7 +53,7 @@ export const paymentRouter = createTRPCRouter({
         order: {
           amount: input.amount,
           invoice_number: payment.invoiceNumber,
-          callback_url: `${env.AUTH_URL}/payments/verify?invoice=${payment.invoiceNumber}`,
+          callback_url: `${env.NEXT_BASE_URL}/payments/verify?invoice=${payment.invoiceNumber}`,
         },
         payment: { payment_due_date: 60 },
       };
@@ -80,11 +80,6 @@ export const paymentRouter = createTRPCRouter({
         .update(signatureString)
         .digest("base64");
 
-      console.log("--- DEBUG SIGNATURE ---");
-      console.log("Secret Key Length:", env.DOKU_SECRET_KEY?.length); // Check if length matches what you expect (detects hidden spaces)
-      console.log("Signature String Plain:", JSON.stringify(signatureString)); // JSON.stringify reveals \n characters
-      console.log("Generated Signature:", signature);
-      console.log("-----------------------");
       // Hit DOKU API
       const response = await fetch(`${env.DOKU_API_URL}/checkout/v1/payment`, {
         method: "POST",
@@ -100,12 +95,8 @@ export const paymentRouter = createTRPCRouter({
 
       const data = await response.json();
 
-      console.log("DOKU Response:", data);
-
       if (!response.ok) {
-        throw new Error(
-          `DOKU API Error: ${data.error_message || "Unknown error"}`,
-        );
+        throw new Error(`Internal Server Error: DOKU API Error`);
       }
 
       if (
@@ -133,5 +124,18 @@ export const paymentRouter = createTRPCRouter({
         throw new Error("Order not found");
       }
       return payment;
+    }),
+
+  getPrice: userProcedure
+    .query(async ({ ctx }) => {
+      const pricing = await ctx.db.price.findFirst();
+      if (!pricing) {
+        throw new Error("Pricing not found");
+      }
+      return {
+        tokenPrice: pricing.tokenPrice,
+        tkaPrice: pricing.paketTkaPrice,
+        utbkPrice: pricing.paketUtbkPrice,
+      };
     }),
 });

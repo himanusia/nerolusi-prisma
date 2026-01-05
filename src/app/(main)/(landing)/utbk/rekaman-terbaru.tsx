@@ -40,7 +40,7 @@ export default function RekamanTerbaru() {
             Kerjakan Try Out ini untuk melihat hasil belajarmu
           </p>
         </div>
-        <Link href={"/video"}>
+        <Link href={"/video/utbk/umum"}>
           <Button variant="outline" size="sm">
             Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
           </Button>

@@ -233,7 +233,7 @@ export default function VerifyPaymentPage() {
           <div className="rounded-lg bg-orange-50 p-4">
             <p className="text-center text-gray-700">
               Kami sedang menunggu konfirmasi pembayaran Anda. Proses ini
-              mungkin membutuhkan beberapa saat. Mohon jangan tutup halaman ini.
+              mungkin membutuhkan beberapa saat.  
             </p>
           </div>
 

@@ -17,7 +17,7 @@ export default function ProfileDetail() {
         <div className="flex flex-wrap items-center gap-3">
           <ProfilCard user={{ image: user?.image ?? "", name: user?.name ?? "" }} />
           {/* TODO: bener g? */}
-          <TokenCard tokenAmount={userTokens} />
+          <TokenCard tokenAmount={userTokens} isMini />
         </div>
         <Mode />
 
