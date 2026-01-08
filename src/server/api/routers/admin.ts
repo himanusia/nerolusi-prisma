@@ -700,7 +700,7 @@ export const adminRouter = createTRPCRouter({
         startTime: z.date().optional(),
         endTime: z.date().optional(),
         url: z.string(),
-        classId: z.number().nullable(),
+        classId: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -711,7 +711,7 @@ export const adminRouter = createTRPCRouter({
           startTime: input.startTime,
           endTime: input.endTime,
           url: input.url,
-          classId: input.classId,
+          classId: input.classId ?? null,
         },
       });
     }),
@@ -733,7 +733,7 @@ export const adminRouter = createTRPCRouter({
         startTime: z.date().optional(),
         endTime: z.date().optional(),
         url: z.string(),
-        classId: z.number().nullable(),
+        classId: z.number().optional(),
       }),
     )
     .mutation(async ({ ctx, input }) => {

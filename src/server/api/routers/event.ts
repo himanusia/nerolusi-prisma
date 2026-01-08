@@ -10,27 +10,28 @@ export const eventRouter = createTRPCRouter({
     .input(
       z
         .object({
-          upcoming: z.boolean().optional(),
           limit: z.number().optional(),
         })
         .optional(),
     )
     .query(async ({ ctx, input }) => {
-      if (!ctx.session.user.classid) {
-        return [];
-      }
-
       const now = new Date();
-      const whereClause = input?.upcoming
-        ? {
+      const whereClause = {
+        AND: [
+          {
             OR: [
               { endTime: { gte: now } },
               { endTime: null }, // Include events without end time
             ],
-            classId: ctx.session.user.classid
-          }
-        : {};
-
+          },
+          {
+            OR: [
+              { classId: ctx.session.user.classid ?? null},
+              { classId: null },
+            ],
+          },
+        ],
+      };
       const events = await ctx.db.event.findMany({
         where: whereClause,
         orderBy: [{ startTime: "asc" }, { createdAt: "desc" }],
