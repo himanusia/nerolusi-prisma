@@ -170,7 +170,7 @@ export default function TryoutEditPage() {
 
     try {
       await createSubtestMutation.mutateAsync({
-        type: subtestForm.type as any,
+        type: (subtestForm.type === 'kpu' ? 'pu' : subtestForm.type) as any,
         packageId: packageId,
         duration: subtestForm.duration,
       });
