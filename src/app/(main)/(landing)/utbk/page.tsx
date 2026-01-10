@@ -14,6 +14,8 @@ import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 import ModulPage from "../../modul/utbk/page";
+import { Button } from "~/app/_components/ui/button";
+import Link from "next/link";
 
 // Define the type using tRPC's inferred types
 type TryoutPackage = RouterOutputs["package"]["getTryoutPackages"][number];
@@ -144,6 +146,17 @@ export default function MainPage() {
   ) : (
     <div className="flex size-full flex-col gap-4">
       {/* <Separator className="h-1 bg-gray-200" /> */}
+      <div className="flex justify-center">
+        <Link href="https://docs.google.com/forms/d/e/1FAIpQLSegQoAdEqQnzWtFeWvYDyF0ukS1Rt-84Tex_qNwFWEux2eEAw/viewform" target="_blank" rel="noopener noreferrer">
+          <Button 
+            size="lg"
+            variant="outline"
+            className="font-bold"
+          >
+            Daftar Free Tryout #1
+          </Button>
+        </Link>
+      </div>
       <div className="flex flex-wrap items-center justify-center gap-12">
         <ProgressChart />
         <DaftarPilihan />
