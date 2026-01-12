@@ -13,10 +13,9 @@ export async function POST(req: Request) {
   const timestamp = headers.get("request-timestamp");
   const target = "/api/webhooks/doku";
 
-  const digest = crypto
-    .createHash("sha256")
-    .update(rawBody)
-    .digest("base64");
+  console.log("secret: ", process.env.DOKU_SECRET_KEY);
+
+  const digest = crypto.createHash("sha256").update(rawBody).digest("base64");
 
   const signaturePayload =
     `Client-Id:${clientId}\n` +
