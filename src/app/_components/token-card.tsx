@@ -20,10 +20,9 @@ export default function TokenCard({ tokenAmount, isMini }: TokenCardProps) {
   const [selectedTokens, setSelectedTokens] = useState(10);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [tokenPackages, setTokenPackages] = useState([
-    { amount: 1, price: 10000 },
-    { amount: 2, price: 20000 },
-    { amount: 5, price: 50000 },
-    { amount: 10, price: 100000 },
+    { amount: 5, price: 10000 },
+    { amount: 10, price: 17000 },
+    { amount: 15, price: 20000 },
   ]);
 
   const {
@@ -32,16 +31,16 @@ export default function TokenCard({ tokenAmount, isMini }: TokenCardProps) {
     isError: isPricingError,
   } = api.payment.getPrice.useQuery();
 
-  useEffect(() => {
-    if (pricingData) {
-      setTokenPackages([
-        { amount: 1, price: pricingData.tokenPrice * 1 },
-        { amount: 2, price: pricingData.tokenPrice * 2 },
-        { amount: 5, price: pricingData.tokenPrice * 5 },
-        { amount: 10, price: pricingData.tokenPrice * 10 },
-      ]);
-    }
-  }, [pricingData]);
+  // useEffect(() => {
+  //   if (pricingData) {
+  //     setTokenPackages([
+  //       { amount: 1, price: pricingData.tokenPrice * 1 },
+  //       { amount: 2, price: pricingData.tokenPrice * 2 },
+  //       { amount: 5, price: pricingData.tokenPrice * 5 },
+  //       { amount: 10, price: pricingData.tokenPrice * 10 },
+  //     ]);
+  //   }
+  // }, [pricingData]);
 
   const createPayment = api.payment.createCheckout.useMutation({
     onSuccess: (dokuUrl) => {
@@ -117,7 +116,7 @@ export default function TokenCard({ tokenAmount, isMini }: TokenCardProps) {
           description="Beli token untuk mengakses try out!"
           price={`Rp${pricingData.tokenPrice.toLocaleString("id-ID")},00`}
           features={[
-            "1 Token untuk setiap try out",
+            "Beli token untuk akses try out",
             "Token berlaku selamanya",
             "Beli sesuai kebutuhanmu",
             "Pembayaran cepat dan aman",
