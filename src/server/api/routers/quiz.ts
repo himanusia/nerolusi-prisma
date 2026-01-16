@@ -104,6 +104,9 @@ export const quizRouter = createTRPCRouter({
                 select: {
                   score: true,
                   endTime: true,
+                  numAnswered: true,
+                  numCorrect: true,
+                  numQuestion: true,
                 },
               },
             },
@@ -128,10 +131,21 @@ export const quizRouter = createTRPCRouter({
             return null;
           }
 
-          const totalScore = subtestsWithScores.reduce(
-            (sum, subtest) => sum + (subtest.quizSession[0]?.score ?? 0),
-            0,
-          );
+          const isPackageEndDatePassed = pkg.TOend < new Date();
+
+          const totalScore = subtestsWithScores.reduce((sum, subtest) => {
+            const session = subtest.quizSession[0];
+            if (!session) return sum;
+            const score = Math.min(session.score ?? 0, 1000);
+
+            const totalQuestions = session.numQuestion || 0;
+            const correctAnswers = session.numCorrect || 0;
+            const emptyAnswers = totalQuestions - (session.numAnswered ?? 0);
+
+            const wrongAnswers = totalQuestions - correctAnswers - emptyAnswers;
+            const adjustedScore = Math.max(score - wrongAnswers, 0);
+            return sum + adjustedScore;
+          }, 0);
           const averageScore = totalScore / subtestsWithScores.length;
 
           // Get the most recent completion date
@@ -149,7 +163,7 @@ export const quizRouter = createTRPCRouter({
           return {
             id: pkg.id,
             name: pkg.name,
-            averageScore: Math.round(averageScore),
+            averageScore: isPackageEndDatePassed ? Math.round(averageScore) : 0,
             completedSubtests: subtestsWithScores.length,
             totalSubtests: pkg.subtests.length,
             endTime: mostRecentEndTime,
@@ -305,11 +319,21 @@ export const quizRouter = createTRPCRouter({
         0,
       );
 
-      const averageScore =
-        sortedSubtests.reduce(
-          (sum, subtest) => sum + (subtest.quizSession?.[0]?.score ?? 0),
-          0,
-        ) / (sortedSubtests.length || 1);
+      const totalScore = sortedSubtests.reduce((sum, subtest) => {
+        const session = subtest.quizSession[0];
+        if (!session) return sum;
+        const score = Math.min(session.score ?? 0, 1000);
+
+        const totalQuestions = session.numQuestion || 0;
+        const correctAnswers = session.numCorrect || 0;
+        const emptyAnswers = totalQuestions - (session.numAnswered ?? 0);
+
+        const wrongAnswers = totalQuestions - correctAnswers - emptyAnswers;
+        const adjustedScore = Math.max(score - wrongAnswers, 0);
+        return sum + adjustedScore;
+      }, 0);
+
+      const averageScore = totalScore / sortedSubtests.length;
 
       const totalKosong = totalQuestions - totalAnswered;
       const totalWrong = totalQuestions - totalCorrect - totalKosong;

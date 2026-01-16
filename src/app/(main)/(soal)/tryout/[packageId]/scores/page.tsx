@@ -132,13 +132,17 @@ export default function ScoresPage() {
           <div className="space-y-2">
             {sortedSubtests.map((subtest) => {
               const subtestName = getSubtestDisplayName(subtest.type);
-              const score = subtest.quizSession?.[0]?.score || 0;
+              const score = Math.min(
+                subtest.quizSession?.[0]?.score || 0,
+                1000,
+              );
               const totalQuestions = subtest.quizSession?.[0]?.numQuestion || 0;
               const correctAnswers = subtest.quizSession?.[0]?.numCorrect || 0;
               const emptyAnswers =
                 totalQuestions - (subtest.quizSession?.[0]?.numAnswered ?? 0);
               const wrongAnswers =
                 totalQuestions - correctAnswers - emptyAnswers;
+              const adjustedScore = Math.max(score - wrongAnswers, 0);
               const isCompleted =
                 subtest.quizSession?.[0] &&
                 new Date(subtest.quizSession[0].endTime ?? "") <= new Date();
@@ -148,7 +152,7 @@ export default function ScoresPage() {
                   key={subtest.id}
                   subtestShort={subtestName.short}
                   subtestFull={subtestName.full}
-                  score={score}
+                  score={adjustedScore}
                   totalQuestions={totalQuestions}
                   correctAnswers={correctAnswers}
                   wrongAnswers={wrongAnswers}
