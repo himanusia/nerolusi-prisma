@@ -80,9 +80,11 @@ const TryoutList = ({ classId, isTka }: TryoutListProps) => {
     const isPackageStarted = new Date(pkg.TOstart) <= new Date();
 
     const isPurchased = pkg.userPackage?.length > 0;
-    const isCompleted = pkg.quizSession?.length > 0;
-
-    if (isPackageEndDatePassed) {
+    const isCompleted =
+      isPurchased &&
+      pkg.quizSession?.length > 0 &&
+      pkg.quizSession?.length === pkg.subtests.length;
+    if (isCompleted) {
       return {
         type: "completed" as const,
       };

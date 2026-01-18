@@ -87,9 +87,9 @@ export default function MainPage() {
     const isPackageStarted = new Date(pkg.TOstart) <= new Date();
 
     const isPurchased = pkg.userPackage?.length > 0;
-    const isCompleted = pkg.quizSession?.length > 0;
+    const isCompleted = pkg.quizSession?.length === pkg.subtests.length;
 
-    if (isPackageEndDatePassed) {
+    if (isCompleted) {
       return {
         type: "completed" as const,
       };

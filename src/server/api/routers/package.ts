@@ -55,6 +55,7 @@ export const packageRouter = createTRPCRouter({
               userId: ctx.session.user.id,
             },
           },
+          subtests: { select: { id: true } },
         },
       });
     }),
