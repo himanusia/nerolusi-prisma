@@ -223,20 +223,20 @@ export default function SubjectMateriPage() {
     return <LoadingPage />;
   }
 
-  if (isMaterialLoading) {
-    return <LoadingPage />;
-  }
-
-  if (isMaterialError) {
-    return <ErrorPage />;
-  }
-
   if (mode === "tka" && !session.data?.user?.enrolledTka) {
     return <NoPackagePage />;
   }
 
   if (mode === "utbk" && !session.data?.user?.enrolledUtbk) {
     return <NoPackagePage />;
+  }
+
+  if (isMaterialLoading) {
+    return <LoadingPage />;
+  }
+
+  if (isMaterialError) {
+    return <ErrorPage />;
   }
 
   return (
