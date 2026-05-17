@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
     paths:
       - 'src/**'
       - 'public/**'
@@ -18,12 +18,17 @@ on:
   release:
     types: [published]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
     paths:
       - 'src/**'
       - 'public/**'
       - 'prisma/**'
       - 'package.json'
+      - 'bun.lock'
+      - 'next.config.js'
+      - 'tsconfig.json'
+      - 'postcss.config.js'
+      - 'tailwind.config.ts'
       - '.github/workflows/**'
       - 'Dockerfile'
   workflow_dispatch:
