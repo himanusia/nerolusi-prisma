@@ -96,6 +96,7 @@ jobs:
 
       - name: 7. Trigger Redeploy Webhook
         if: github.event_name != 'pull_request'
+        continue-on-error: true
         run: |
           curl --fail --show-error --silent \
             --request POST \
