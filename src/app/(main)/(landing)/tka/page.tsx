@@ -34,7 +34,7 @@ export default function MainPage() {
     isLoading: tryoutLoading,
     isError: tryoutError,
     refetch,
-  } = api.package.getTryoutPackages.useQuery({});
+  } = api.package.getTryoutPackages.useQuery({ isTka: true });
 
   const purchaseTryOutMutation = api.package.purchasePackage.useMutation();
 
@@ -83,6 +83,7 @@ export default function MainPage() {
       participants: 0,
       difficulty: "medium",
       tokenPrice: pkg.tokenPrice, // Include tokenPrice for purchase dialog
+      mode: pkg.mode ?? "tka",
     };
   };
 
@@ -91,8 +92,10 @@ export default function MainPage() {
     const isPackageStarted = new Date(pkg.TOstart) <= new Date();
 
     const isPurchased = pkg.userPackage?.length > 0;
-    const isCompleted = pkg.quizSession?.length > 0;
-
+    const isCompleted =
+      isPurchased &&
+      pkg.quizSession?.length > 0 &&
+      pkg.quizSession?.length === pkg.subtests.length;
     if (isCompleted) {
       return {
         type: "completed" as const,
@@ -164,7 +167,7 @@ export default function MainPage() {
     <div className="flex size-full flex-col gap-4">
       {/* <Separator className="h-1 bg-gray-200" /> */}
       <InformasiUtama />
-      <VideoMateri />
+      <VideoMateri isTka={true} />
       <Separator className="h-1 bg-gray-200" />
       <TryOutTersedia
         tryOuts={tkaTryOuts}

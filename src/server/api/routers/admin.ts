@@ -1,5 +1,6 @@
 import { SubtestType } from "@prisma/client";
 import { z } from "zod";
+import { getAllSubjects } from "~/app/_components/constants";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
 
 export const adminRouter = createTRPCRouter({
@@ -97,11 +98,11 @@ export const adminRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // TKA Tryouts (using existing Package model with type filtering)
-  getTKATryouts: adminProcedure.query(async ({ ctx }) => {
+  // Tryouts (using existing Package model with type filtering)
+  getTryouts: adminProcedure.query(async ({ ctx }) => {
     const tryouts = await ctx.db.package.findMany({
       where: {
-        type: "tryout", // Assuming TKA tryouts use tryout type
+        type: "tryout",
       },
       include: {
         class: true,
@@ -116,6 +117,7 @@ export const adminRouter = createTRPCRouter({
     return tryouts.map((tryout) => ({
       id: tryout.id,
       name: tryout.name,
+      mode: tryout.mode,
       description: `TKA Tryout for ${tryout.class?.name || "All Classes"}`,
       startDate: tryout.TOstart || new Date(),
       endDate: tryout.TOend || new Date(),
@@ -129,7 +131,7 @@ export const adminRouter = createTRPCRouter({
     }));
   }),
 
-  createTKATryout: adminProcedure
+  createTryout: adminProcedure
     .input(
       z.object({
         name: z.string(),
@@ -138,6 +140,7 @@ export const adminRouter = createTRPCRouter({
         endDate: z.string(),
         duration: z.number(),
         maxParticipants: z.number(),
+        mode: z.enum(["tka", "utbk"]),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -148,13 +151,14 @@ export const adminRouter = createTRPCRouter({
           type: "tryout",
           TOstart: new Date(input.startDate),
           TOend: new Date(input.endDate),
+          mode: input.mode,
         },
       });
 
       return tryout;
     }),
 
-  deleteTKATryout: adminProcedure
+  deleteTryout: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.package.delete({
@@ -216,7 +220,9 @@ export const adminRouter = createTRPCRouter({
   createSubtest: adminProcedure
     .input(
       z.object({
-        type: z.enum(Object.values(SubtestType) as [SubtestType, ...SubtestType[]]),
+        type: z.enum(
+          Object.values(SubtestType) as [SubtestType, ...SubtestType[]],
+        ),
         packageId: z.string(),
         duration: z.number(),
       }),
@@ -260,13 +266,15 @@ export const adminRouter = createTRPCRouter({
     return videos;
   }),
 
-  createTKAVideo: adminProcedure
+  createVideo: adminProcedure
     .input(
       z.object({
         title: z.string(),
         description: z.string(),
         videoUrl: z.string(),
         duration: z.number(),
+        mode: z.enum(["tka", "utbk"]),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -277,11 +285,13 @@ export const adminRouter = createTRPCRouter({
           type: "rekaman",
           url: input.videoUrl,
           duration: input.duration,
+          mode: input.mode,
+          classId: input.classId,
         },
       });
     }),
 
-  updateTKAVideo: adminProcedure
+  updateVideo: adminProcedure
     .input(
       z.object({
         id: z.string(),
@@ -289,6 +299,8 @@ export const adminRouter = createTRPCRouter({
         description: z.string(),
         videoUrl: z.string(),
         duration: z.number(),
+        mode: z.enum(["tka", "utbk"]),
+        classId: z.number().nullable(),
       }),
     )
     .mutation(async ({ ctx, input }) => {
@@ -297,13 +309,16 @@ export const adminRouter = createTRPCRouter({
         data: {
           title: input.title,
           description: input.description,
+          type: "rekaman",
           url: input.videoUrl,
           duration: input.duration,
+          mode: input.mode,
+          classId: input.classId,
         },
       });
     }),
 
-  deleteTKAVideo: adminProcedure
+  deleteVideo: adminProcedure
     .input(z.object({ id: z.string() }))
     .mutation(async ({ ctx, input }) => {
       await ctx.db.video.delete({
@@ -341,8 +356,7 @@ export const adminRouter = createTRPCRouter({
       return { success: true };
     }),
 
-  // TKA Drills (using existing Package model with drill type)
-  getTKADrills: adminProcedure.query(async ({ ctx }) => {
+  getDrills: adminProcedure.query(async ({ ctx }) => {
     const drills = await ctx.db.subtest.findMany({
       where: {
         type: "materi",
@@ -366,13 +380,8 @@ export const adminRouter = createTRPCRouter({
       id: drill.id,
       title: drill.topics?.name ?? "",
       subject: drill.topics?.material?.subject.name ?? "",
-      difficulty: "medium", // Default - you may want to add difficulty field
-      timeLimit: drill.duration, // 10 minutes default
+      timeLimit: drill.duration,
       questionCount: drill.questions.length,
-      isActive: true,
-      attempts: 0, // Would need to count from quiz sessions
-      averageScore: 0, // Would need to calculate from quiz sessions
-      completionRate: 0, // Would need to calculate from quiz sessions
     }));
   }),
 
@@ -412,8 +421,13 @@ export const adminRouter = createTRPCRouter({
   // === Material & Topic Management ===
   getSubjects: adminProcedure.query(async ({ ctx }) => {
     return ctx.db.subject.findMany({
+      where: { type: "utbk" },
       orderBy: { id: "asc" },
     });
+  }),
+
+  getAllSubjects: adminProcedure.query(async ({ ctx }) => {
+    return ctx.db.subject.findMany({ orderBy: { id: "asc" } });
   }),
 
   getMaterialsBySubject: adminProcedure
@@ -545,6 +559,15 @@ export const adminRouter = createTRPCRouter({
         );
       }
 
+      const material = await ctx.db.material.findUnique({
+        where: { id: input.materialId },
+        include: { subject: true },
+      });
+
+      if (!material) {
+        throw new Error("Material not found");
+      }
+
       // Create video and subtest first, then create topic
       return ctx.db.$transaction(async (tx) => {
         // Create the video
@@ -554,6 +577,7 @@ export const adminRouter = createTRPCRouter({
             url: input.videoUrl,
             duration: input.videoDuration,
             type: "materi",
+            mode: material.subject.mode,
           },
         });
 
@@ -665,6 +689,158 @@ export const adminRouter = createTRPCRouter({
         });
 
         return subtest;
+      });
+    }),
+
+  createKegiatan: adminProcedure
+    .input(
+      z.object({
+        title: z.string(),
+        description: z.string().optional(),
+        startTime: z.date().optional(),
+        endTime: z.date().optional(),
+        url: z.string(),
+        classId: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.event.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          url: input.url,
+          classId: input.classId ?? null,
+        },
+      });
+    }),
+
+  deleteKegiatan: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.event.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  updateKegiatan: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        title: z.string(),
+        description: z.string().optional(),
+        startTime: z.date().optional(),
+        endTime: z.date().optional(),
+        url: z.string(),
+        classId: z.number().optional(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.event.update({
+        where: { id: input.id },
+        data: {
+          title: input.title,
+          description: input.description,
+          startTime: input.startTime,
+          endTime: input.endTime,
+          url: input.url,
+          classId: input.classId,
+        },
+      });
+    }),
+
+  getClassById: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.class.findUnique({
+        where: { id: input.id },
+      });
+    }),
+
+  createClass: adminProcedure
+    .input(
+      z.object({
+        name: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.class.create({
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+
+  updateClass: adminProcedure
+    .input(
+      z.object({
+        id: z.number(),
+        name: z.string().min(1),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      return ctx.db.class.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+
+  deleteClass: adminProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      await ctx.db.class.delete({
+        where: { id: input.id },
+      });
+    }),
+
+  // Get users by class
+  getUsersByClass: adminProcedure
+    .input(z.object({ classId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.user.findMany({
+        where: {
+          classid: input.classId,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+
+  // Get videos by class
+  getVideosByClass: adminProcedure
+    .input(z.object({ classId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.video.findMany({
+        where: {
+          classId: input.classId,
+        },
+        include: {
+          class: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
+    }),
+
+  // Get kegiatan by class
+  getKegiatanByClass: adminProcedure
+    .input(z.object({ classId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      return ctx.db.event.findMany({
+        where: {
+          classId: input.classId,
+        },
+        include: {
+          class: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
       });
     }),
 });

@@ -34,6 +34,7 @@ export const packageRouter = createTRPCRouter({
     .input(
       z.object({
         classId: z.number().optional(),
+        isTka: z.boolean(),
       }),
     )
     .query(async ({ ctx, input }) => {
@@ -41,6 +42,7 @@ export const packageRouter = createTRPCRouter({
         where: {
           ...(input.classId && { classId: input.classId }), // Only add classId filter if it exists
           type: "tryout",
+          mode: input.isTka ? "tka" : "utbk",
         },
         include: {
           quizSession: {
@@ -53,6 +55,7 @@ export const packageRouter = createTRPCRouter({
               userId: ctx.session.user.id,
             },
           },
+          subtests: { select: { id: true } },
         },
       });
     }),

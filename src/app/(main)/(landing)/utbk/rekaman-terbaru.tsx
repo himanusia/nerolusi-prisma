@@ -4,13 +4,14 @@ import { Skeleton } from "~/app/_components/ui/skeleton";
 import { Button } from "~/app/_components/ui/button";
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
+import ErrorPage from "~/app/error";
 
 export default function RekamanTerbaru() {
   const {
     data: videos,
     isLoading: videosLoading,
     isError: videosError,
-  } = api.video.getAllVideos.useQuery();
+  } = api.video.getRecentRekamanUTBKVideos.useQuery();
 
   if (videosLoading) {
     return (
@@ -22,8 +23,16 @@ export default function RekamanTerbaru() {
     );
   }
 
+  if (videosError || !videos) {
+    return (
+      <div className="flex h-20 w-full flex-col items-center justify-center">
+        Gagal memuat rekaman terbaru.
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-4 overflow-auto">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-xl font-bold">Rekaman Kelas Terbaru</h3>
@@ -31,7 +40,7 @@ export default function RekamanTerbaru() {
             Kerjakan Try Out ini untuk melihat hasil belajarmu
           </p>
         </div>
-        <Link href={"/rekaman"}>
+        <Link href={"/video/utbk/umum"}>
           <Button variant="outline" size="sm">
             Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
           </Button>

@@ -31,7 +31,7 @@ export const quizRouter = createTRPCRouter({
   getQuizSessionResult: userProcedure
     .input(z.object({ sessionId: z.string() }))
     .query(async ({ ctx, input }) => {
-      const session = ctx.db.quizSession.findUnique({
+      const session = await ctx.db.quizSession.findUnique({
         where: {
           id: input.sessionId,
         },
@@ -53,12 +53,144 @@ export const quizRouter = createTRPCRouter({
           },
         },
       });
+
+      if (
+        session.userId !== ctx.session.user?.id &&
+        ctx.session.user?.role !== "admin"
+      ) {
+        throw new Error("Access denied");
+      }
+
       return session;
+    }),
+
+  getPastScores: userProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      // Get all packages where the user has completed at least one subtest
+      const packages = await ctx.db.package.findMany({
+        where: {
+          type: "tryout",
+          mode: "utbk",
+          subtests: {
+            some: {
+              quizSession: {
+                some: {
+                  userId: ctx.session.user.id,
+                  endTime: { not: null },
+                  score: { not: null },
+                },
+              },
+            },
+          },
+        },
+        include: {
+          subtests: {
+            include: {
+              quizSession: {
+                where: {
+                  userId: ctx.session.user.id,
+                  endTime: { not: null },
+                  score: { not: null },
+                },
+                orderBy: {
+                  endTime: "desc",
+                },
+                take: 1,
+                select: {
+                  score: true,
+                  endTime: true,
+                  numAnswered: true,
+                  numCorrect: true,
+                  numQuestion: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "asc",
+        },
+        take: input.limit,
+      });
+
+      // Calculate average score for each package
+      const packagesWithScores = packages
+        .map((pkg) => {
+          const subtestsWithScores = pkg.subtests.filter(
+            (subtest) =>
+              subtest.quizSession.length > 0 &&
+              subtest.quizSession[0]?.score != null,
+          );
+
+          if (subtestsWithScores.length === 0) {
+            return null;
+          }
+
+          const isPackageEndDatePassed = pkg.TOend < new Date();
+
+          const totalScore = subtestsWithScores.reduce((sum, subtest) => {
+            const session = subtest.quizSession[0];
+            if (!session) return sum;
+            const score = Math.min(session.score ?? 0, 1000);
+
+            const totalQuestions = session.numQuestion || 0;
+            const correctAnswers = session.numCorrect || 0;
+            const emptyAnswers = totalQuestions - (session.numAnswered ?? 0);
+
+            const wrongAnswers = totalQuestions - correctAnswers - emptyAnswers;
+            const adjustedScore = Math.max(score - wrongAnswers, 0);
+            return sum + adjustedScore;
+          }, 0);
+          const averageScore = totalScore / subtestsWithScores.length;
+
+          // Get the most recent completion date
+          const mostRecentEndTime = subtestsWithScores.reduce(
+            (latest, subtest) => {
+              const endTime = subtest.quizSession[0]?.endTime;
+              if (!endTime) return latest;
+              return !latest || new Date(endTime) > new Date(latest)
+                ? endTime
+                : latest;
+            },
+            null as Date | null,
+          );
+
+          return {
+            id: pkg.id,
+            name: pkg.name,
+            averageScore: isPackageEndDatePassed ? Math.round(averageScore) : 0,
+            completedSubtests: subtestsWithScores.length,
+            totalSubtests: pkg.subtests.length,
+            endTime: mostRecentEndTime,
+          };
+        })
+        .filter((pkg) => pkg !== null)
+        .sort((a, b) => {
+          if (!a.endTime || !b.endTime) return 0;
+          return new Date(a.endTime).getTime() - new Date(b.endTime).getTime();
+        });
+
+      return packagesWithScores;
     }),
 
   getPackageWithSubtest: userProcedure
     .input(z.object({ id: z.string() }))
     .query(async ({ ctx, input }) => {
+      const userPackage = await ctx.db.userPackage.findFirst({
+        where: {
+          userId: ctx.session.user?.id,
+          packageId: input.id,
+        },
+      });
+      if (!userPackage) {
+        throw new Error("Access denied");
+      }
+
       const packageData = await ctx.db.package.findUnique({
         where: {
           id: input.id,
@@ -116,6 +248,117 @@ export const quizRouter = createTRPCRouter({
       }
 
       return packageData;
+    }),
+
+  getPackageScoresSummary: userProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      const userPackage = await ctx.db.userPackage.findFirst({
+        where: {
+          userId: ctx.session.user?.id,
+          packageId: input.id,
+        },
+      });
+
+      if (!userPackage) {
+        throw new Error("Access denied");
+      }
+
+      const packageData = await ctx.db.package.findUnique({
+        where: {
+          id: input.id,
+        },
+        include: {
+          subtests: {
+            include: {
+              quizSession: {
+                where: {
+                  userId: ctx.session.user?.id,
+                },
+                select: {
+                  endTime: true,
+                  numAnswered: true,
+                  numCorrect: true,
+                  numQuestion: true,
+                  score: true,
+                },
+                orderBy: {
+                  endTime: "desc",
+                },
+                take: 1,
+              },
+            },
+          },
+        },
+      });
+
+      if (!packageData) {
+        throw new Error("Package not found");
+      }
+
+      const subtestOrder = ["pu", "ppu", "pbm", "pk", "lbi", "lbe", "pm"];
+      const sortedSubtests = packageData.subtests.sort((a, b) => {
+        const indexA = subtestOrder.indexOf(a.type);
+        const indexB = subtestOrder.indexOf(b.type);
+        return indexA - indexB;
+      });
+
+      // Calculate totals
+      const totalQuestions = sortedSubtests.reduce(
+        (sum, subtest) => sum + (subtest.quizSession?.[0]?.numQuestion ?? 0),
+        0,
+      );
+
+      const totalCorrect = sortedSubtests.reduce(
+        (sum, subtest) => sum + (subtest.quizSession?.[0]?.numCorrect ?? 0),
+        0,
+      );
+
+      const totalAnswered = sortedSubtests.reduce(
+        (sum, subtest) => sum + (subtest.quizSession?.[0]?.numAnswered ?? 0),
+        0,
+      );
+
+      const totalScore = sortedSubtests.reduce((sum, subtest) => {
+        const session = subtest.quizSession[0];
+        if (!session) return sum;
+        const score = Math.min(session.score ?? 0, 1000);
+
+        const totalQuestions = session.numQuestion || 0;
+        const correctAnswers = session.numCorrect || 0;
+        const emptyAnswers = totalQuestions - (session.numAnswered ?? 0);
+
+        const wrongAnswers = totalQuestions - correctAnswers - emptyAnswers;
+        const adjustedScore = Math.max(score - wrongAnswers, 0);
+        return sum + adjustedScore;
+      }, 0);
+
+      const averageScore = totalScore / sortedSubtests.length;
+
+      const totalKosong = totalQuestions - totalAnswered;
+      const totalWrong = totalQuestions - totalCorrect - totalKosong;
+
+      const completedCount = sortedSubtests.filter(
+        (s) =>
+          s.quizSession?.[0] &&
+          new Date(s.quizSession[0].endTime ?? "") <= new Date(),
+      ).length;
+
+      const isPackageEndDatePassed =
+        packageData.TOend && new Date(packageData.TOend) < new Date();
+
+      return {
+        packageName: packageData.name,
+        TOend: packageData.TOend,
+        totalQuestions,
+        totalCorrect,
+        totalWrong,
+        totalKosong,
+        averageScore: Math.round(averageScore),
+        completedCount,
+        totalSubtests: sortedSubtests.length,
+        isPackageEndDatePassed,
+      };
     }),
 
   getSession: userProcedure
@@ -267,7 +510,7 @@ export const quizRouter = createTRPCRouter({
         (session.userId !== ctx.session.user?.id &&
           ctx.session.user?.role !== "admin")
       ) {
-        return null;
+        throw new Error("Access denied");
       }
 
       return session;

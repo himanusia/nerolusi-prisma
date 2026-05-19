@@ -6,16 +6,14 @@ import { GiOpenBook } from "react-icons/gi";
 interface HeadJenisSubtestProps {
   title: string;
   type: "modul" | "rekaman";
-  isTka: boolean;
 }
 
 export default function HeadJenisSubtest({
   title,
   type,
-  isTka,
 }: HeadJenisSubtestProps) {
   return (
-    <div className="flex items-center rounded-lg ">
+    <div className="flex items-center rounded-lg">
       <div className="hidden w-full items-center sm:flex">
         <div className="flex size-20 shrink-0 items-center justify-center rounded-full bg-[#2B8057]">
           {type === "rekaman" ? (
@@ -25,9 +23,7 @@ export default function HeadJenisSubtest({
           )}
         </div>
         <div className="ml-4 flex w-full flex-col justify-between gap-4">
-          <h2 className="font-bold text-[#2B8057] text-3xl">
-            {title}
-          </h2>
+          <h2 className="text-3xl font-bold text-[#2B8057]">{title}</h2>
           {/* {!isTka && (
             <div className="flex w-full max-w-4xl flex-wrap justify-evenly gap-2">
               {Object.values(SubtestType).map((type) => (
@@ -37,11 +33,10 @@ export default function HeadJenisSubtest({
               ))}
             </div>
           )} */}
-          
         </div>
       </div>
       <div className="flex w-full flex-col justify-center gap-4 sm:hidden">
-        <div className="flex items-center w-full justify-center">
+        <div className="flex w-full items-center justify-center">
           <div className="flex size-14 shrink-0 items-center justify-center rounded-full bg-[#2B8057]">
             {type === "rekaman" ? (
               <HiMiniVideoCamera className="size-6 text-white" />

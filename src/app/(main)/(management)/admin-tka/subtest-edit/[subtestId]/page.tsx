@@ -625,7 +625,7 @@ export default function QuizPage() {
                   className="flex w-full items-center gap-2 bg-red-600 text-white hover:bg-red-700"
                 >
                   <Flag className="h-4 w-4" />
-                  {isSubmitting ? "Mengirim..." : "Selesai & Kirim"}
+                  {isSubmitting ? "Mengirim..." : "Selesai"}
                 </Button>
               ) : (
                 <Link href={`/quiz/${sessionIdString}/score`}>

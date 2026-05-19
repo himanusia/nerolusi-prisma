@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Play, Lock } from "lucide-react";
+import { Play, Lock, Loader2 } from "lucide-react";
 import { Button } from "~/app/_components/ui/button";
 import { getSubjectBySlug } from "~/app/_components/constants";
 import { useSession } from "next-auth/react";
@@ -15,7 +15,8 @@ import { MaterialSection, Video } from "~/server/api/routers/materi";
 import LoadingPage from "~/app/loading";
 import ErrorPage from "~/app/error";
 import NoPackagePage from "~/app/no-package";
-import Image from "next/image";
+import Link from "next/link";
+import { useMode } from "~/contexts/mode-context";
 
 export default function SubjectMateriPage() {
   const params = useParams();
@@ -24,6 +25,11 @@ export default function SubjectMateriPage() {
   const subject = getSubjectBySlug(params.subject as string);
 
   const [sections, setSections] = useState<MaterialSection[]>([]);
+  const [updatingTopicIds, setUpdatingTopicIds] = useState<Set<number>>(
+    new Set(),
+  );
+
+  const { mode } = useMode();
 
   const {
     data: materialData,
@@ -35,6 +41,22 @@ export default function SubjectMateriPage() {
 
   const updateUserProgressMutation =
     api.materi.updateUserMaterialProgress.useMutation({
+      onMutate: (variables) => {
+        const vars = variables as { topicId?: number };
+        if (vars?.topicId) {
+          setUpdatingTopicIds((prev) => new Set(prev).add(vars.topicId));
+        }
+      },
+      onSettled: (data, error, variables) => {
+        const vars = variables as { topicId?: number };
+        if (vars?.topicId) {
+          setUpdatingTopicIds((prev) => {
+            const newSet = new Set(prev);
+            newSet.delete(vars.topicId);
+            return newSet;
+          });
+        }
+      },
       onSuccess: (data, variables) => {
         if (variables && variables.topicId) {
           toggleVideoCompleted(variables.topicId);
@@ -169,10 +191,6 @@ export default function SubjectMateriPage() {
     }
   };
 
-  const handleBack = () => {
-    router.push("/video/materi");
-  };
-
   const formatDuration = (duration: number) => {
     const minutes = Math.floor(duration / 60);
     const seconds = duration % 60;
@@ -188,7 +206,10 @@ export default function SubjectMateriPage() {
   }
 
   const getTotalDuration = (section: MaterialSection) => {
-    const totalSeconds = section.videos.reduce((sum, video) => sum + (video.duration || 0),0);
+    const totalSeconds = section.videos.reduce(
+      (sum, video) => sum + (video.duration || 0),
+      0,
+    );
     const hours = Math.floor(totalSeconds / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
@@ -196,13 +217,17 @@ export default function SubjectMateriPage() {
       return `${hours}h ${minutes}m ${seconds < 10 ? "0" : ""}${seconds}s`;
     }
     return `${minutes}m ${seconds < 10 ? "0" : ""}${seconds}s`;
-  }
+  };
 
   if (session.status === "loading") {
     return <LoadingPage />;
   }
 
-  if (!session.data?.user?.enrolledTka) {
+  if (mode === "tka" && !session.data?.user?.enrolledTka) {
+    return <NoPackagePage />;
+  }
+
+  if (mode === "utbk" && !session.data?.user?.enrolledUtbk) {
     return <NoPackagePage />;
   }
 
@@ -221,16 +246,15 @@ export default function SubjectMateriPage() {
           <h1 className="mb-1 text-2xl font-bold text-[#2b8057]">
             {subject.title}
           </h1>
-          <p className="text-gray-600">Marathon LENGKAP materi {subject.title}!</p>
+          <p className="text-gray-600">
+            Marathon LENGKAP materi {subject.title}!
+          </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          className="text-gray-600"
-          onClick={handleBack}
-        >
-          ← Kembali
-        </Button>
+        <Link href={"/video"}>
+          <Button variant="outline" size="sm" className="text-gray-600">
+            ← Kembali
+          </Button>
+        </Link>
       </div>
 
       {/* Material Sections */}
@@ -245,28 +269,25 @@ export default function SubjectMateriPage() {
               onClick={() => toggleSection(section.id)}
             >
               <div className="flex-1">
-                <h3 className="font-bold text-black text-sm md:text-md">
+                <h3 className="md:text-md text-sm font-bold text-black">
                   Materi {section.index} -{" "}
                   {section.title.replace(`Materi ${section.index} - `, "")}
                 </h3>
-                {section.subtitle && (
-                  <p className="mt-1 text-xs md:text-sm text-black">{section.subtitle}</p>
-                )}
               </div>
 
               <div className="flex items-center gap-6">
-                <div className="text-xs md:text-sm text-black">
+                <div className="text-xs text-black md:text-sm">
                   <span className="font-bold">{section.videoCount} Videos</span>
                 </div>
-                <div className="hidden md:block text-xs md:text-sm text-black">
+                <div className="hidden text-xs text-black md:block md:text-sm">
                   <span className="font-bold">
                     Total durasi: {getTotalDuration(section)}
                   </span>
                 </div>
                 {section.isExpanded ? (
-                  <BiSolidDownArrow className="h-3 w-3 md:h-5 md:w-5 text-black" />
+                  <BiSolidDownArrow className="h-3 w-3 text-black md:h-5 md:w-5" />
                 ) : (
-                  <BiSolidUpArrow className="h-3 w-3 md:h-5 md:w-5 text-black" />
+                  <BiSolidUpArrow className="h-3 w-3 text-black md:h-5 md:w-5" />
                 )}
               </div>
             </div>
@@ -277,52 +298,54 @@ export default function SubjectMateriPage() {
                 {section.videos.map((video) => (
                   <div
                     key={video.id}
-                    className={`flex flex-row cursor-pointer items-center justify-between border-t border-[#acaeba] px-3 py-2 md:px-6 md:py-4 transition-colors hover:bg-gray-50 ${
+                    className={`flex cursor-pointer flex-row items-center justify-between border-t border-[#acaeba] px-3 py-2 transition-colors hover:bg-gray-50 md:px-6 md:py-4 ${
                       video.isCompleted
                         ? "bg-gradient-to-r from-[#9ad09f] to-[#cbffd0]"
                         : "bg-white"
                     }`}
                     onClick={() => handleVideoClick(video)}
                   >
-                    <div className="flex w-full sm:w-auto flex-row items-center gap-4">
+                    <div className="flex w-full flex-row items-center gap-4 sm:w-auto">
                       <div
-                        className={`flex h-6 w-6 md:h-10 md:w-10 items-center justify-center rounded-full ${
+                        className={`flex h-6 w-6 items-center justify-center rounded-full md:h-10 md:w-10 ${
                           video.isLocked ? "bg-gray-300" : "bg-black"
                         }`}
                       >
                         {video.isLocked ? (
-                          <Lock className="h-3 w-3 md:h-5 md:w-5 text-white" />
+                          <Lock className="h-3 w-3 text-white md:h-5 md:w-5" />
                         ) : (
-                          <Play className="h-3 w-3 md:h-5 md:w-5 fill-white text-white" />
+                          <Play className="h-3 w-3 fill-white text-white md:h-5 md:w-5" />
                         )}
                       </div>
 
-                      <div className="flex-1 min-w-0">
-                        <h4 className="text-sm md:text-lg font-semibold text-black break-all whitespace-pre-line">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="whitespace-pre-line break-all text-sm font-semibold text-black md:text-lg">
                           {video.title}
                         </h4>
                       </div>
 
-                      <div className="hidden md:block min-w-[100px] text-center">
+                      <div className="hidden min-w-[100px] text-center md:block">
                         <span className="font-bold text-black">----</span>
                       </div>
 
-                      <div className="hidden md:block min-w-[70px] md:min-w-[120px] text-center">
-                        <span className="font-bold text-black text-sm md:text-md">
+                      <div className="hidden min-w-[70px] text-center md:block md:min-w-[120px]">
+                        <span className="md:text-md text-sm font-bold text-black">
                           {formatDuration(video.duration)}
                         </span>
                       </div>
                     </div>
 
-                    <div className="flex w-full md:w-auto flex-row items-center gap-1 md:gap-5 ml-1 md:ml-0">
+                    <div className="ml-1 flex w-full flex-row items-center gap-1 md:ml-0 md:w-auto md:gap-5">
                       {/* Completion Status */}
                       <div className="flex max-w-[100px] flex-row items-center gap-0">
-                        <span className="text-center text-xs md:text-sm font-bold text-black whitespace-nowrap">
+                        <span className="whitespace-nowrap text-center text-xs font-bold text-black md:text-sm">
                           Sudah ditonton:
                         </span>
                         <div className="flex items-center">
-                          {video.isCompleted ? (
-                            <div className="flex h-4 w-4 md:h-6 md:w-6 items-center justify-center rounded bg-[#35c05f] font-bold text-white">
+                          {updatingTopicIds.has(video.topicId) ? (
+                            <Loader2 className="h-4 w-4 animate-spin text-[#2b8057] md:h-6 md:w-6" />
+                          ) : video.isCompleted ? (
+                            <div className="flex h-4 w-4 items-center justify-center rounded bg-[#35c05f] font-bold text-white md:h-6 md:w-6">
                               ✓
                             </div>
                           ) : (
@@ -334,8 +357,11 @@ export default function SubjectMateriPage() {
                                   topicId: video.topicId,
                                 })
                               }
-                              disabled={video.isLocked}
-                              className="h-3 w-3 md:h-5 md:w-5 rounded border-[#acaeba] text-[#2b8057] focus:ring-[#2b8057] disabled:opacity-50"
+                              disabled={
+                                video.isLocked ||
+                                updatingTopicIds.has(video.topicId)
+                              }
+                              className="h-3 w-3 rounded border-[#acaeba] text-[#2b8057] focus:ring-[#2b8057] disabled:opacity-50 md:h-5 md:w-5"
                               onClick={(e) => e.stopPropagation()}
                             />
                           )}
@@ -343,41 +369,43 @@ export default function SubjectMateriPage() {
                       </div>
 
                       {/* Drill Buttons */}
-                      <div className="flex max-w-[120px] md:min-w-[200px] items-center justify-end md:gap-2">
+                      <div className="flex max-w-[120px] items-center justify-end md:min-w-[200px] md:gap-2">
                         {video.hasQuiz && (
                           <>
                             {video.drillId && !video.isDrillCompleted ? (
-                              <div className="flex ml-2 md:gap-2">
+                              <div className="ml-2 flex md:gap-2">
                                 <Button
                                   size="sm"
-                                  className={`max-w-[60px] md:min-h-[40px] md:max-w-[105px] p-1 md:p-2 text-xs ${
+                                  className={`max-w-[60px] p-1 text-xs md:min-h-[40px] md:max-w-[105px] md:p-2 ${
                                     !video.isCompleted || video.isLocked
                                       ? "cursor-not-allowed border-2 border-[#a6a6a6] bg-[#d9d9d9]"
                                       : "border-2 border-white bg-[#ffca28] hover:bg-[#ffca28]/80"
                                   } flex flex-row items-center justify-center whitespace-normal rounded-[5px] text-start font-bold leading-tight text-white`}
-                                  disabled={!video.isCompleted || video.isLocked}
+                                  disabled={
+                                    !video.isCompleted || video.isLocked
+                                  }
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleDrillClick(video);
                                   }}
                                 >
-                                  <p className="leading-tight text-[9px] md:text-xs text-left">
+                                  <p className="text-left text-[9px] leading-tight md:text-xs">
                                     Kerjakan Drill Soal
                                   </p>
-                                  <RiPencilFill className="hidden md:block md:ml-1 md:h-10 md:w-10" />
+                                  <RiPencilFill className="hidden md:ml-1 md:block md:h-10 md:w-10" />
                                 </Button>
                               </div>
                             ) : (
                               <Button
                                 size="sm"
-                                className="max-w-[60px] md:max-w-[100px] rounded-[5px] border-2 border-white bg-gradient-to-b from-[#223a67] to-[#2d69db] p-1 md:p-2 text-[9px] md:text-xs font-bold text-white hover:bg-blue-600"
+                                className="max-w-[60px] rounded-[5px] border-2 border-white bg-gradient-to-b from-[#223a67] to-[#2d69db] p-1 text-[9px] font-bold text-white hover:bg-blue-600 md:max-w-[100px] md:p-2 md:text-xs"
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   handleViewScoreClick(video);
                                 }}
                               >
                                 <p>Lihat Hasil</p>
-                                <HiOutlineDocumentReport className="hidden md:block ml-1 h-4 w-4" />
+                                <HiOutlineDocumentReport className="ml-1 hidden h-4 w-4 md:block" />
                               </Button>
                             )}
                           </>

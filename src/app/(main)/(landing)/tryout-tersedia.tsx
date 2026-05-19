@@ -4,6 +4,7 @@ import { Button } from "~/app/_components/ui/button";
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 import TryOutCard, { type TryOutData } from "~/app/_components/tryout-card";
+import Link from "next/link";
 
 interface TryOutTersediaProps {
   tryOuts: TryOutData[];
@@ -27,13 +28,11 @@ export default function TryOutTersedia({
             Kerjakan Try Out mu untuk melihat hasil belajarmu!
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => router.push("/tryout")}
-        >
-          Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
-        </Button>
+        <Link href={"/tryout"}>
+          <Button variant="outline" size="sm">
+            Lihat semua <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </Link>
       </div>
 
       <div className="flex w-full gap-2 overflow-x-scroll pb-2 scrollbar-thin scrollbar-track-transparent">

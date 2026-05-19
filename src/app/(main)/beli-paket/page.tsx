@@ -3,102 +3,76 @@
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "~/app/_components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/app/_components/ui/card";
+
 import TokenCard from "~/app/_components/token-card";
 import { TbTargetArrow, TbBook, TbCoins } from "react-icons/tb";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-
-interface PackageCardProps {
-  title: string;
-  description: string;
-  price: string;
-  features: string[];
-  icon: React.ReactNode;
-  disabled: boolean;
-  href: string;
-}
-
-const PackageCard = ({
-  title,
-  description,
-  price,
-  features,
-  icon,
-  disabled,
-  href,
-}: PackageCardProps) => {
-  return (
-    <Card className="h-full border-gray-200 transition-shadow hover:shadow-lg">
-      <CardHeader className="pb-4 text-center">
-        <div className="mb-4 flex justify-center">{icon}</div>
-        <CardTitle className="text-xl font-bold text-gray-900">
-          {title}
-        </CardTitle>
-        <p className="text-sm text-gray-600">{description}</p>
-      </CardHeader>
-      <CardContent className="space-y-4 flex flex-col">
-        <div className="text-center">
-          <div className="mb-4 flex items-center justify-center gap-2">
-            <span className="text-3xl font-bold text-orange-600">{price}</span>
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <h4 className="font-semibold text-gray-900">Fitur:</h4>
-          <ul className="space-y-1">
-            {features.map((feature, index) => (
-              <li
-                key={index}
-                className="flex items-start gap-2 text-sm text-gray-600"
-              >
-                <span className="mt-0.5 text-green-600">✓</span>
-                {feature}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <Link href={href} target="_blank">
-          <Button variant="default" className="w-full" disabled={disabled}>
-            Beli Paket
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
-  );
-};
+import { api } from "~/trpc/react";
+import { PackageCard } from "./package-card";
+import { toast } from "sonner";
+import LoadingPage from "~/app/loading";
+import ErrorPage from "~/app/error";
 
 export default function BeliPaketPage() {
-  // const { data: session } = useSession();
+  const { data: session, status } = useSession();
   // const router = useRouter();
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<{
-    title: string;
+    title: "Paket TKA" | "Paket UTBK";
     price: number;
   } | null>(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
-  const userTokens = 0;
+  const {
+    data: pricingData,
+    isLoading: isPricingLoading,
+    isError: isPricingError,
+  } = api.payment.getPrice.useQuery();
 
-  // const handleBuyPackage = (packageTitle: string, price: number) => {
-  //   // setSelectedPackage({ title: packageTitle, price });
-  //   // setShowPurchaseDialog(true);
-  //   router.push("");
-  // };
+  const createPayment = api.payment.createCheckout.useMutation({
+    onSuccess: (dokuUrl) => {
+      // Direct redirect to DOKU's hosted checkout page
+      window.location.href = dokuUrl;
+    },
+    onError: (error) => {
+      setIsRedirecting(false);
+      toast.error(`Gagal melakukan checkout: ${error.message}`);
+    },
+  });
 
-  // const handlePurchaseConfirm = () => {
-  //   // Handle actual purchase logic here
-  //   console.log("Purchase confirmed for:", selectedPackage);
-  //   setShowPurchaseDialog(false);
-  //   setSelectedPackage(null);
-  //   // You might want to show a success message or redirect
-  // };
+  const handleBuyPackage = (
+    packageTitle: "Paket TKA" | "Paket UTBK",
+    price: number,
+  ) => {
+    setSelectedPackage({ title: packageTitle, price });
+    setShowPurchaseDialog(true);
+  };
 
+  const handlePurchaseConfirm = () => {
+    setShowPurchaseDialog(false);
+    setSelectedPackage(null);
+
+    setIsRedirecting(true);
+
+    const idempotencyKey = crypto.randomUUID();
+    const type = selectedPackage?.title === "Paket TKA" ? "tka" : "utbk";
+
+    createPayment.mutate({
+      idempotencyKey,
+      type,
+      userId: session?.user.id,
+      amount: selectedPackage.price,
+    });
+  };
+
+  if (status === "loading" || isPricingLoading) {
+    return <LoadingPage />;
+  }
+
+  if (isPricingError) {
+    return <ErrorPage />;
+  }
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -118,12 +92,12 @@ export default function BeliPaketPage() {
       {/* <TokenCard tokenAmount={userTokens} /> */}
 
       {/* Package Cards */}
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-3">
         {/* UTBK Package */}
         <PackageCard
           title="Paket UTBK"
           description="Persiapan lengkap untuk UTBK SNBT 2026"
-          price={"Coming Soon"}
+          price={`Rp${pricingData.utbkPrice.toLocaleString("id-ID")},00`}
           features={[
             "10+ Try Out UTBK terlengkap",
             "Pembahasan detail setiap soal",
@@ -132,15 +106,16 @@ export default function BeliPaketPage() {
             "Video pembahasan materi",
           ]}
           icon={<TbTargetArrow className="h-16 w-16 text-blue-600" />}
-          href={"/"}
-          disabled={true}
+          // href={"/"}
+          onClick={() => handleBuyPackage("Paket UTBK", pricingData.utbkPrice)}
+          disabled={isRedirecting}
         />
 
         {/* TKA Package */}
         <PackageCard
           title="Paket TKA"
           description="Tes Kemampuan Akademik untuk berbagai jurusan"
-          price="Rp49.000,00"
+          price={`Rp${pricingData.tkaPrice.toLocaleString("id-ID")},00`}
           features={[
             "Try Out TKA Saintek & Soshum",
             "Materi lengkap per mata pelajaran",
@@ -149,13 +124,16 @@ export default function BeliPaketPage() {
             "Video pembelajaran",
           ]}
           icon={<TbBook className="h-16 w-16 text-purple-600" />}
-          href={"https://bit.ly/Nerolusi-INTI-TKA2025"}
-          disabled={false}
+          // href={"https://bit.ly/Nerolusi-INTI-TKA2025"}
+          disabled={isRedirecting}
+          onClick={() => handleBuyPackage("Paket TKA", pricingData.tkaPrice)}
         />
+
+        <TokenCard tokenAmount={session.user.token ?? 0} isMini={false} />
       </div>
 
       {/* Purchase Confirmation Dialog */}
-      {/* {showPurchaseDialog && selectedPackage && (
+      {showPurchaseDialog && selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <div className="mx-4 w-full max-w-md rounded-xl bg-white p-6">
             <div className="mb-4 flex items-center justify-between">
@@ -179,30 +157,12 @@ export default function BeliPaketPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700">Harga:</span>
                   <div className="flex items-center gap-2">
-                    <TbCoins className="h-5 w-5 text-orange-600" />
                     <span className="font-bold text-orange-600">
                       {selectedPackage.price}
                     </span>
-                    <span className="text-gray-500">Token</span>
-                  </div>
-                </div>
-                <div className="mt-2 flex items-center justify-between">
-                  <span className="text-gray-700">Token Anda:</span>
-                  <div className="flex items-center gap-2">
-                    <TbCoins className="h-5 w-5 text-orange-600" />
-                    <span className="font-bold">{userTokens}</span>
                   </div>
                 </div>
                 <hr className="my-2" />
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-700">Sisa Token:</span>
-                  <div className="flex items-center gap-2">
-                    <TbCoins className="h-5 w-5 text-orange-600" />
-                    <span className="font-bold text-green-600">
-                      {userTokens - selectedPackage.price}
-                    </span>
-                  </div>
-                </div>
               </div>
             </div>
 
@@ -211,11 +171,8 @@ export default function BeliPaketPage() {
                 variant="default"
                 onClick={handlePurchaseConfirm}
                 className="flex-1"
-                disabled={userTokens < selectedPackage.price}
               >
-                {userTokens < selectedPackage.price
-                  ? "Token Tidak Cukup"
-                  : "Konfirmasi"}
+                Konfirmasi
               </Button>
               <Button
                 onClick={() => setShowPurchaseDialog(false)}
@@ -227,7 +184,7 @@ export default function BeliPaketPage() {
             </div>
           </div>
         </div>
-      )} */}
+      )}
     </div>
   );
 }

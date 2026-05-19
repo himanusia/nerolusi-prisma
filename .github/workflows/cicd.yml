@@ -2,7 +2,7 @@ name: Build and Deploy
 
 on:
   push:
-    branches: [main]
+    branches: [develop, main]
     paths:
       - 'src/**'
       - 'public/**'
@@ -18,12 +18,17 @@ on:
   release:
     types: [published]
   pull_request:
-    branches: [main]
+    branches: [develop, main]
     paths:
       - 'src/**'
       - 'public/**'
       - 'prisma/**'
       - 'package.json'
+      - 'bun.lock'
+      - 'next.config.js'
+      - 'tsconfig.json'
+      - 'postcss.config.js'
+      - 'tailwind.config.ts'
       - '.github/workflows/**'
       - 'Dockerfile'
   workflow_dispatch:
@@ -82,11 +87,6 @@ jobs:
           file: ./Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           build-args: |
-            DATABASE_URL=${{ secrets.DATABASE_URL }}
-            AUTH_SECRET=${{ secrets.AUTH_SECRET }}
-            AUTH_URL=${{ vars.AUTH_URL }}
-            AUTH_GOOGLE_ID=${{ secrets.AUTH_GOOGLE_ID }}
-            AUTH_GOOGLE_SECRET=${{ secrets.AUTH_GOOGLE_SECRET }}
             ANALYTICS_SRC=${{ vars.ANALYTICS_SRC }}
             ANALYTICS_ID=${{ vars.ANALYTICS_ID }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -96,7 +96,16 @@ jobs:
 
       - name: 7. Trigger Redeploy Webhook
         if: github.event_name != 'pull_request'
-        run: curl -f -X POST ${{ secrets.WEBHOOK_URL }}
+        continue-on-error: true
+        run: |
+          curl --fail --show-error --silent \
+            --request POST \
+            --connect-timeout 10 \
+            --max-time 60 \
+            --retry 5 \
+            --retry-delay 10 \
+            --retry-all-errors \
+            "${{ secrets.WEBHOOK_URL }}"
 
       - name: 8. Update Deployment Status
         uses: bobheadxi/deployments@v1

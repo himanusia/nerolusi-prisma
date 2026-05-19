@@ -7,12 +7,16 @@ export interface Subject {
 
 export interface SubjectCategory {
   type: string;
+  mode: "utbk" | "tka";
+  type_name: string;
   subjects: Subject[];
 }
 
 export const SUBJECT_CATEGORIES: SubjectCategory[] = [
   {
+    mode: "tka",
     type: "wajib",
+    type_name: "Wajib",
     subjects: [
       {
         id: 1,
@@ -35,7 +39,9 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
+    mode: "tka",
     type: "saintek",
+    type_name: "Saintek",
     subjects: [
       {
         id: 4,
@@ -64,7 +70,9 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
     ],
   },
   {
+    mode: "tka",
     type: "soshum",
+    type_name: "Soshum",
     subjects: [
       {
         id: 8,
@@ -104,6 +112,75 @@ export const SUBJECT_CATEGORIES: SubjectCategory[] = [
       // },
     ],
   },
+  {
+    mode: "utbk",
+    type: "modul_nerolusi",
+    type_name: "Modul Nerolusi",
+    subjects: [
+      {
+        id: 19,
+        title: "Modul Nerolusi 2026",
+        image: "/modul/nerolusi.webp",
+        slug: "nerolusi-2026",
+      },
+    ],
+  },
+  {
+    mode: "utbk",
+    type: "tps",
+    type_name: "Tes Potensi Skolastik (TPS)",
+    subjects: [
+      {
+        id: 12,
+        title: "Pengetahuan dan Pemahaman Umum",
+        image: "/modul/ppu.png",
+        slug: "ppu",
+      },
+      {
+        id: 13,
+        title: "Kemampuan Penalaran Umum",
+        image: "/modul/kpu.webp",
+        slug: "kpu",
+      },
+      {
+        id: 15,
+        title: "Pengetahuan Kuantitatif",
+        image: "/modul/pk.webp",
+        slug: "pk",
+      },
+      {
+        id: 16,
+        title: "Penalaran Matematika",
+        image: "/modul/pm.webp",
+        slug: "pm",
+      }
+    ],
+  },
+  {
+    mode: "utbk",
+    type: "tl",
+    type_name: "Tes Literasi (TL)",
+    subjects: [
+      {
+        id: 14,
+        title: "Kemampuan Memahami Bacaan dan Menulis",
+        image: "/modul/pbm.webp",
+        slug: "pbm",
+      },
+      {
+        id: 17,
+        title: "Literasi Bahasa Inggris",
+        image: "/modul/lbing.webp",
+        slug: "lbe",
+      },
+      {
+        id: 18,
+        title: "Literasi Bahasa Indonesia",
+        image: "/modul/lbind.webp",
+        slug: "lbi",
+      },
+    ],
+  },
 ];
 
 // Helper functions to get specific categories
@@ -127,10 +204,43 @@ export const getAllSubjects = (): Subject[] => {
   return SUBJECT_CATEGORIES.flatMap((category) => category.subjects);
 };
 
+export const getUTBKSubjects = (): Subject[] => {
+  return (
+    SUBJECT_CATEGORIES.filter(
+      (cat) => cat.mode === "utbk" && cat.type !== "modul_nerolusi",
+    ).flatMap((cat) => cat.subjects) || []
+  )
+};
+
+export const getUTBKModulSubjects = (): Subject[] => {
+  return (
+    SUBJECT_CATEGORIES.filter(
+      (cat) => cat.mode === "utbk",
+    ).flatMap((cat) => cat.subjects) || []
+  );
+};
+
 export const getSubjectBySlug = (slug: string): Subject | undefined => {
   return getAllSubjects().find((subject) => subject.slug === slug);
 };
 
 export const getSubjectByName = (name: string): Subject | undefined => {
   return getAllSubjects().find((subject) => subject.title === name);
+};
+
+export const getSlugBySubjectName = (name: string): string | undefined => {
+  return getAllSubjects().find((subject) => subject.title === name)?.slug;
+}
+
+export const getSubjectType = (name: string): string | undefined => {
+  return (
+    SUBJECT_CATEGORIES.find((category) => subjectsInCategoryHasName(category, name))?.type
+  );
+};
+
+const subjectsInCategoryHasName = (
+  category: SubjectCategory,
+  name: string,
+): boolean => {
+  return category.subjects.some((subject) => subject.title === name);
 };

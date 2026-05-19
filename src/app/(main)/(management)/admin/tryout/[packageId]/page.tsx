@@ -170,7 +170,7 @@ export default function TryoutEditPage() {
 
     try {
       await createSubtestMutation.mutateAsync({
-        type: subtestForm.type as any,
+        type: (subtestForm.type === 'kpu' ? 'pu' : subtestForm.type) as any,
         packageId: packageId,
         duration: subtestForm.duration,
       });
@@ -407,7 +407,7 @@ export default function TryoutEditPage() {
                 onChange={(e) =>
                   setPackageForm({
                     ...packageForm,
-                    tokenPrice: parseInt(e.target.value) || 0,
+                    tokenPrice: parseInt(e.target.value) || 1,
                   })
                 }
                 placeholder="Enter token price"
@@ -469,11 +469,11 @@ export default function TryoutEditPage() {
                         <SelectValue placeholder="Select subtest type" />
                       </SelectTrigger>
                       <SelectContent>
-                        {SUBTEST_TYPES.map((type) => (
+                        {/* {SUBTEST_TYPES.map((type) => (
                           <SelectItem key={type.value} value={type.value}>
                             {type.label}
                           </SelectItem>
-                        ))}
+                        ))} */}
                         {getAllSubjects().map((subject) => (
                           <SelectItem
                             key={subject.slug.replace("-", "_")}

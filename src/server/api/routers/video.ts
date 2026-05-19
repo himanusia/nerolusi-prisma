@@ -7,10 +7,40 @@ import {
 } from "~/server/api/trpc";
 
 export const videoRouter = createTRPCRouter({
-  getAllRekamanVideos: subscriberProcedure.query(async ({ ctx }) => {
+  getAllRekamanTKAVideos: subscriberProcedure.query(async ({ ctx }) => {
     const videos = await ctx.db.video.findMany({
-      where: { type: "rekaman" },
+      where: { type: "rekaman", mode: "tka" },
       orderBy: { createdAt: "desc" },
+    });
+    return videos;
+  }),
+
+  getAllRekamanUTBKVideos: subscriberProcedure.query(async ({ ctx }) => {
+    if (!ctx.session.user.classid) {
+      throw new Error("User not enrolled in any class");
+    }
+
+    const videos = await ctx.db.video.findMany({
+      where: {
+        type: "rekaman",
+        mode: "utbk",
+        classId: ctx.session.user.classid,
+      },
+      orderBy: { createdAt: "desc" },
+    });
+    return videos;
+  }),
+
+  getRecentRekamanUTBKVideos: userProcedure.query(async ({ ctx }) => {
+
+    if (!ctx.session.user.classid) {
+      return [];
+    }
+
+    const videos = await ctx.db.video.findMany({
+      where: { type: "rekaman", mode: "utbk", classId: ctx.session.user.classid },
+      orderBy: { createdAt: "desc" },
+      take: 4,
     });
     return videos;
   }),
@@ -28,8 +58,13 @@ export const videoRouter = createTRPCRouter({
         throw new Error("Video not found");
       }
 
-      if (video.type === "materi" && !ctx.session.user.enrolledTka) {
-        throw new Error("You must be enrolled in TKA to access this video.");
+      if (video.type === "materi") {
+        if (video.mode === "tka"  && !ctx.session.user.enrolledTka){
+          throw new Error("You must be enrolled in TKA to access this video.");
+        }
+        if (video.mode === "utbk" && !ctx.session.user.enrolledUtbk){
+          throw new Error("You must be enrolled in UTBK to access this video.");
+        }
       }
 
       return video;

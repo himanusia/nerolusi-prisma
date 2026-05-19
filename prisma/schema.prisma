@@ -20,6 +20,9 @@ model User {
   token              Int                  @default(0)
   createdAt          DateTime             @default(now())
   classid            Int?
+  school             String?
+  birthDate          DateTime?
+  birthPlace         String?
   accounts           Account[]
   quizSession        QuizSession[]
   sessions           Session[]
@@ -27,6 +30,54 @@ model User {
   userAnswers        UserAnswer[]
   UserMateriProgress UserMateriProgress[]
   UserPackage        UserPackage[]
+  UserMajorChoice    UserMajorChoice[]
+  payments           Payment[]
+}
+
+model UserMajorChoice {
+  id           String   @id @default(cuid())
+  userId       String
+  majorId      Int
+  choiceNumber Int
+  createdAt    DateTime @default(now())
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  major        Major    @relation(fields: [majorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, majorId], name: "userId_majorId")
+}
+
+model University {
+  id    Int     @id @default(autoincrement())
+  name  String
+  Major Major[]
+}
+
+model Major {
+  id              Int               @id @default(autoincrement())
+  name            String
+  universityId    Int
+  passingGrade    Int?
+  university      University        @relation(fields: [universityId], references: [id], onDelete: Cascade)
+  UserMajorChoice UserMajorChoice[]
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  startTime   DateTime?
+  endTime     DateTime?
+  url         String
+  classId     Int?
+  class       Class?    @relation(fields: [classId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+}
+
+model MainPageVideo {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
 }
 
 model Account {
@@ -70,6 +121,9 @@ model Class {
   name      String
   createdAt DateTime  @default(now())
   packages  Package[]
+  modules   Module[]
+  videos    Video[]
+  events    Event[]
   users     User[]
 }
 
@@ -77,8 +131,23 @@ model Subject {
   id        Int         @id @default(autoincrement())
   name      String
   type      SubjectType
+  mode      SubjectMode @default(tka)
   createdAt DateTime    @default(now())
   materials Material[]
+  Module    Module[]
+}
+
+model Module {
+  id          Int        @id @default(autoincrement())
+  title       String
+  description String?
+  url         String
+  subjectId   Int?
+  classId     Int?
+  createdAt   DateTime   @default(now())
+  type        ModuleType @default(bahan_materi)
+  class       Class?     @relation(fields: [classId], references: [id], onDelete: Cascade)
+  subject     Subject?   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
 }
 
 model Material {
@@ -109,6 +178,7 @@ model Package {
   id          String        @id @default(cuid())
   name        String
   type        PackageType
+  mode        SubjectMode?  @default(tka)
   classId     Int?
   TOstart     DateTime?
   TOend       DateTime?
@@ -191,13 +261,16 @@ model UserMateriProgress {
 }
 
 model Video {
-  id          String    @id @default(cuid())
+  id          String      @id @default(cuid())
   title       String
   description String?
   url         String
   duration    Int
-  createdAt   DateTime  @default(now())
-  type        VideoType @default(rekaman)
+  createdAt   DateTime    @default(now())
+  classId     Int?
+  type        VideoType   @default(rekaman)
+  mode        SubjectMode @default(tka)
+  class       Class?      @relation(fields: [classId], references: [id], onDelete: Cascade)
   topic       Topic?
 }
 
@@ -252,6 +325,37 @@ model Announcement {
   createdAt DateTime @default(now())
 }
 
+model Payment {
+  id            String        @id @default(cuid())
+  amount        Int
+  status        PaymentStatus @default(PENDING)
+  userId        String
+  type          PaymentType
+  tokens        Int           @default(0)
+  invoiceNumber String        @unique
+  createdAt     DateTime      @default(now())
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Price {
+  id             Int @id @default(autoincrement())
+  paketUtbkPrice Int
+  paketTkaPrice  Int
+  tokenPrice     Int
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum PaymentType {
+  tka
+  utbk
+  token
+}
+
 enum Role {
   user
   teacher
@@ -302,9 +406,23 @@ enum SubjectType {
   wajib
   saintek
   soshum
+  utbk
+  tps
+  tl
+  modul_nerolusi
+}
+
+enum SubjectMode {
+  tka
+  utbk
 }
 
 enum SessionType {
   package
   subtest
+}
+
+enum ModuleType {
+  catatan
+  bahan_materi
 }
