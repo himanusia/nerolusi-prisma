@@ -95,8 +95,8 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: 7. Trigger Redeploy Webhook
-        if: github.event_name != 'pull_request'
-        run: curl -f -X POST ${{ secrets.WEBHOOK_URL }}
+        if: github.event_name != 'pull_request' && vars.ENABLE_REDEPLOY_WEBHOOK == 'true'
+        run: curl --fail --show-error --retry 3 --retry-all-errors --retry-delay 10 -X POST ${{ secrets.WEBHOOK_URL }}
 
       - name: 8. Update Deployment Status
         uses: bobheadxi/deployments@v1
