@@ -1,7 +1,12 @@
-import { SubtestType } from "@prisma/client";
+import { SubtestType, QuestionType } from "@prisma/client";
 import { z } from "zod";
 import { getAllSubjects } from "~/app/_components/constants";
 import { adminProcedure, createTRPCRouter } from "~/server/api/trpc";
+import { UTApi } from "uploadthing/server";
+import { parseTryoutExcel } from "~/lib/parseTryoutExcel";
+
+const utapi = new UTApi();
+
 
 export const adminRouter = createTRPCRouter({
   // Dashboard stats
@@ -842,5 +847,133 @@ export const adminRouter = createTRPCRouter({
           createdAt: "desc",
         },
       });
+    }),
+
+  // Tambahkan import ini di paling atas admin.ts, sejajar import lain:
+  // import { UTApi } from "uploadthing/server";
+  // import { parseTryoutExcel } from "~/lib/parseTryoutExcel";
+  // import { QuestionType } from "@prisma/client"; // (SubtestType sudah ada)
+
+  // Buat instance di luar router (sekali saja, reuse antar request):
+  // const utapi = new UTApi();
+
+  // Tempel mutation ini di dalam adminRouter:
+
+  importTryoutQuestions: adminProcedure
+    .input(
+      z.object({
+        packageId: z.string(),
+        excelUrl: z.string().url(),
+      }),
+    )
+    .mutation(async ({ ctx, input }) => {
+      const pkg = await ctx.db.package.findUnique({
+        where: { id: input.packageId },
+      });
+      if (!pkg) throw new Error("Package not found");
+
+      // 1. Ambil file excel mentah yang sudah diupload ke UploadThing
+      const fileRes = await fetch(input.excelUrl);
+      if (!fileRes.ok) {
+        return {
+          success: false,
+          errors: ["Gagal mengambil file Excel yang sudah diupload."],
+          subtestsCreated: 0,
+          questionsCreated: 0,
+        };
+      }
+      const buffer = Buffer.from(await fileRes.arrayBuffer());
+
+      // 2. Parse + validasi (lihat parseTryoutExcel.ts)
+      const parsed = await parseTryoutExcel(buffer);
+      if (parsed.errors.length > 0) {
+        return {
+          success: false,
+          errors: parsed.errors,
+          subtestsCreated: 0,
+          questionsCreated: 0,
+        };
+      }
+
+      // 3. Upload semua gambar embedded ke UploadThing, satu per satu
+      const utapi = new UTApi();
+      for (const subtest of parsed.subtests) {
+        for (const q of subtest.questions) {
+          if (!q.imageBuffer) continue;
+
+          const file = new File(
+            [new Uint8Array(q.imageBuffer.buffer)],
+            `soal-${Date.now()}-${Math.random().toString(36).slice(2)}.${q.imageBuffer.extension}`,
+            { type: `image/${q.imageBuffer.extension}` },
+          );
+
+          const uploadResult = await utapi.uploadFiles(file);
+          if (uploadResult.error || !uploadResult.data) {
+            return {
+              success: false,
+              errors: [
+                `Gagal upload gambar untuk soal "${q.content.slice(0, 40)}...": ${
+                  uploadResult.error?.message ?? "unknown error"
+                }`,
+              ],
+              subtestsCreated: 0,
+              questionsCreated: 0,
+            };
+          }
+          q.imageUrl = uploadResult.data.url;
+        }
+      }
+
+      // 4. Simpan semua ke database dalam satu transaksi
+      return await ctx.db.$transaction(
+        async (tx) => {
+          let subtestsCreated = 0;
+          let questionsCreated = 0;
+
+          for (const subtestInput of parsed.subtests) {
+            const subtest = await tx.subtest.create({
+              data: {
+                type: subtestInput.type,
+                packageId: input.packageId,
+                duration: subtestInput.duration,
+              },
+            });
+            subtestsCreated++;
+
+            for (const [index, q] of subtestInput.questions.entries()) {
+              const question = await tx.question.create({
+                data: {
+                  subtestId: subtest.id,
+                  content: q.content,
+                  type: q.type,
+                  score: q.score,
+                  imageUrl: q.imageUrl,
+                  explanation: q.explanation,
+                  videoExplanation: q.videoExplanation,
+                  index,
+                },
+              });
+
+              await tx.answer.createMany({
+                data: q.answers.map((a, aIndex) => ({
+                  questionId: question.id,
+                  content: a.content,
+                  isCorrect: a.isCorrect,
+                  index: aIndex,
+                })),
+              });
+              questionsCreated++;
+            }
+          }
+
+          return {
+            success: true,
+            errors: [] as string[],
+            subtestsCreated,
+            questionsCreated,
+          };
+        },
+        { timeout: 120_000 },
+      );
     }),
 });
