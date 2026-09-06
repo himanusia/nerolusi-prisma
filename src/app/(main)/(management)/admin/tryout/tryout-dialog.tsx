@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/app/_components/ui/select";
+import { UploadSoalField } from "./upload-soal-field";
 
 interface TryoutDialogProps {
   isOpen: boolean;
@@ -34,6 +35,10 @@ interface TryoutDialogProps {
   onSubmit: () => void;
   isPending: boolean;
   activeMode: "tka" | "utbk";
+  // BARU: id package yang baru dibuat -> null berarti masih di step 1 (form)
+  createdPackageId: string | null;
+  // BARU: dipanggil saat upload selesai / admin pilih skip -> tutup modal total
+  onFinish: () => void;
 }
 
 export function TryoutDialog({
@@ -44,6 +49,8 @@ export function TryoutDialog({
   onSubmit,
   isPending,
   activeMode,
+  createdPackageId,
+  onFinish,
 }: TryoutDialogProps) {
   const isFormValid =
     formData.name.trim() !== "" &&
@@ -54,6 +61,21 @@ export function TryoutDialog({
     formData.maxParticipants > 0 &&
     new Date(formData.startDate) < new Date(formData.endDate);
 
+  // STEP 2: package sudah dibuat -> tampilkan upload Excel, bukan form lagi
+  if (createdPackageId) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Upload Soal</DialogTitle>
+          </DialogHeader>
+          <UploadSoalField packageId={createdPackageId} onDone={onFinish} />
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // STEP 1: form metadata tryout (sama seperti sebelumnya)
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md">

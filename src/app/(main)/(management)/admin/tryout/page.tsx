@@ -23,6 +23,10 @@ export default function TryoutPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMode, setActiveMode] = useState<"tka" | "utbk">("tka");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  // BARU: simpan id package hasil createTryout, null = masih di step form
+  const [createdPackageId, setCreatedPackageId] = useState<string | null>(
+    null,
+  );
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -51,6 +55,20 @@ export default function TryoutPage() {
     tryout.name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const resetFormAndClose = () => {
+    setIsCreateDialogOpen(false);
+    setCreatedPackageId(null);
+    setFormData({
+      name: "",
+      description: "",
+      startDate: "",
+      endDate: "",
+      duration: 120,
+      maxParticipants: 100,
+      mode: activeMode,
+    });
+  };
+
   const handleCreateTryout = async () => {
     // Validate form
     if (
@@ -71,18 +89,10 @@ export default function TryoutPage() {
     }
 
     try {
-      await createTryoutMutation.mutateAsync(formData);
-      toast.success("Tryout created successfully!");
-      setIsCreateDialogOpen(false);
-      setFormData({
-        name: "",
-        description: "",
-        startDate: "",
-        endDate: "",
-        duration: 120,
-        maxParticipants: 100,
-        mode: activeMode,
-      });
+      // UBAH: simpan hasilnya, JANGAN tutup modal / reset form dulu
+      const tryout = await createTryoutMutation.mutateAsync(formData);
+      toast.success("Tryout created! Sekarang upload soalnya.");
+      setCreatedPackageId(tryout.id);
       await refetch();
     } catch (error: any) {
       toast.error(error.message || "Failed to create tryout");
@@ -142,12 +152,21 @@ export default function TryoutPage() {
       {/* Create Tryout Dialog */}
       <TryoutDialog
         isOpen={isCreateDialogOpen}
-        onOpenChange={setIsCreateDialogOpen}
+        onOpenChange={(open) => {
+          // Kalau admin tutup manual (klik X / luar modal), reset semua state juga
+          if (!open) resetFormAndClose();
+          setIsCreateDialogOpen(open);
+        }}
         formData={formData}
         onFormDataChange={setFormData}
         onSubmit={handleCreateTryout}
         isPending={createTryoutMutation.isPending}
         activeMode={activeMode}
+        createdPackageId={createdPackageId}
+        onFinish={async () => {
+          resetFormAndClose();
+          await refetch();
+        }}
       />
 
       {/* Tabs and Content */}
